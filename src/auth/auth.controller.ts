@@ -4,6 +4,7 @@ import { signup } from "./items/signup.dto";
 import { signin } from "./items/signin.dto";
 import { getinfo } from "./items/getinfo.dto";
 import { getname } from "./items/getname.dto";
+import { getnft } from "./items/tokeninfo.dto";
 
 //Global
 @Controller('auth')
@@ -37,4 +38,12 @@ export class AuthController {
     readall(@Param() Getname:getname): string{
     return `your id is ${Getname.id} and your name is  ${Getname.name}`;
     }
+
+    //   Get route
+    @Get(':cntraddr/:id')
+    getTokenData(@Param() NftData:getnft): string{
+        
+    return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
+    }
+
 }
