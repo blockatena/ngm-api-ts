@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class getnft {
     @ApiProperty()
-    readonly cntraddr:number;
+    readonly cntraddr:string;
     @ApiProperty()
     readonly id:string;
 }

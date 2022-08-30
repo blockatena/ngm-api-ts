@@ -5,6 +5,7 @@ import { signin } from "./items/signin.dto";
 import { getinfo } from "./items/getinfo.dto";
 import { getname } from "./items/getname.dto";
 import { getnft } from "./items/tokeninfo.dto";
+import { ethers } from "ethers";
 
 //Global
 @Controller('auth')
@@ -42,7 +43,9 @@ export class AuthController {
     //   Get route
     @Get(':cntraddr/:id')
     getTokenData(@Param() NftData:getnft): string{
-        
+        // const erc20 = new ethers.Contract(NftData.cntraddr, abi, provider); // abi and provider to be declared
+
+        // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
     return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
     }
 
