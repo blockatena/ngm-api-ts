@@ -1,12 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { signup } from './items/signup.dto';
-import { signin } from './items/signin.dto';
-import { getinfo } from './items/getinfo.dto';
-import { getname } from './items/getname.dto';
-import { getnft } from './items/tokeninfo.dto';
-import { ethers } from 'ethers';
-const baycAbi =  [
+[
   {
     "inputs": [
       { "internalType": "string", "name": "name", "type": "string" },
@@ -421,53 +413,4 @@ const baycAbi =  [
     "stateMutability": "nonpayable",
     "type": "function"
   }
-];
-
-require("dotenv").config();
-
-//Global
-const RPC_URL = process.env.RPC_URL;
-const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-
-@Controller('auth')
-export class AuthController {
-  constructor(private authservice: AuthService) {
-  }
-
-  //  Post route
-  @Post('signup')
-  signup(@Body() Signup: signup): string {
-    return `Hello ${Signup.name}  you are successfully registered`;
-  }
-
-  //  Post route
-  @Post('login')
-  signin(@Body() Signin: signin) {
-    return `Hello ${Signin.name} You are Successfully logged in  `;
-  }
-
-  // get Route
-  @Get(':id')
-  readitems(@Param() Getinfo: getinfo): string {
-    console.log(Getinfo.id);
-    return `your id is ${Getinfo.id}`;
-  }
-
-  // //   Get route
-  // @Get(':id/:name')
-  // readall(@Param() Getname: getname): string {
-  //   return `your id is ${Getname.id} and your name is  ${Getname.name}`;
-  // }
-
-  //   Get route
-  @Get(':cntraddr/:id')
-  async getTokenData(@Param() NftData: getnft): Promise<string> {
-    console.log("The data is: ", NftData.cntraddr, NftData.id); 
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
-    // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
-    console.log("Contract Instance: ", nftCntr)
-    const tokenURI = await nftCntr.tokenURI(NftData.id)
-    console.log("TokenURI: ", tokenURI);
-    return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
-  }
-}
+]
