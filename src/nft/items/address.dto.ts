@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class getinfo {
+export class address {
   @ApiProperty()
-  readonly id: number;
+  readonly cntraddr: string;
 }

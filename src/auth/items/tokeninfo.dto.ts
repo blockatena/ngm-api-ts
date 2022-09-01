@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class signin {
+export class getnft {
   @ApiProperty()
-  readonly name: string;
+  readonly cntraddr: string;
   @ApiProperty()
-  readonly password: string;
+  readonly id: string;
 }

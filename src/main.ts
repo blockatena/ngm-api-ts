@@ -1,23 +1,23 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+require('dotenv').config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-//
+  
+  // initialize Swagger
 
-// initialize Swagger
+  const config = new DocumentBuilder()
+    .setTitle('NFT Game Machine API')
+    .setDescription('API Demontstration ')
+    .setVersion('1.0')
+    .addTag('NGM APIs')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('ngmapi', app, document);
+  const PORT = process.env.PORT || 8080;
 
-const config = new DocumentBuilder()
-.setTitle('REST API')
-.setDescription('REST API DEMONSTRATION')
-.setVersion('1.0')
-.addTag('APIS')
-.build();
-const document = SwaggerModule.createDocument(app, config);
-SwaggerModule.setup('restapi', app, document);
-
-//
-  await app.listen(3333);
+  await app.listen(PORT);
 }
 bootstrap();
