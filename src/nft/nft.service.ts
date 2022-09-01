@@ -1,11 +1,21 @@
+import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class NftService {
-  signup() {
-    return { msg: 'I have signed Up' };
+  constructor(private readonly httpService: HttpService) {}
+
+  async getMetadata(cid: string, ipfsFlag: boolean): Promise<any> {
+    return await this.httpService.axiosRef.get(
+      ipfsFlag ? 'https://ipfs.io/ipfs/' + cid : cid,
+    );
   }
-  signin() {
-    return { msg: 'I have signed in' };
+
+  getImageUrl(url: string) {
+    
+  }
+
+  tokeninfo() {
+    return { msg: 'Metadata Fetched' };
   }
 }
