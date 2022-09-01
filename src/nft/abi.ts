@@ -1,4 +1,4 @@
-[
+const abi = [
   {
     "inputs": [
       { "internalType": "string", "name": "name", "type": "string" },
@@ -414,3 +414,4 @@
     "type": "function"
   }
 ]
+export default abi;

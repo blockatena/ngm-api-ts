@@ -11,8 +11,10 @@ export class NftService {
     );
   }
 
-  getImageUrl(url: string) {
-    
+  getImageUrl(url: string): string {
+    return url.includes('ipfs://')
+      ? 'https://ipfs.io/ipfs/' + url.split('ipfs://')[1]
+      : url;
   }
 
   tokeninfo() {
