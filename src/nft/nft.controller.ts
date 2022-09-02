@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getnft } from './items/tokeninfo.dto';
+import { getnft } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
 import { ApiTags } from '@nestjs/swagger';
 
@@ -439,7 +439,7 @@ export class NftController {
   // }
 
   @Get(':cntraddr/:id')
-  async getTokenImage(@Param() NftData: getnft): Promise<string> {
+  async getTokenImage(@Body() NftData: getnft): Promise<string> {
     console.log("The data is: ", NftData.cntraddr, NftData.id); 
     const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
     // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
@@ -451,7 +451,7 @@ export class NftController {
 
   //   Get route
   @Get(':cntraddr/:id')
-  async getTokenData(@Param() NftData: getnft): Promise<string> {
+  async getTokenData(@Body() NftData: getnft): Promise<string> {
     console.log("The data is: ", NftData.cntraddr, NftData.id); 
     const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
     // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
@@ -460,4 +460,25 @@ export class NftController {
     console.log("TokenURI: ", tokenURI);
     return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
   }
+
+
+
+//Checking
+@Get(':getall')
+async getall(@Body() data ): Promise<string>{
+  let a:number=3;
+  let b:number=3;
+  
+  return  new Promise((res,rej)=>{
+    if(a+b<10){
+      res("Fine");
+    }
+    rej("not fine");
+   }) ;
 }
+
+}
+
+
+
+
