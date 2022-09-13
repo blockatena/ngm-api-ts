@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getnft } from './nftitems/tokeninfo.dto';
+import { getnft, get_transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
-import { ApiTags } from '@nestjs/swagger';
+import {  ApiCreatedResponse, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 const baycAbi =  [
   {
@@ -426,32 +426,46 @@ require("dotenv").config();
 const RPC_URL = process.env.RPC_URL;
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 
+
+
 @ApiTags('NGM APIs')
 @Controller('nft')
 export class NftController {
   constructor(private nftservice: NftService) {
+ 
+ 
   }
 
-  // //  Post route
-  // @Post('signup')
-  // signup(@Body() Signup: signup): string {
-  //   return `Hello ${Signup.name}  you are successfully registered`;
-  // }
-
-  @Get(':cntraddr/:id')
-  async getTokenImage(@Body() NftData: getnft): Promise<string> {
-    console.log("The data is: ", NftData.cntraddr, NftData.id); 
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
-    // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
-    console.log("Contract Instance: ", nftCntr)
-    const tokenURI = await nftCntr.tokenURI(NftData.id)
-    console.log("TokenURI: ", tokenURI);
-    return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
+  // To Get all All NFTs in the Db 
+  @Get('get-all-nfts')
+  @ApiCreatedResponse({
+    status: 201, 
+    description: 'The records has been fetched successfully.',
+    type: [getnft],
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.'})
+  async getallNfts():Promise<[getnft]>{
+    return [{"cntraddr":"cntraddr","id":"id"}];
   }
-
+ 
+  // to fetch total number of NFTs related to the game
+  @Get('total-count/:gamename')
+  @ApiCreatedResponse({
+    status: 201, 
+    description: 'Total has been Fetched successfully.',
+    type: Number,
+  })
+  @ApiResponse({ status: 204, description: 'There are no NFTS associated with that Game'})
+  @ApiResponse({ status: 403, description: 'Forbidden.'})
+  async totalcount(@Param("game-name") gameName: string):Promise<Number>{
+    return 55;
+  }
+ 
   //   Get route
   @Get(':cntraddr/:id')
-  async getTokenData(@Body() NftData: getnft): Promise<string> {
+  @ApiResponse({ status: 201, description: 'To fetch the details the Token URI'})
+  @ApiResponse({ status: 403, description: 'Forbidden.'})
+  async getTokenData(@Param() NftData: getnft): Promise<string> {
     console.log("The data is: ", NftData.cntraddr, NftData.id); 
     const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
     // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
@@ -461,24 +475,20 @@ export class NftController {
     return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
   }
 
+  // To fetch Contract Details 
+  @Get('contract-details')
+  @ApiResponse({ status: 201, description: 'Fetching the contract details'})
+  @ApiResponse({ status: 403, description: 'Forbidden.'})
+  async contractdetails(): Promise<string>{
+         return `Contract`;
+  }
 
 
-//Checking
-@Get(':getall')
-async getall(@Body() data ): Promise<string>{
-  let a:number=3;
-  let b:number=3;
-  
-  return  new Promise((res,rej)=>{
-    if(a+b<10){
-      res("Fine");
-    }
-    rej("not fine");
-   }) ;
-}
+  @Get('get-transactions/:tokenid/:cntraddr')
+  @ApiResponse({ status: 201, description: 'Fetching the Transactions'})
+  @ApiResponse({ status: 403, description: 'Forbidden.'})
+  async getransactions(@Param()transactions: get_transactions) : Promise<string> {
+    return `ddf`;
+  }
 
-}
-
-
-
-
+ }
