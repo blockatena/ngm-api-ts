@@ -20,7 +20,7 @@ export class DeploymentController {
   }
 
   
-  @Post('/change-base-uri1155/cntr-addr')
+  @Post('/change-base-uri1155/cntraddr')
   changeBaseURI_1155(@Param('cntraddress') cntraddress:string){
  
   }

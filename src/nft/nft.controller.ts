@@ -93,11 +93,11 @@ export class NftController {
   async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN:string){
 
   }
-  @Post('put-for-sale/:token-id/:cntr-addr')
+  @Post('put-for-sale/:token-id/:cntraddr')
   async putForSale(@Param() sale:transactions){
 
   }
-  @Post('blacklist-nft/:token-id/:cntr-addr')
+  @Post('blacklist-nft/:token-id/:cntraddr')
   async blacklistNFT(@Param() blacklist:transactions){
             
   }
