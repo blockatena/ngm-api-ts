@@ -15,8 +15,8 @@ export class getnft {
 }
 
 
-// @ApiExtraModels()
-export class get_transactions{
+@ApiExtraModels()
+export class transactions{
   @ApiProperty()
     readonly "token-id": string;
  
@@ -25,3 +25,4 @@ export class get_transactions{
 
      
 }
+
