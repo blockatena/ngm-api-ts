@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getnft, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
-import {  ApiCreatedResponse, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCreatedResponse, ApiHeader, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { baycAbi } from './abi';
 
 require("dotenv").config();
@@ -86,7 +86,7 @@ export class NftController {
 // *****************************************//
   @Post('mint-nft/:ERC_TOKEN')
   async mintNFT(@Param('ERC_TOKEN') ERC_TOKEN:string){
-
+   
   }
 
   @Post('mint-batch-nft/:ERC_TOKEN')
