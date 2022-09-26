@@ -16,7 +16,7 @@ export class DeploymentController {
    
   @Post('pause-contract/:cntraddress')
   pauseContract(@Param('cntraddress') cntraddress:string){
- 
+   
   }
 
   
