@@ -4,12 +4,8 @@ import { NftController } from './nft.controller';
 import { NftService } from './nft.service';
 
 @Module({
-  imports: [
-    HttpModule.register({
-      timeout: 500000,
-    }),
-  ],
   controllers: [NftController],
   providers: [NftService],
+  imports: [HttpModule],
 })
 export class NftModule {}
