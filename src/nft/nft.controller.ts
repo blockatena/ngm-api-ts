@@ -16,6 +16,7 @@ require('dotenv').config();
 //Global
 const RPC_URL = process.env.RPC_URL;
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+const ipfsDecorator = 'ipfs://';
 
 @ApiTags('NGM APIs')
 @Controller('nft')
