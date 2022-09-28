@@ -56,7 +56,7 @@ export class Bucket {
     const file = { path: `/${name}.json`, content: Buffer.from(content) };
     const res = await this.buckets.pushPath(this.buckKey, `/${name}.json`, file);
     console.log('res of pushPath: ', res);
-    return baseUrl + name + '.json';
+    return res;
   };
 
   pullJSON = async (name) => {
