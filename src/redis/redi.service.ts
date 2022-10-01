@@ -6,7 +6,7 @@ export class redisCacheManger {
 
   async setEx(key: string, value: string): Promise<any> {
     console.log(key, 'data  received', value);
-    return await this.Cacheservice.set(key, value, 6000);
+    return await this.Cacheservice.set(key, value);
   }
 
   async getEx(key: string): Promise<any> {

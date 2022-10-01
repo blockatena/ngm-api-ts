@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getnft, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
@@ -10,6 +10,8 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { baycAbi } from './abi';
+import { Roles } from 'src/guards/roles.decorator';
+import { redisCacheManger } from 'src/redis/redi.service';
 
 require('dotenv').config();
 
@@ -17,11 +19,14 @@ require('dotenv').config();
 const RPC_URL = process.env.RPC_URL;
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 const ipfsDecorator = 'ipfs://';
-
+@UseGuards()
 @ApiTags('NGM APIs')
 @Controller('nft')
 export class NftController {
-  constructor(private nftservice: NftService) {}
+  constructor(
+    private nftservice: NftService,
+    private readonly redisService: redisCacheManger,
+  ) {}
 
   // To Get all All NFTs in the Db
   // For Docs
@@ -36,6 +41,14 @@ export class NftController {
   // Logic
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async getallNfts(): Promise<[getnft]> {
+    const allNfts = await this.redisService.getEx('get-all-nfts');
+    console.log(allNfts);
+    if (allNfts) {
+      console.log('Found in redis');
+      return allNfts;
+    }
+    console.log('Not  Found in redis');
+    console.log(await this.redisService.setEx('allProds', allNfts));
     return [{ cntraddr: 'cntraddr', id: 'id' }];
   }
 
@@ -90,6 +103,11 @@ export class NftController {
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
+
+  //
+  // @Roles(Role.Admin)
+  // @Post()
+  //
   @Post('mint-nft/:ERC_TOKEN')
   async mintNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
 
