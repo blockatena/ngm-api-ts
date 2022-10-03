@@ -1,27 +1,21 @@
 import { HttpModule } from '@nestjs/axios';
-import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { NftController } from './nft.controller';
 import { NftService } from './nft.service';
 import * as redisStore from 'cache-manager-redis-store';
-import { redisCacheManger } from 'src/redis/redi.service';
-import { RolesGuard } from 'src/guards/roles.guard';
-// import { ConfigModule } from '@nestjs/config';
+import { CacheModule, Module } from '@nestjs/common';
+import { RedisCliService } from '../redis-cli/redis-cli.service';
 @Module({
   imports: [
     HttpModule,
+
     CacheModule.register({
-      isGlobal: true,
-      // store: redisStore,
+      store: redisStore,
       host: process.env.REDIS_HOST,
       port: parseInt(process.env.REDIS_PORT),
+      db: 1,
     }),
   ],
   controllers: [NftController],
-  providers: [
-    NftService,
-    redisCacheManger,
-    { provide: APP_GUARD, useClass: RolesGuard },
-  ],
+  providers: [NftService, RedisCliService],
 })
 export class NftModule {}

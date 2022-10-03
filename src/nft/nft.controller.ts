@@ -9,23 +9,20 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { baycAbi } from './abi';
-import { Roles } from 'src/guards/roles.decorator';
-import { redisCacheManger } from 'src/redis/redi.service';
-
 require('dotenv').config();
 
 //Global
 const RPC_URL = process.env.RPC_URL;
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 const ipfsDecorator = 'ipfs://';
-@UseGuards()
 @ApiTags('NGM APIs')
 @Controller('nft')
 export class NftController {
   constructor(
     private nftservice: NftService,
-    private readonly redisService: redisCacheManger,
+    private RedisService: RedisCliService,
   ) {}
 
   // To Get all All NFTs in the Db
@@ -40,16 +37,14 @@ export class NftController {
   //
   // Logic
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getallNfts(): Promise<[getnft]> {
-    const allNfts = await this.redisService.getEx('get-all-nfts');
-    console.log(allNfts);
-    if (allNfts) {
-      console.log('Found in redis');
-      return allNfts;
+  async getallNfts(): Promise<any> {
+    const data = await this.RedisService.getEx('allNfts');
+    if (data) {
+      return data;
     }
-    console.log('Not  Found in redis');
-    console.log(await this.redisService.setEx('allProds', allNfts));
-    return [{ cntraddr: 'cntraddr', id: 'id' }];
+    const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
+    await this.RedisService.setEx('allNfts', JSON.stringify(fetchData));
+    return fetchData;
   }
 
   // to fetch total number of NFTs related to the game
