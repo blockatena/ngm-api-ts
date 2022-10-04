@@ -7,12 +7,11 @@ import { RedisCliService } from '../redis-cli/redis-cli.service';
 @Module({
   imports: [
     HttpModule,
-
     CacheModule.register({
       store: redisStore,
       host: process.env.REDIS_HOST,
-      port: parseInt(process.env.REDIS_PORT),
-      db: 1,
+      port: process.env.REDIS_PORT,
+      // db: process.env.REDIS_DB,
     }),
   ],
   controllers: [NftController],

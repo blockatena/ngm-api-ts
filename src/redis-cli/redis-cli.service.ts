@@ -3,9 +3,15 @@ import { Cache } from 'cache-manager';
 @Injectable()
 export class RedisCliService {
   constructor(@Inject(CACHE_MANAGER) private cacheManager: Cache) {}
-  async setEx(key: string, value: string): Promise<any> {
-    console.log(key, 'data  received', value);
-    await this.cacheManager.set(key, value);
+  async setEx(key: string, value: string, ttl:number): Promise<any> {
+    console.log(key, 'setEx data  received', value);
+    await this.cacheManager.set(key, value, ttl);
+    return this.cacheManager.get(key);
+  }
+
+  async set(key: string, value: string): Promise<any> {
+    console.log(key, 'set data  received', value, key);
+    await this.cacheManager.set(key, value, 60000000);
     return this.cacheManager.get(key);
   }
 

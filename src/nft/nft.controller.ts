@@ -43,7 +43,7 @@ export class NftController {
       return data;
     }
     const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
-    await this.RedisService.setEx('allNfts', JSON.stringify(fetchData));
+    await this.RedisService.set('allNfts', JSON.stringify(fetchData));
     return fetchData;
   }
 

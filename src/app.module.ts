@@ -12,8 +12,8 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
     CacheModule.register({
       store: redisStore,
       ttl: 5,
-      host: 'localhost',
-      port: 6379,
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT,
     }),
     NftModule,
     AuthModule,
