@@ -1,25 +1,22 @@
-import { CacheInterceptor, CacheModule, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { NftModule } from './nft/nft.module';
 import { DeploymentModule } from './deployment/deployment.module';
 import { TextileModule } from './textile/textile.module';
 import { ConfigModule } from '@nestjs/config';
-import * as redisStore from 'cache-manager-redis-store';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { MongooseModule } from '@nestjs/mongoose';
+import { UsersModule } from './users/users.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    CacheModule.register({
-      store: redisStore,
-      ttl: 5,
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
-    }),
+    MongooseModule.forRoot(process.env.ATLAS),
     NftModule,
     AuthModule,
     DeploymentModule,
     TextileModule,
+    UsersModule,
   ],
-  providers: [{ provide: APP_INTERCEPTOR, useClass: CacheInterceptor }],
+  providers: [],
 })
 export class AppModule {}
