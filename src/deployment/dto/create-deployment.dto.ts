@@ -11,4 +11,6 @@ export class CreateDeploymentDto {
   readonly collectionName: string;
   @ApiProperty()
   readonly chain: string;
+  @ApiProperty()
+  readonly type: string;
 }
