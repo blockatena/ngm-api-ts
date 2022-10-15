@@ -1,11 +1,27 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  SetMetadata,
+  UseGuards,
+} from '@nestjs/common';
 import { NftService } from './nft.service';
-import { tokeninfo } from './items/tokeninfo.dto';
+import { getnft, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
-import { ApiTags } from '@nestjs/swagger';
-import { address } from './items/address.dto';
-import { getusertoken } from './items/getusertoken';
-import baycAbi from './abi';
+import {
+  ApiCreatedResponse,
+  ApiHeader,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { RedisCliService } from '../redis-cli/redis-cli.service';
+import { baycAbi } from './abi';
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
+import { Role } from 'src/guards/roles.enum';
 require('dotenv').config();
 
 //Global
@@ -15,77 +31,101 @@ const ipfsDecorator = 'ipfs://';
 
 @ApiTags('NGM APIs')
 @Controller('nft')
+@UseGuards(RolesGuard)
 export class NftController {
-  constructor(private nftservice: NftService) {}
+  constructor(
+    private nftservice: NftService,
+    private RedisService: RedisCliService,
+  ) {}
 
-  //Get totalSupply
-  @Get('totalSupply/:cntraddr')
-  async totalSupply(@Param() Contract: address): Promise<any> {
-    const nftCntr = new ethers.Contract(Contract.cntraddr, baycAbi, provider);
-    const totalSupply = await nftCntr.totalSupply();
-    return parseInt(totalSupply._hex);
+  // To Get all All NFTs in the Db
+  // For Docs
+  // You can Specify access to single person or multiple persons
+  // You can give permissions to as many people as you want
+  @SetMetadata('roles', [Role.Admin, Role.User])
+  @Get('get-all-nfts/:jwt')
+  @ApiOperation({ summary: 'To Get All Nfts' })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'The records has been fetched successfully.',
+    type: [getnft],
+  })
+  //
+  // Logic
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async getallNfts(@Param('jwt') jwt: string): Promise<any> {
+    const data = await this.RedisService.getEx('allNfts');
+    if (data) {
+      return data;
+    }
+    const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
+    await this.RedisService.set('allNfts', JSON.stringify(fetchData));
+    return fetchData;
   }
 
-  //get image of the nft
-  @Get('/image/:cntraddr/:id')
-  async getTokenImage(@Param() NftData: tokeninfo): Promise<any> {
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider);
+  // to fetch total number of NFTs related to the game
+  @Get('total-count/:gamename')
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Total has been Fetched successfully.',
+    type: Number,
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'There are no NFTS associated with that Game',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async totalcount(@Param('game-name') gameName: string): Promise<Number> {
+    return 55;
+  }
+
+  //   Get route
+  @Get(':cntraddr/:id')
+  @ApiResponse({
+    status: 201,
+    description: 'To fetch the details the Token URI',
+  })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async getTokenImage(@Param() NftData: getnft): Promise<string> {
+    console.log('The data is: ', NftData.cntraddr, NftData.id);
+    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
+    // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
+    console.log('Contract Instance: ', nftCntr);
     const tokenURI = await nftCntr.tokenURI(NftData.id);
     console.log('TokenURI: ', tokenURI);
-    let ipfsFlag = tokenURI.includes(ipfsDecorator);
-    const cid = ipfsFlag ? tokenURI.split(ipfsDecorator)[1] : tokenURI;
-    console.log(cid, ipfsFlag);
-    const metadata = await this.nftservice.getMetadata(cid, ipfsFlag);
-    const imageUrl = this.nftservice.getImageUrl(metadata.data.image);
-    if (metadata) return { image: imageUrl };
     return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
   }
 
-  //get metadata of the nft
-  @Post('/data/')
-  async getTokenData(@Body() NftData: tokeninfo): Promise<any> {
-    console.log('NftData: ', NftData.cntraddr, NftData.id);
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider);
-    const tokenURI = await nftCntr.tokenURI(NftData.id);
-    console.log('nftCntr: ', tokenURI);
-    const ipfsFlag = tokenURI.includes(ipfsDecorator);
-    const cid = ipfsFlag ? tokenURI.split(ipfsDecorator)[1] : tokenURI;
-    console.log(cid, ipfsFlag);
-    const metadata = await this.nftservice.getMetadata(cid, ipfsFlag);
-    console.log('TokenURI: ', metadata.data);
-    if (metadata) {
-      return metadata.data;
-    }
-    return {
-      res: `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`,
-    };
+  // To fetch Contract Details
+  @Get('contract-details')
+  @ApiResponse({ status: 201, description: 'Fetching the contract details' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async contractdetails(): Promise<string> {
+    return `Contract`;
   }
-  //get token owned by an address
-  @Post('/user')
-  async getTokenOfOwner(@Body() NftData: getusertoken): Promise<any[]> {
-    console.log('NftData: ', NftData.cntraddr, NftData.walletaddr);
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider);
-    const balance = await nftCntr.balanceOf(NftData.walletaddr);
-    const tokenBalance = parseInt(balance._hex);
-    let tokens = [];
-    for (let i = 0; i < tokenBalance; i++) {
-      const tokenId = await nftCntr.tokenOfOwnerByIndex(
-        NftData.walletaddr,
-        i,
-      );
-      tokens.push(parseInt(tokenId._hex));    
-    }
-    return tokens;
-    // const ipfsFlag = tokenURI.includes(ipfsDecorator);
-    // const cid = ipfsFlag ? tokenURI.split(ipfsDecorator)[1] : tokenURI;
-    // console.log(cid, ipfsFlag);
-    // const metadata = await this.nftservice.getMetadata(cid, ipfsFlag);
-    // console.log('TokenURI: ', metadata.data);
-    // if (metadata) {
-    //   return metadata.data;
-    // }
-    // return {
-    //   res: `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`,
-    // };
+
+  @Get('get-transactions/:tokenid/:cntraddr')
+  @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  async getransactions(@Param() transactions: transactions): Promise<string> {
+    return `ddf`;
   }
+
+  // *****************************************//
+  //                POST APIs                 //
+  // *****************************************//
+
+  //
+  // @Roles(Role.Admin)
+  // @Post()
+  //
+  @Post('mint-nft/:ERC_TOKEN')
+  async mintNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
+
+  @Post('mint-batch-nft/:ERC_TOKEN')
+  async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
+  @Post('put-for-sale/:tokenid/:cntraddr')
+  async putForSale(@Param() sale: transactions) {}
+  @Post('blacklist-nft/:tokenid/:cntraddr')
+  async blacklistNFT(@Param() blacklist: transactions) {}
 }

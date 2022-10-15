@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 require('dotenv').config();
-
+global.__basedir = __dirname;
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  
+  const app = await NestFactory.create(AppModule, { cors: true });
+  app.enableCors();
   // initialize Swagger
 
   const config = new DocumentBuilder()
