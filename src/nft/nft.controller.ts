@@ -1,8 +1,19 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseFilePipe,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getnft, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiHeader,
   ApiOperation,
@@ -10,6 +21,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { baycAbi } from './abi';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 require('dotenv').config();
 
@@ -22,7 +36,47 @@ const ipfsDecorator = 'ipfs://';
 @Controller('nft')
 export class NftController {
   constructor(private nftservice: NftService) {}
+  // File Upload
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './files',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = Date.now() + '-' + Math.random() * 1e9;
+          const ext = extname(file.originalname);
+          const filename = `${file.originalname}-${uniqueSuffix}${ext}`;
+          callback(null, filename);
+        },
+      }),
+    }),
+  )
+  @Post('uploadFile')
+  uploadFile(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          // new MaxFileSizeValidator({ maxSize: 10000 }),
+          // new FileTypeValidator({ fileType: 'text' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    // Finally
+    console.log(file);
+    return file;
+  }
 
+  //
   // To Get all All NFTs in the Db
   // For Docs
   @Get('get-all-nfts')
