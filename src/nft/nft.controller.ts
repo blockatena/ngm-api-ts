@@ -4,9 +4,11 @@ import {
   Get,
   Param,
   ParseFilePipe,
-  Post,
   UploadedFile,
   UseInterceptors,
+  Post,
+  SetMetadata,
+  UseGuards,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getnft, transactions } from './nftitems/tokeninfo.dto';
@@ -20,11 +22,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { baycAbi } from './abi';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
+import { RolesGuard } from 'src/guards/roles.guard';
+import { Roles } from 'src/guards/roles.decorator';
+import { Role } from 'src/guards/roles.enum';
 require('dotenv').config();
 
 //Global
@@ -34,8 +40,12 @@ const ipfsDecorator = 'ipfs://';
 
 @ApiTags('NGM APIs')
 @Controller('nft')
+// @UseGuards(RolesGuard)
 export class NftController {
-  constructor(private nftservice: NftService) {}
+  constructor(
+    private nftservice: NftService,
+    private RedisService: RedisCliService,
+  ) {}
   // File Upload
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -79,7 +89,10 @@ export class NftController {
   //
   // To Get all All NFTs in the Db
   // For Docs
-  @Get('get-all-nfts')
+  // You can Specify access to single person or multiple persons
+  // You can give permissions to as many people as you want
+  @SetMetadata('roles', [Role.Admin, Role.User])
+  @Get('get-all-nfts/:jwt')
   @ApiOperation({ summary: 'To Get All Nfts' })
   @ApiCreatedResponse({
     status: 201,
@@ -89,8 +102,14 @@ export class NftController {
   //
   // Logic
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getallNfts(): Promise<[getnft]> {
-    return [{ cntraddr: 'cntraddr', id: 'id' }];
+  async getallNfts(@Param('jwt') jwt: string): Promise<any> {
+    const data = await this.RedisService.getEx('allNfts');
+    if (data) {
+      return data;
+    }
+    const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
+    await this.RedisService.set('allNfts', JSON.stringify(fetchData));
+    return fetchData;
   }
 
   // to fetch total number of NFTs related to the game
@@ -144,6 +163,11 @@ export class NftController {
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
+
+  //
+  // @Roles(Role.Admin)
+  // @Post()
+  //
   @Post('mint-nft/:ERC_TOKEN')
   async mintNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
 
