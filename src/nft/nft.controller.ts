@@ -31,12 +31,16 @@ import { extname } from 'path';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
+import { NFTStorage, File, Blob } from 'nft.storage';
+import { mintToken } from './nftitems/mintToken.dto';
+
 require('dotenv').config();
 
 //Global
 const RPC_URL = process.env.RPC_URL;
 const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 const ipfsDecorator = 'ipfs://';
+const token = process.env.NFT_STORAGE_KEY;
 
 @ApiTags('NGM APIs')
 @Controller('nft')
@@ -57,20 +61,21 @@ export class NftController {
     },
   })
   @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './files',
-        filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.random() * 1e9;
-          const ext = extname(file.originalname);
-          const filename = `${file.originalname}-${uniqueSuffix}${ext}`;
-          callback(null, filename);
-        },
-      }),
-    }),
+    FileInterceptor('file'),
+    // {
+    // storage: diskStorage({
+    //   destination: './files',
+    //   filename: (req, file, callback) => {
+    // const uniqueSuffix = Date.now() + '-' + Math.random() * 1e9;
+    // const ext = extname(file.originalname);
+    // const filename = `${file.originalname}-${uniqueSuffix}${ext}`;
+    // callback(null, filename);
+    // },
+    // }),
+    // }
   )
   @Post('uploadFile')
-  uploadFile(
+  async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -81,9 +86,21 @@ export class NftController {
     )
     file: Express.Multer.File,
   ) {
-    // Finally
-    console.log(file);
-    return file;
+    try {
+      console.log(file);
+
+      const storage = new NFTStorage({ token });
+      const blob = new Blob([file.buffer]);
+      const toUploadFile = new File([blob], `/${file.originalname}`, {
+        type: file.mimetype,
+      });
+      const cid = await storage.storeDirectory([toUploadFile]);
+      const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
+      console.log({ tokenUri });
+      return cid;
+    } catch (error) {
+      return false;
+    }
   }
 
   //
@@ -169,7 +186,7 @@ export class NftController {
   // @Post()
   //
   @Post('mint-nft/:ERC_TOKEN')
-  async mintNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
+  async mintNFT(@Body('ERC_TOKEN') ERC_TOKEN: mintToken) {}
 
   @Post('mint-batch-nft/:ERC_TOKEN')
   async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
