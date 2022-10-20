@@ -228,7 +228,7 @@ export class NftController {
         jsonData,
         body.cntraddr,
       );
-      return response;
+      return `${response}/${tokenId}.json`;
     } catch (error) {
       console.log(error);
       return false;
