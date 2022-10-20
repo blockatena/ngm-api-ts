@@ -19,6 +19,7 @@ const provider = new ethers.providers.JsonRpcProvider(
   process.env.MATIC_MUMBAI_RPC_URL,
 );
 const wallet = new ethers.Wallet(process.env.PRIV_KEY, provider);
+// let contractWithSigner = contract.connect(wallet);
 
 @ApiTags('Deployment')
 @Controller('deployment')
@@ -26,13 +27,14 @@ export class DeploymentController {
   constructor(private readonly deploymentService: DeploymentService) {}
 
   @Post('deploy-contract')
-  async deployContract(@Body() deploymentDto: CreateDeploymentDto) {
-    console.log(deploymentDto);
+  async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
+    console.log(deploymentBody);
 
     // Checkong Number of Contracts that this address hold
     if (
-      (await this.deploymentService.ContractCount(deploymentDto.ownerAddress)) >
-      4
+      (await this.deploymentService.ContractCount(
+        deploymentBody.ownerAddress,
+      )) > 4
     ) {
       console.log('in');
       return 'you exceeded limit, kindly subscribe to our services';
@@ -43,11 +45,11 @@ export class DeploymentController {
 
     const abiPath = path.join(
       process.cwd(),
-      `src/utils/constants/${deploymentDto.type}/${deploymentDto.type}.abi`,
+      `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.abi`,
     );
     const binPath = path.join(
       process.cwd(),
-      `src/utils/constants/${deploymentDto.type}/${deploymentDto.type}.bin`,
+      `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.bin`,
     );
     // console.log(abiPath, '  ', binPath);
     //  retrieving abi and bin files through fs module
@@ -59,27 +61,18 @@ export class DeploymentController {
 
     const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
 
-    // ERC721PSI - (CollectionName , Symbol)
-    // ERC721TINY- (CollectionName,Symbol)
-    // ERC1155-D - (uri)
-    let contract;
-    if (deploymentDto.type == 'NGM1155') {
-      const _contract = await contractFactory.deploy(
-        deploymentDto.collectionName,
-        deploymentDto.symbol,
-        deploymentDto.uri,
-      );
-      contract = _contract;
-    } else {
-      const _contract = await contractFactory.deploy(
-        deploymentDto.collectionName,
-        deploymentDto.symbol,
-      );
-      contract = _contract;
-    }
-
+    // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
+    // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
+    // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
+    let contract = await contractFactory.deploy(
+      deploymentBody.collectionName,
+      deploymentBody.symbol,
+      deploymentBody.uri,
+    );
+    const uri = 'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space'
     const confirm = await contract.deployed();
     const address = contract.address;
+    const res = await contract.setBaseURI(`${uri}/${address}/`);
     const hash = confirm.deployTransaction.hash;
 
     // Contract Deployment End
@@ -95,12 +88,12 @@ export class DeploymentController {
     const keys = ['ownerAddress', 'symbol', 'chain', 'collectionName', 'type'];
     const arr = {};
     keys.forEach((element) => {
-      arr[`${element}`] = deploymentDto[element];
+      arr[`${element}`] = deploymentBody[element];
     });
     arr[`transactionhash`] = hash;
     arr[`contractaddress`] = address;
-    if (deploymentDto.uri) {
-      arr[`uri`] = deploymentDto.uri;
+    if (deploymentBody.uri) {
+      arr[`uri`] = deploymentBody.uri;
     }
     return await this.deploymentService.InsertContract(arr);
   }
@@ -113,6 +106,25 @@ export class DeploymentController {
   async getContractsOfUser(@Param('owneraddr') owneraddr: string) {
     return this.deploymentService.getContractByOwnerAddr(owneraddr);
   }
+
+  @Get('callFunction/:owneraddr')
+  async callFunction(@Param('owneraddr') owneraddr: string) {
+    // ethersjs call method safe mint ngm721
+    const abiPath = path.join(
+      process.cwd(),
+      `src/utils/constants/NGM721PSI/NGM721PSI.abi`,
+    );
+    console.log(process.cwd());
+    const abi = fs.readFileSync(abiPath, 'utf-8');
+    const nftCntr = new ethers.Contract('0xe528a4898c00F9B48e302B7b3Ba535319fD51bBd', abi, wallet); // abi and provider to be declared
+    console.log("nftContract: ", nftCntr, owneraddr);
+    const minted = await nftCntr.safeMint('0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390', 1, '0x0');
+    // const minted = await nftCntr.safeMint(owneraddr, 1, '0x0');
+    // const uri = await nftCntr.name();
+    const uri = await nftCntr.baseURI(0);
+    console.log("uri", uri);
+  }
+
   @Get('contract-Details/:cntraddr')
   async getContractdetails(@Param('cntraddr') cntraddr: string) {
     console.log(cntraddr);

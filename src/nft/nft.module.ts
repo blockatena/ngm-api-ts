@@ -6,6 +6,10 @@ import { CacheModule, Module } from '@nestjs/common';
 import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { DeploymentService } from 'src/deployment/deployment.service';
+import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
+import { MongooseModule } from '@nestjs/mongoose';
+
 require('dotenv').config();
 @Module({
   imports: [
@@ -20,8 +24,11 @@ require('dotenv').config();
       port: process.env.REDIS_PORT,
       db: process.env.REDIS_DB,
     }),
+    MongooseModule.forFeature([
+      { name: ContractSchema.name, schema: contractSchema },
+    ]),
   ],
   controllers: [NftController],
-  providers: [NftService, RedisCliService, JwtAuthService],
+  providers: [NftService, RedisCliService, JwtAuthService, DeploymentService],
 })
 export class NftModule {}
