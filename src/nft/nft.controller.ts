@@ -214,7 +214,7 @@ export class NftController {
       console.log('nftContract: ', nftCntr);
       const mintToken = await nftCntr.mint(body.token_owner, 1);
       const res = await mintToken.wait(1);
-      const tokenId = res.events[0].args.tokenId._hex || '0';
+      const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
       const jsonData = {
         name: body.name,
@@ -224,7 +224,7 @@ export class NftController {
         attributes: body.attributes,
       };
       const response = await buckInstance.pushJSON(
-        tokenId,
+        String(tokenId),
         jsonData,
         body.cntraddr,
       );
