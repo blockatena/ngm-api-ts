@@ -48,15 +48,35 @@ export class Bucket {
     return buf;
   };
 
-  pushJSON = async (name, data) => {
-    console.log('pushJSON: ', name, data);
-    await this.initBuckets();
-    console.log('done initBuckets');
-    const content = JSON.stringify(data);
-    const file = { path: `/${name}.json`, content: Buffer.from(content) };
-    const res = await this.buckets.pushPath(this.buckKey, `/${name}.json`, file);
-    console.log('res of pushPath: ', res);
-    return res;
+  pushJSON = async (
+    name: string,
+    data: any,
+    contract_address?: string,
+    retry = false,
+  ) => {
+    try {
+      console.log('pushJSON: ', name, data);
+      await this.initBuckets();
+      console.log('done initBuckets');
+      const content = JSON.stringify(data);
+      const path = contract_address
+        ? `/${contract_address}/${name}.json`
+        : `/${name}.json`;
+      const file = { path: path, content: Buffer.from(content) };
+      const res = await this.buckets.pushPath(
+        this.buckKey,
+        `/${name}.json`,
+        file,
+      );
+      console.log('res of pushPath: ', res);
+      return res;
+    } catch (error) {
+      if (!retry) {
+        return this.pushJSON(name, data, contract_address, true);
+      } else {
+        return false;
+      }
+    }
   };
 
   pullJSON = async (name) => {
@@ -70,7 +90,6 @@ export class Bucket {
   getIpnsLink = async () => {
     await this.initBuckets();
     const links = await this.buckets.links(this.buckKey);
-    console.log('links: ', links);
-    return links.ipns;
+    return links;
   };
 }
