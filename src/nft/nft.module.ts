@@ -6,10 +6,14 @@ import { CacheModule, Module } from '@nestjs/common';
 import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { JwtModule } from '@nestjs/jwt';
+import { MongooseModule } from '@nestjs/mongoose';
+import { nftSchema, NftSchema } from 'src/schemas/nft.schema';
+
 require('dotenv').config();
 @Module({
   imports: [
     HttpModule,
+    MongooseModule.forFeature([{ name: NftSchema.name, schema: nftSchema }]),
     JwtModule.register({
       secret: process.env.jwtSecret,
       signOptions: { expiresIn: process.env.ExpiresIN },
@@ -23,5 +27,6 @@ require('dotenv').config();
   ],
   controllers: [NftController],
   providers: [NftService, RedisCliService, JwtAuthService],
+  exports: [NftService],
 })
 export class NftModule {}

@@ -4,12 +4,13 @@ import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 export class mintToken {
   @ApiProperty({
     description: 'Id of Your Wallet',
-    example: "44fdfsdfdsfsfsdgssd",
+    example: '44fdfsdfdsfsfsdgssd',
   })
-  readonly cntraddr: string;
+  readonly contract_address: string;
   @ApiProperty({
-    description: 'Counter Address Of the Wallet ( Wallet Address of the others )',
-    example: "dfsed454fdfsdfdsfsfsdgssd"
+    description:
+      'Counter Address Of the Wallet ( Wallet Address of the others )',
+    example: 'dfsed454fdfsdfdsfsfsdgssd',
   })
   readonly id: string;
   readonly owner_address: string;
@@ -17,15 +18,11 @@ export class mintToken {
   readonly token_uri: string;
 }
 
-
 @ApiExtraModels()
-export class transactions{
+export class transactions {
   @ApiProperty()
-    readonly "token-id": string;
- 
-  @ApiProperty()
-    readonly "cntr-addr": string;
+  readonly 'token-id': string;
 
-     
+  @ApiProperty()
+  readonly 'cntr-addr': string;
 }
-

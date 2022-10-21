@@ -33,6 +33,7 @@ import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { mintToken } from './nftitems/mintToken.dto';
+import { createNFT } from './nftitems/createNft.dto';
 
 require('dotenv').config();
 
@@ -185,8 +186,20 @@ export class NftController {
   // @Roles(Role.Admin)
   // @Post()
   //
+  // test route
+  @Post('create-nft')
+  async createNft(@Body() createnft: createNFT): Promise<any> {
+    return this.nftservice.createNFT(createnft);
+  }
+  @Get('get-all-nfts')
+  async getallnfts() {
+    return await this.nftservice.getallnfts();
+  }
+
+  //
+
   @Post('mint-nft/:ERC_TOKEN')
-  async mintNFT(@Body('ERC_TOKEN') ERC_TOKEN: mintToken) {}
+  async mintNFT(@Body() ERC_TOKEN: mintToken) {}
 
   @Post('mint-batch-nft/:ERC_TOKEN')
   async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}

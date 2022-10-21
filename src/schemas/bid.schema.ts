@@ -1,18 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 export type BidDocument = BidSchema & Document;
 
 @Schema()
 export class BidSchema {
   @Prop()
+  auction_id: string;
+  @Prop()
   bidder_address: string;
   @Prop()
-  nft: string;
+  token_id: string;
   @Prop()
-  bid_amount: string;
+  bid_amount: number;
   @Prop()
-  bid_expires: string;
-  @Prop()
-  transaction_hash: string;
+  bid_expiresin: string;
 }
 export const bidSchema = SchemaFactory.createForClass(BidSchema);
