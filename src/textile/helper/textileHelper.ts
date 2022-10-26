@@ -55,7 +55,6 @@ export class Bucket {
     retry = false,
   ) => {
     try {
-      console.log('pushJSON: ', name, data);
       await this.initBuckets();
       console.log('done initBuckets');
       const content = JSON.stringify(data);

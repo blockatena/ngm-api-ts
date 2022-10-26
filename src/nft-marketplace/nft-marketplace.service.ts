@@ -40,15 +40,19 @@ export class NftMarketplaceService {
     this.addCornJob(data._id, data.end_date, async () => {
       console.log('winner is ');
       console.log(await this.declareWinner(data._id));
+      //update status to bid and auction add winner also
     });
 
     return data;
   }
 
   async cancel_auction(auction_id: string): Promise<any> {
-    await this.AuctionModel.deleteOne({ _id: auction_id });
+    this.deleteCron(auction_id);
+    const auction_data = await this.get_auction(auction_id);
+    this.update_nft_auction_status(auction_data.nft_id, false);
+    return await this.AuctionModel.deleteOne({ _id: auction_id });
   }
-  async cancel_bid(bid_id): Promise<any> {
+  async cancel_bid(bid_id: string): Promise<any> {
     const message = await this.BidModel.deleteOne({ _id: bid_id });
     const cron = this.deleteCron(bid_id);
     return {
@@ -100,6 +104,20 @@ export class NftMarketplaceService {
   async get_Nft(details: any): Promise<any> {
     console.log(details);
     return await this.NftModel.findOne(details);
+  }
+  async update_status_auction(condition: Object, values: Object) {
+    try {
+      return this.AuctionModel.updateOne(condition, values);
+    } catch (error) {
+      return { message: 'something went wrong', error: error };
+    }
+  }
+  async update_status_bid(condition: Object, values: Object) {
+    try {
+      return this.BidModel.updateOne(condition, values);
+    } catch (error) {
+      return { message: 'something went wrong', error: error };
+    }
   }
   async update_nft_auction_status(token_id: string, status: boolean) {
     return await this.NftModel.updateOne(

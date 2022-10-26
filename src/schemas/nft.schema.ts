@@ -12,13 +12,11 @@ export class NftSchema {
   @Prop()
   token_id: string;
   @Prop()
-  description: string;
-  @Prop()
   meta_data_url: string;
   @Prop({ default: false })
   is_in_auction: boolean;
   @Prop()
-  owner_address: string;
+  token_owner: string;
 }
 
 export const nftSchema = SchemaFactory.createForClass(NftSchema);

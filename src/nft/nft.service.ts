@@ -29,7 +29,8 @@ export class NftService {
     return { msg: 'Metadata Fetched' };
   }
 
-  async createNFT(nftData: createNFT): Promise<any> {
+  async createNFT(nftData: any): Promise<any> {
+    console.log('from service', nftData);
     return await (await this.NftModel.create(nftData)).save();
   }
 

@@ -14,5 +14,7 @@ export class AuctionSchema {
   end_date: string;
   @Prop()
   min_price: string;
+  @Prop()
+  status:string;
 }
 export const auctionSchema = SchemaFactory.createForClass(AuctionSchema);

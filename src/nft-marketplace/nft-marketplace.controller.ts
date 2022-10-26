@@ -8,10 +8,7 @@ import { NftMarketplaceService } from './nft-marketplace.service';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
-  constructor(
-    private readonly nftMarketplaceService: NftMarketplaceService,
-    private readonly nftService: NftService,
-  ) {}
+  constructor(private readonly nftMarketplaceService: NftMarketplaceService) {}
 
   @Post('create-nft-auction')
   async create_Auction(

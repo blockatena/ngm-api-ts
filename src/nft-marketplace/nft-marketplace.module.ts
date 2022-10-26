@@ -7,7 +7,6 @@ import { bidSchema, BidSchema } from 'src/schemas/bid.schema';
 import { NftModule } from 'src/nft/nft.module';
 import { nftSchema, NftSchema } from 'src/schemas/nft.schema';
 import { NftService } from 'src/nft/nft.service';
-import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -16,10 +15,8 @@ import { HttpModule } from '@nestjs/axios';
       { name: BidSchema.name, schema: bidSchema },
       { name: NftSchema.name, schema: nftSchema },
     ]),
-    NftModule,
-    HttpModule,
   ],
   controllers: [NftMarketplaceController],
-  providers: [NftMarketplaceService,NftService ],
+  providers: [NftMarketplaceService],
 })
 export class NftMarketplaceModule {}

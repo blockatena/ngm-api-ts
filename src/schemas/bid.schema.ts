@@ -14,5 +14,7 @@ export class BidSchema {
   bid_amount: number;
   @Prop()
   bid_expiresin: string;
+  @Prop()
+  status: string;
 }
 export const bidSchema = SchemaFactory.createForClass(BidSchema);

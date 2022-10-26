@@ -36,6 +36,7 @@ import { Bucket } from 'src/textile/helper/textileHelper';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { arrayBuffer } from 'stream/consumers';
 
 require('dotenv').config();
 
@@ -105,6 +106,9 @@ export class NftController {
       const cid = await storage.storeDirectory([toUploadFile]);
       const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
       console.log({ tokenUri });
+      // **********Storing in Db
+
+      // **********
       return tokenUri;
     } catch (error) {
       return false;
@@ -228,7 +232,25 @@ export class NftController {
         jsonData,
         body.contract_address,
       );
-      return `${response}/${tokenId}.json`;
+      const textileUri =
+        'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
+      const meta_data_url = `${textileUri}/${body.contract_address}/${tokenId}.json`;
+
+      // savng in Db************
+
+      const arrdb = {
+        contract_address: body.contract_address,
+        contract_type: body.contract_type || 'NGM721PSI',
+        token_id: tokenId,
+        meta_data_url: meta_data_url,
+        is_in_auction: false,
+        token_owner: body.token_owner,
+      };
+      console.log(arrdb);
+
+      const data = await this.nftservice.createNFT(arrdb);
+      // ****************
+      return data;
     } catch (error) {
       console.log(error);
       return false;
@@ -241,4 +263,9 @@ export class NftController {
   async putForSale(@Param() sale: transactions) {}
   @Post('blacklist-nft/:tokenid/:cntraddr')
   async blacklistNFT(@Param() blacklist: transactions) {}
+
+  @Post('createnft')
+  async nftcreate(@Body() nft: any): Promise<any> {
+    await this.nftservice.createNFT(nft);
+  }
 }
