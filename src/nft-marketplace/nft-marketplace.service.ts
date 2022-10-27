@@ -10,6 +10,7 @@ import { CronJob } from 'cron';
 import { NftService } from 'src/nft/nft.service';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { getNft } from 'src/nft/nftitems/createNft.dto';
+import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 @Injectable()
 export class NftMarketplaceService {
   private readonly logger = new Logger(NftMarketplaceService.name);
@@ -20,6 +21,8 @@ export class NftMarketplaceService {
   // }
   constructor(
     private schedulerRegistry: SchedulerRegistry,
+    @InjectModel(ContractSchema.name)
+    private ContractModel: Model<ContractDocument>,
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
@@ -28,6 +31,7 @@ export class NftMarketplaceService {
     AuctionModel;
     BidModel;
     NftModel;
+    ContractModel;
   }
 
   async create_auction(createAuction: CreateAuctionBody): Promise<any> {
@@ -65,7 +69,8 @@ export class NftMarketplaceService {
 
   async cancel_auction(auction_id: string): Promise<any> {
     console.log('auction_id', auction_id);
-    this.deleteCron(auction_id);
+    this.schedulerRegistry.deleteCronJob(auction_id);
+    // this.deleteCron(auction_id);
     const auction_data = await this.get_auction({ _id: auction_id });
     this.update_nft_status(
       {
@@ -166,5 +171,9 @@ export class NftMarketplaceService {
   }
   async get_bid(details: any): Promise<any> {
     return await this.BidModel.findOne(details);
+  }
+  // get routes
+  async getcollections() {
+    return await this.ContractModel.find({});
   }
 }

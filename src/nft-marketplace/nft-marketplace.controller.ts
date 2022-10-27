@@ -171,4 +171,9 @@ export class NftMarketplaceController {
     return this.nftMarketplaceService.getCrons();
   }
   //
+  // Get all collections
+  @Get('get-collections')
+  async getcollections(): Promise<any> {
+    return await this.nftMarketplaceService.getcollections();
+  }
 }
