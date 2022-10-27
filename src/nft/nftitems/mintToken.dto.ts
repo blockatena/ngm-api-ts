@@ -50,7 +50,7 @@ export class mintToken {
 
   @ApiProperty({
     description: 'attributes of the nft',
-    example: "[{name: 'name', value: 'value']]",
+    example: "[{name: 'name', value: 'value'}]",
   })
   readonly attributes: any[];
 

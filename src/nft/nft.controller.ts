@@ -256,7 +256,6 @@ export class NftController {
       return false;
     }
   }
-
   @Post('mint-batch-nft/:ERC_TOKEN')
   async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
   @Post('put-for-sale/:tokenid/:cntraddr')

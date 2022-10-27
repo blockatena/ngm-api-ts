@@ -2,7 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAuctionBody {
   @ApiProperty()
-  owner_address: string;
+  token_owner: string;
+  @ApiProperty()
+  contract_address: string;
   @ApiProperty()
   token_id: string;
   @ApiProperty({ type: Date })
@@ -11,4 +13,8 @@ export class CreateAuctionBody {
   end_date: Date;
   @ApiProperty()
   min_price: number;
+}
+export class CancelAuctionBody {
+  @ApiProperty()
+  auction_id: string;
 }

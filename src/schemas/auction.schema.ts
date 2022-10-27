@@ -5,9 +5,11 @@ export type AuctionDocument = AuctionSchema & Document;
 @Schema()
 export class AuctionSchema {
   @Prop()
-  owner_address: string;
-  @Prop({ type: mongoose.Types.ObjectId, ref: 'nftSchema' })
-  nft_id: mongoose.Types.ObjectId;
+  token_owner: string;
+  @Prop()
+  contract_address: string;
+  @Prop()
+  token_id: string;
   @Prop()
   start_date: string;
   @Prop()
@@ -15,6 +17,10 @@ export class AuctionSchema {
   @Prop()
   min_price: string;
   @Prop()
-  status:string;
+  status: string;
+  @Prop()
+  winner: Array<any>;
+  @Prop()
+  transaction_status: string;
 }
 export const auctionSchema = SchemaFactory.createForClass(AuctionSchema);

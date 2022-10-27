@@ -31,25 +31,49 @@ export class NftMarketplaceService {
   }
 
   async create_auction(createAuction: CreateAuctionBody): Promise<any> {
+    createAuction[`status`] = 'started';
     let data = await (await this.AuctionModel.create(createAuction)).save();
-    await this.NftModel.updateOne(
-      { token_id: createAuction.token_id },
-      { $set: { is_in_auction: true } },
+    await this.update_nft_status(
+      {
+        contract_address: createAuction.contract_address,
+        token_id: createAuction.token_id,
+      },
+      { is_in_auction: true },
     );
     console.log(data.end_date);
     this.addCornJob(data._id, data.end_date, async () => {
       console.log('winner is ');
-      console.log(await this.declareWinner(data._id));
+      const winnerdata = await this.declareWinner(data._id);
       //update status to bid and auction add winner also
+      // update after auction ,set auction status to false
+      await this.update_nft_status(
+        {
+          contract_address: createAuction.contract_address,
+          token_id: createAuction.token_id,
+        },
+        { is_in_auction: false },
+      );
+      const winner_info =
+        winnerdata.length == 0 ? 'No bids for this auction' : winnerdata;
+      await this.update_auction(
+        { _id: data._id },
+        { status: 'expired', winner: winner_info },
+      );
     });
-
     return data;
   }
 
   async cancel_auction(auction_id: string): Promise<any> {
+    console.log('auction_id', auction_id);
     this.deleteCron(auction_id);
-    const auction_data = await this.get_auction(auction_id);
-    this.update_nft_auction_status(auction_data.nft_id, false);
+    const auction_data = await this.get_auction({ _id: auction_id });
+    this.update_nft_status(
+      {
+        contract_address: auction_data.contract_address,
+        token_id: auction_data.token_id,
+      },
+      { is_in_auction: false },
+    );
     return await this.AuctionModel.deleteOne({ _id: auction_id });
   }
   async cancel_bid(bid_id: string): Promise<any> {
@@ -77,8 +101,15 @@ export class NftMarketplaceService {
     this.logger.warn(`job ${name} added for each minute at ${date} seconds!`);
   }
   deleteCron(name: string) {
-    this.schedulerRegistry.deleteCronJob(name);
-    this.logger.warn(`job ${name} deleted!`);
+    try {
+      console.log(name);
+      const job = this.getCrons();
+      console.log(job);
+      this.schedulerRegistry.deleteCronJob(name);
+      this.logger.warn(`job ${name} deleted!`);
+    } catch (err) {
+      console.log(err);
+    }
   }
   getCrons() {
     const jobs = this.schedulerRegistry.getCronJobs();
@@ -105,13 +136,6 @@ export class NftMarketplaceService {
     console.log(details);
     return await this.NftModel.findOne(details);
   }
-  async update_status_auction(condition: Object, values: Object) {
-    try {
-      return this.AuctionModel.updateOne(condition, values);
-    } catch (error) {
-      return { message: 'something went wrong', error: error };
-    }
-  }
   async update_status_bid(condition: Object, values: Object) {
     try {
       return this.BidModel.updateOne(condition, values);
@@ -119,23 +143,28 @@ export class NftMarketplaceService {
       return { message: 'something went wrong', error: error };
     }
   }
-  async update_nft_auction_status(token_id: string, status: boolean) {
-    return await this.NftModel.updateOne(
-      { token_id: token_id },
-      {
-        $set: {
-          is_in_auction: status,
-        },
-      },
-    );
+  async update_nft_status(data: any, update_data: any) {
+    return await this.NftModel.updateOne(data, {
+      $set: update_data,
+    });
   }
+
+  //
+  async update_auction(data: any, update_data: any) {
+    return await this.AuctionModel.updateOne(data, {
+      $set: update_data,
+    });
+  }
+
+  //
+
   async get_all_Nfts_inauction() {
     return await this.NftModel.findOne({ is_in_auction: true });
   }
   async get_auction(details: any): Promise<any> {
-    return await this.AuctionModel.findOne({ _id: details });
+    return await this.AuctionModel.findOne(details);
   }
   async get_bid(details: any): Promise<any> {
-    return await this.BidModel.findOne({ _id: details });
+    return await this.BidModel.findOne(details);
   }
 }

@@ -2,8 +2,11 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { check } from 'prettier';
 import { NftService } from 'src/nft/nft.service';
-import { CreateAuctionBody } from './dtos/create_auction.dto';
-import { CreateBidBody } from './dtos/create_bid.dto';
+import {
+  CancelAuctionBody,
+  CreateAuctionBody,
+} from './dtos/create_auction.dto';
+import { Acceptbid, CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
 import { NftMarketplaceService } from './nft-marketplace.service';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
@@ -14,11 +17,11 @@ export class NftMarketplaceController {
   async create_Auction(
     @Body() Create_Auction: CreateAuctionBody,
   ): Promise<any> {
-    const { owner_address, token_id } = Create_Auction;
+    const { token_owner, token_id } = Create_Auction;
 
     console.log(Create_Auction);
 
-    const checkCretedetials = { owner_address, token_id };
+    const checkCretedetials = { token_owner, token_id };
     // if he/she is the owner then only he/she can put the nft ITEM on Auction
     try {
       let check_is_owner = await this.nftMarketplaceService.get_Nft(
@@ -42,12 +45,14 @@ export class NftMarketplaceController {
   }
 
   @Post('cancel-auction')
-  async cancel_auction(@Body() auction_id: string) {
-    await this.nftMarketplaceService.cancel_auction(auction_id);
+  async cancel_auction(@Body() auction_id: CancelAuctionBody): Promise<any> {
+    return await this.nftMarketplaceService.cancel_auction(
+      auction_id.auction_id,
+    );
   }
   @Post('cancel-bid')
-  async cancel_bid(@Body() bid_id: string) {
-    await this.nftMarketplaceService.cancel_bid(bid_id);
+  async cancel_bid(@Body() bid_id: CancelBidBody) {
+    return await this.nftMarketplaceService.cancel_bid(bid_id.bid_id);
   }
   @Post('create-nft-offer')
   async create_offer() {}
@@ -56,12 +61,19 @@ export class NftMarketplaceController {
   @Post('place-nft-bid')
   async create_bid(@Body() Create_Bid: CreateBidBody) {
     //  nft_id auction id bidding price
-    const { token_id, auction_id, bid_amount, bidder_address, bid_expiresin } =
-      Create_Bid;
+    const {
+      token_id,
+      auction_id,
+      bid_amount,
+      bidder_address,
+      bid_expiresin,
+      contract_address,
+    } = Create_Bid;
 
     // wallet adders
     const is_nft_exists = await this.nftMarketplaceService.get_Nft({
       token_id,
+      contract_address,
     });
     console.log(is_nft_exists);
     if (!is_nft_exists) {
@@ -71,13 +83,18 @@ export class NftMarketplaceController {
       return 'Nft is not available for auction';
     }
     console.log(is_nft_exists.is_in_auction);
-    const is_auction_exists = await this.nftMarketplaceService.get_auction(
-      auction_id,
-    );
+    const is_auction_exists = await this.nftMarketplaceService.get_auction({
+      _id: auction_id,
+    });
     console.log(is_auction_exists);
     if (!is_auction_exists) {
       return 'Invalid Auction Id';
     }
+    //  bid amount should be greater than min amount
+    if (bid_amount < is_auction_exists.min_price) {
+      return `Minium weth required for this Auction is ${is_auction_exists.min_price}`;
+    }
+
     // const is_already_bidded = await this.nftMarketplaceService.get_bid({
     //   auction_id,
     //   token_id,
@@ -87,7 +104,7 @@ export class NftMarketplaceController {
     //   return 'You alread bidded for that Nft want to lower the price ?';
     // }
     console.log('no problem in controller');
-    await this.nftMarketplaceService.create_bid(Create_Bid);
+    return await this.nftMarketplaceService.create_bid(Create_Bid);
   }
   @Post('change-nft-bid-price')
   async change_bid_price() {}
@@ -96,7 +113,55 @@ export class NftMarketplaceController {
   @Post('get-all-offers')
   async get_all_offers() {}
   @Post('accept-bid')
-  async accept_bid() {}
+  async accept_bid(@Body() body: Acceptbid) {
+    try {
+      const { auction_id, bid_id } = body;
+      const auction_data = await this.nftMarketplaceService.get_auction({
+        _id: auction_id,
+      });
+      //  validate auction
+      if (!auction_data) {
+        return 'Invalid Auction Id, Please check auction is present or not';
+      }
+      // validate Nft
+      const nft_data = await this.nftMarketplaceService.get_Nft({
+        token_id: auction_data.token_id,
+        token_owner: auction_data.token_owner,
+      });
+      if (!nft_data) {
+        return 'You are not owner of the NFT';
+      }
+      // validate Bid
+
+      const bid_data = await this.nftMarketplaceService.get_bid({
+        _id: bid_id,
+      });
+      if (!bid_data) {
+        return 'There is no bid associated with that bid Id please check ';
+      }
+      //  All validations are now , now we are transferring the nft
+      // *********block chain code to transfer NFT
+
+      // *********
+
+      const dbmsg = await this.nftMarketplaceService.update_nft_status(
+        {
+          contract_address: nft_data.contract_address,
+          token_id: nft_data.token_id,
+        },
+        { token_owner: bid_data.bidder_address },
+      );
+      return {
+        message: 'Bid accepted and transferred the ownership of the NFT',
+        status: dbmsg,
+      };
+    } catch (error) {
+      console.error(error);
+      return {
+        messge: 'something went wrong ,Please wait our team is working on it',
+      };
+    }
+  }
   @Post('accept-offers')
   async accept_offers() {}
 
