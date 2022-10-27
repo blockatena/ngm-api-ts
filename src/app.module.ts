@@ -6,9 +6,11 @@ import { TextileModule } from './textile/textile.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
-
+import { NftMarketplaceModule } from './nft-marketplace/nft-marketplace.module';
+import { ScheduleModule } from '@nestjs/schedule';
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.ATLAS),
     NftModule,
@@ -16,6 +18,7 @@ import { UsersModule } from './users/users.module';
     DeploymentModule,
     TextileModule,
     UsersModule,
+    NftMarketplaceModule,
   ],
   providers: [],
 })

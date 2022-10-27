@@ -20,7 +20,9 @@ export class ContractSchema {
   @Prop({ unique: true })
   contractaddress: string;
   @Prop()
-  uri: string;
+  baseuri: string;
+  @Prop()
+  imageuri: string;
 }
 
 export const contractSchema = SchemaFactory.createForClass(ContractSchema);

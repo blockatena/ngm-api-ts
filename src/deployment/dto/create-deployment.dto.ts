@@ -21,6 +21,6 @@ export class CreateDeploymentDto {
     default: 'NGM721PSI',
   })
   readonly type: string;
-  @ApiProperty({})
-  readonly uri?: string;
+  @ApiProperty({ description: 'Image of the contract for front-end' })
+  readonly imageuri?: string;
 }
