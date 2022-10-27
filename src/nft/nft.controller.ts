@@ -22,7 +22,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { RedisCliService } from '../redis-cli/redis-cli.service';
+// import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { baycAbi } from './abi';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -56,7 +56,7 @@ const wallet = new ethers.Wallet(process.env.PRIV_KEY, mum_provider);
 export class NftController {
   constructor(
     private nftservice: NftService,
-    private RedisService: RedisCliService,
+    // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
   ) {}
   // File Upload
@@ -132,12 +132,12 @@ export class NftController {
   // Logic
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async getallNfts(@Param('jwt') jwt: string): Promise<any> {
-    const data = await this.RedisService.getEx('allNfts');
-    if (data) {
-      return data;
-    }
+    // const data = await this.RedisService.getEx('allNfts');
+    // if (data) {
+    //   return data;
+    // }
     const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
-    await this.RedisService.set('allNfts', JSON.stringify(fetchData));
+    // await this.RedisService.set('allNfts', JSON.stringify(fetchData));
     return fetchData;
   }
 
