@@ -7,6 +7,7 @@ import { bidSchema, BidSchema } from 'src/schemas/bid.schema';
 import { NftModule } from 'src/nft/nft.module';
 import { nftSchema, NftSchema } from 'src/schemas/nft.schema';
 import { NftService } from 'src/nft/nft.service';
+import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { NftService } from 'src/nft/nft.service';
       { name: AuctionSchema.name, schema: auctionSchema },
       { name: BidSchema.name, schema: bidSchema },
       { name: NftSchema.name, schema: nftSchema },
+      { name: ContractSchema.name, schema: contractSchema },
     ]),
   ],
   controllers: [NftMarketplaceController],
