@@ -1,10 +1,11 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { check } from 'prettier';
 import { NftService } from 'src/nft/nft.service';
+import { create_Offer_Body } from './dtos/create_offer.dto';
 import {
   CancelAuctionBody,
   CreateAuctionBody,
+  get_All_Bids,
 } from './dtos/create_auction.dto';
 import { Acceptbid, CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
 import { NftMarketplaceService } from './nft-marketplace.service';
@@ -48,14 +49,25 @@ export class NftMarketplaceController {
   async cancel_auction(@Body() auction_id: CancelAuctionBody): Promise<any> {
     return await this.nftMarketplaceService.cancel_auction(
       auction_id.auction_id,
+      auction_id.cronjob_id,
     );
   }
   @Post('cancel-bid')
-  async cancel_bid(@Body() bid_id: CancelBidBody) {
-    return await this.nftMarketplaceService.cancel_bid(bid_id.bid_id);
+  async cancel_bid(@Body() body: CancelBidBody) {
+    return await this.nftMarketplaceService.cancel_bid(body);
   }
   @Post('create-nft-offer')
-  async create_offer() {}
+  async create_offer(body: create_Offer_Body) {
+    try {
+      const { token_id, offer_currency, offer_price } = body;
+    } catch (error) {
+      console.log(error);
+      return {
+        message:
+          'something went wrong, our team will resolve it as soon as possible ,Appreciating your patience',
+      };
+    }
+  }
   @Post('put-for-sale-fixed-price')
   async put_sale_fixed_price() {}
   @Post('place-nft-bid')
@@ -109,7 +121,16 @@ export class NftMarketplaceController {
   @Post('change-nft-bid-price')
   async change_bid_price() {}
   @Post('get-bid-list-by-auction')
-  async get_bid_list_for_auction(auction_id: string) {}
+  async get_bid_list_for_auction(@Body() body: get_All_Bids) {
+    try {
+      //Auction
+      const { skip, limit, token_id, auction_id } = body;
+      const skipp = Number(skip) || 0;
+      const limitt = Number(limit) || 20;
+    } catch (error) {
+      console.log(error);
+    }
+  }
   @Post('get-all-offers')
   async get_all_offers() {}
   @Post('accept-bid')
@@ -140,11 +161,11 @@ export class NftMarketplaceController {
         return 'There is no bid associated with that bid Id please check ';
       }
       //  All validations are now , now we are transferring the nft
-      // *********block chain code to transfer NFT
+      // ********* please add block chain code to transfer NFT
 
       // *********
 
-      const dbmsg = await this.nftMarketplaceService.update_nft_status(
+      const dbmsg = await this.nftMarketplaceService.update_nft(
         {
           contract_address: nft_data.contract_address,
           token_id: nft_data.token_id,

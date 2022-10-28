@@ -14,10 +14,12 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('NGM APIs')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('ngmapi', app, document);
   const PORT = process.env.PORT || 8080;
 
   await app.listen(PORT);
+  console.log(`Application is running on: ${await app.getUrl()}/ngmapi`);
 }
 bootstrap();

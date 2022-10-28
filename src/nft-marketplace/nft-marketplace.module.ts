@@ -8,6 +8,7 @@ import { NftModule } from 'src/nft/nft.module';
 import { nftSchema, NftSchema } from 'src/schemas/nft.schema';
 import { NftService } from 'src/nft/nft.service';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
+import { Market_Place_Constants } from 'src/utils/constants/MARKETPLACE/marketplace.constants';
 
 @Module({
   imports: [
@@ -19,6 +20,6 @@ import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
     ]),
   ],
   controllers: [NftMarketplaceController],
-  providers: [NftMarketplaceService],
+  providers: [NftMarketplaceService, Market_Place_Constants],
 })
 export class NftMarketplaceModule {}
