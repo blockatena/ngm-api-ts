@@ -16,7 +16,11 @@ export class CreateBidBody {
 }
 export class CancelBidBody {
   @ApiProperty()
+  bidder_address: string;
+  @ApiProperty()
   bid_id: string;
+  @ApiProperty()
+  token_id: string;
 }
 export class Acceptbid {
   @ApiProperty()
