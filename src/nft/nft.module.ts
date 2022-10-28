@@ -32,7 +32,7 @@ require('dotenv').config();
   ],
   controllers: [NftController],
   providers: [NftService, JwtAuthService, DeploymentService],
-  //RedisCliService
+  //  add to  RedisCliService
   exports: [NftModule],
 })
 export class NftModule {}
