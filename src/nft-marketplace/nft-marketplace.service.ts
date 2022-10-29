@@ -10,28 +10,35 @@ import { CronJob } from 'cron';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { Market_Place_Constants } from 'src/utils/constants/MARKETPLACE/marketplace.constants';
-import { async } from 'rxjs';
+import { CronjobService } from 'src/cronjob/cronjob.service';
+import { Create_Sale_Body } from './dtos/create-sale.dto';
+import { SalesDocument, SalesSchema } from 'src/schemas/sales.schema';
+import { OfferDocument, OfferSchema } from 'src/schemas/offer.schema';
 @Injectable()
 export class NftMarketplaceService {
-  private readonly logger = new Logger(NftMarketplaceService.name);
+  // private readonly logger = new Logger(NftMarketplaceService.name);
   constructor(
     private mrkt_constants: Market_Place_Constants,
-    private schedulerRegistry: SchedulerRegistry,
+    // private schedulerRegistry: SchedulerRegistry,
+    private Cron_job: CronjobService,
     @InjectModel(ContractSchema.name)
     private ContractModel: Model<ContractDocument>,
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
+    @InjectModel(SalesSchema.name) private SalesModel: Model<SalesDocument>,
+    @InjectModel(OfferSchema.name) private OfferModel: Model<OfferDocument>,
   ) {
     AuctionModel;
     BidModel;
     NftModel;
     ContractModel;
+    SalesModel;
+    OfferModel;
   }
 
   async create_auction(createAuction: CreateAuctionBody): Promise<any> {
-    createAuction[`status`] = this.mrkt_constants.STARTED || 'started';
     let data = await (await this.AuctionModel.create(createAuction)).save();
     await this.update_nft(
       {
@@ -42,7 +49,7 @@ export class NftMarketplaceService {
     );
     console.log(data.end_date);
     //  Adding Cron Job
-    this.addCornJob(
+    this.Cron_job.addCornJob(
       `${createAuction.contract_address}${createAuction.token_id}`,
       data.end_date,
       async () => {
@@ -64,6 +71,10 @@ export class NftMarketplaceService {
           { _id: data._id },
           { status: 'expired', winner: winner_info },
         );
+        // After auction this cron job will be deleted // need to fix with unique id
+        this.Cron_job.deleteCron(
+          `${createAuction.contract_address}${createAuction.token_id}`,
+        );
       },
     );
     return data;
@@ -73,7 +84,7 @@ export class NftMarketplaceService {
     console.log('auction_id', auction_id);
     // this.schedulerRegistry.deleteCronJob(cronjob_id);
     try {
-      this.deleteCron(cronjob_id);
+      this.Cron_job.deleteCron(cronjob_id);
       const auction_data = await this.get_auction({ _id: auction_id });
       this.update_nft(
         {
@@ -101,7 +112,9 @@ export class NftMarketplaceService {
         { _id: bid_data.bid_id },
         { status: this.mrkt_constants.CANCELLED || 'cancelled' },
       );
-      this.deleteCron(`${bid_data.bidder_address}${bid_data.token_id}`);
+      this.Cron_job.deleteCron(
+        `${bid_data.bidder_address}${bid_data.token_id}`,
+      );
       return {
         message,
       };
@@ -116,9 +129,9 @@ export class NftMarketplaceService {
   }
 
   async create_bid(createBid: CreateBidBody): Promise<any> {
-    createBid[`status`] = 'started';
+    // createBid[`status`] = 'started';
     const data = await (await this.BidModel.create(createBid)).save();
-    this.addCornJob(
+    this.Cron_job.addCornJob(
       `${data.bidder_address}${data.token_id}`,
       createBid.bid_expiresin,
       async () => {
@@ -128,39 +141,29 @@ export class NftMarketplaceService {
     );
     return data;
   }
+  // ******************[CREATE SALE]**************//
+  async create_sale(sale: Create_Sale_Body): Promise<any> {
+    // save in DB
+    const save_in_db = await (await this.SalesModel.create(sale)).save();
+    //create cron job
 
-  addCornJob(name: string, date: string, callback: any) {
-    console.log('date', date);
-    const job = new CronJob(new Date(date), callback);
-    this.schedulerRegistry.addCronJob(name, job);
-    job.start();
-    this.logger.warn(`job ${name} added for each minute at ${date} seconds!`);
+    this.Cron_job.addCornJob(
+      `${sale.contract_address}${sale.token_id}`,
+      sale.end_date,
+      async () => {
+        console.log('sale ended');
+        await this.update_sale({ _id: save_in_db._id }, { status: 'ended' });
+      },
+    );
+    // save in DB
+    //update in nft is in auction is true
   }
-  deleteCron(name: string) {
-    try {
-      console.log(name);
-      const job = this.getCrons();
-      console.log(job);
-      this.schedulerRegistry.deleteCronJob(name);
-      this.logger.warn(`job ${name} deleted!`);
-    } catch (err) {
-      console.log(err);
-    }
+
+  async update_sale(data: any, update_data: any) {
+    await this.SalesModel.updateOne(data, { $set: update_data });
   }
-  getCrons() {
-    const jobs = this.schedulerRegistry.getCronJobs();
-    let arr = [];
-    jobs.forEach((value, key, map) => {
-      let next;
-      try {
-        next = value.nextDates().toJSDate();
-      } catch (e) {
-        next = 'error: next fire date is in the past!';
-      }
-      arr.push(`job: ${key} next: ${next}`);
-    });
-    return arr;
-  }
+
+  //************************************************* */
   async declareWinner(Auction_id: any) {
     //currently its a demo version need to add actual functionality later
     let data = await this.BidModel.find({
@@ -210,5 +213,9 @@ export class NftMarketplaceService {
   // get routes
   async getcollections() {
     return await this.ContractModel.find({});
+  }
+
+  async getCrons() {
+    return this.Cron_job.getCrons();
   }
 }

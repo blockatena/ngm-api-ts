@@ -1,20 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type SalesDocument = SalesShema & Document;
+export type SalesDocument = SalesSchema & Document;
 @Schema()
-export class SalesShema {
+export class SalesSchema {
   @Prop()
-  buyer_address: string;
+  token_owner: string;
   @Prop()
-  seller_address: string;
+  contract_address: string;
   @Prop()
-  nft: string;
+  token_id: string;
   @Prop()
   price: string;
   @Prop()
-  transaction_hash: string;
+  start_date: string;
   @Prop()
-  transaction_date: string;
+  end_date: string;
+  @Prop()
+  status: string;
 }
-export const salesSchema = SchemaFactory.createForClass(SalesShema);
+export const salesSchema = SchemaFactory.createForClass(SalesSchema);
+salesSchema.pre('save', function () {
+  this.status = 'started';
+});
