@@ -9,6 +9,7 @@ import {
 } from './dtos/create_auction.dto';
 import { Acceptbid, CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
 import { NftMarketplaceService } from './nft-marketplace.service';
+import { Create_Sale_Body } from './dtos/create-sale.dto';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
@@ -31,6 +32,11 @@ export class NftMarketplaceController {
       if (!check_is_owner) {
         return 'You are not the owner of the NFT';
       }
+
+      if (check_is_owner.is_in_sale) {
+        return 'This Nft is already in  sale you cant put it in Auction ,Please Cancel that sale and try again';
+      }
+
       //  checking if this NFT is already in auction or not
       if (check_is_owner.is_in_auction) {
         return 'This NFT is Already in Auction';
@@ -56,6 +62,43 @@ export class NftMarketplaceController {
   async cancel_bid(@Body() body: CancelBidBody) {
     return await this.nftMarketplaceService.cancel_bid(body);
   }
+
+  /******************[ SALE AND OFFER ]******************************** */
+  @Post('create-sale')
+  async create_sale(@Body() body: Create_Sale_Body): Promise<any> {
+    const { token_owner, contract_address, token_id, price } = body;
+    try {
+      //is Nft Exists
+      const CHECK_NFT_EXISTS = await this.nftMarketplaceService.get_Nft({
+        contract_address,
+        token_id,
+      });
+      if (!CHECK_NFT_EXISTS) {
+        return 'NFT  DOESNT EXISTS';
+      }
+      //is Nft belongs to that owner
+      if (!(CHECK_NFT_EXISTS.token_owner == token_owner)) {
+        return 'You are not the Owner of this NFT';
+      }
+      // is in auction
+      if (CHECK_NFT_EXISTS.is_in_auction) {
+        return 'NFT is already in Auction';
+      }
+      //is already in sale
+      if (CHECK_NFT_EXISTS.is_in_sale) {
+        return 'NFT is already in Sale';
+      }
+      // All checks Completed from Db
+    } catch (error) {
+      console.log(error);
+      return {
+        message:
+          'Something Went Wrong , Our team is Working on please.For any queries please mail us to the below contact',
+        contact: 'hello@blockatena.com',
+      };
+    }
+  }
+
   @Post('create-nft-offer')
   async create_offer(body: create_Offer_Body) {
     try {
@@ -70,6 +113,9 @@ export class NftMarketplaceController {
   }
   @Post('put-for-sale-fixed-price')
   async put_sale_fixed_price() {}
+  @Post('get-all-offers')
+  async get_all_offers() {}
+  /*********************************************************/
   @Post('place-nft-bid')
   async create_bid(@Body() Create_Bid: CreateBidBody) {
     //  nft_id auction id bidding price
@@ -131,8 +177,7 @@ export class NftMarketplaceController {
       console.log(error);
     }
   }
-  @Post('get-all-offers')
-  async get_all_offers() {}
+
   @Post('accept-bid')
   async accept_bid(@Body() body: Acceptbid) {
     try {

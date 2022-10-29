@@ -20,3 +20,6 @@ export class BidSchema {
   won: boolean;
 }
 export const bidSchema = SchemaFactory.createForClass(BidSchema);
+bidSchema.pre('save', function () {
+  this.status = 'started';
+});

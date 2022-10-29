@@ -24,3 +24,7 @@ export class AuctionSchema {
   transaction_status: string;
 }
 export const auctionSchema = SchemaFactory.createForClass(AuctionSchema);
+// DB functions
+auctionSchema.pre('save', function () {
+  this.status = 'started';
+});

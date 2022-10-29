@@ -15,6 +15,8 @@ export class NftSchema {
   meta_data_url: string;
   @Prop({ default: false })
   is_in_auction: boolean;
+  @Prop({ default: false })
+  is_in_sale: boolean;
   @Prop()
   token_owner: string;
 }

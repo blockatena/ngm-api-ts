@@ -8,6 +8,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { NftMarketplaceModule } from './nft-marketplace/nft-marketplace.module';
 import { ScheduleModule } from '@nestjs/schedule';
+
+import { CronjobService } from './cronjob/cronjob.service';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -20,6 +22,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     UsersModule,
     NftMarketplaceModule,
   ],
-  providers: [],
+  providers: [CronjobService],
 })
 export class AppModule {}
