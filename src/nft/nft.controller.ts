@@ -36,7 +36,7 @@ import { Bucket } from 'src/textile/helper/textileHelper';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { arrayBuffer } from 'stream/consumers';
+import { get_collections_body, get_Nft_body } from './nftitems/createNft.dto';
 
 require('dotenv').config();
 
@@ -60,6 +60,9 @@ export class NftController {
     private deploymentService: DeploymentService,
   ) {}
   // File Upload
+  @ApiOperation({
+    summary: 'This Api will upload your asset and gets you URI of that asset',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -122,7 +125,7 @@ export class NftController {
   // You can give permissions to as many people as you want
   @SetMetadata('roles', [Role.Admin, Role.User])
   @Get('get-all-nfts/:jwt')
-  @ApiOperation({ summary: 'To Get All Nfts' })
+  // @ApiOperation({ summary: 'To Get All Nfts' })
   @ApiCreatedResponse({
     status: 201,
     description: 'The records has been fetched successfully.',
@@ -188,15 +191,37 @@ export class NftController {
   async getransactions(@Param() transactions: transactions): Promise<string> {
     return `ddf`;
   }
-
+  @Post('get-nft/contract-address/token-id')
+  async get_Nft(@Body() body: get_Nft_body): Promise<any> {
+    // Validations
+    // check in Db
+    // return await this.nftservice.get
+  }
+  //******************[GET_ALL_COLLECTIONS]************************/
+  @ApiOperation({ summary: 'This Api Will get all the Collections' })
+  @Get('get-collections')
+  async getcollections(): Promise<any> {
+    return await this.nftservice.getcollections();
+  }
+  /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
+  @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
+  @Get('collection/:contract_address')
+  async get_collections_by_contract_address(
+    @Param('Contract_address') contract_address: string,
+  ): Promise<any> {
+    console.log(contract_address);
+    return await this.nftservice.get_Nfts_by_Collection(contract_address);
+  }
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
-
   //
   // @Roles(Role.Admin)
   // @Post()
   //
+  @ApiOperation({
+    summary: 'This Api will Mint Nft and its details stores it info in DB ',
+  })
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
     try {
@@ -258,13 +283,6 @@ export class NftController {
   }
   @Post('mint-batch-nft/:ERC_TOKEN')
   async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
-  @Post('put-for-sale/:tokenid/:cntraddr')
-  async putForSale(@Param() sale: transactions) {}
   @Post('blacklist-nft/:tokenid/:cntraddr')
   async blacklistNFT(@Param() blacklist: transactions) {}
-
-  @Post('createnft')
-  async nftcreate(@Body() nft: any): Promise<any> {
-    await this.nftservice.createNFT(nft);
-  }
 }

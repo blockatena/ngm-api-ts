@@ -23,6 +23,6 @@ import { offerSchema, OfferSchema } from 'src/schemas/offer.schema';
     ]),
   ],
   controllers: [NftMarketplaceController],
-  providers: [NftMarketplaceService, Market_Place_Constants, CronjobService],
+  providers: [NftMarketplaceService, CronjobService],
 })
 export class NftMarketplaceModule {}

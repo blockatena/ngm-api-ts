@@ -15,7 +15,13 @@ require('dotenv').config();
 @Module({
   imports: [
     HttpModule,
-    MongooseModule.forFeature([{ name: NftSchema.name, schema: nftSchema }]),
+    MongooseModule.forFeature([
+      { name: NftSchema.name, schema: nftSchema },
+      {
+        name: ContractSchema.name,
+        schema: contractSchema,
+      },
+    ]),
     JwtModule.register({
       secret: process.env.jwtSecret,
       signOptions: { expiresIn: process.env.ExpiresIN },

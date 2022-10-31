@@ -22,6 +22,7 @@ export class AuctionSchema {
   winner: Array<any>;
   @Prop()
   transaction_status: string;
+  // add cron job exclude
 }
 export const auctionSchema = SchemaFactory.createForClass(AuctionSchema);
 // DB functions

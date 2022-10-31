@@ -18,3 +18,13 @@ export class getNft {
   readonly owner_address: string;
   readonly token_id: string;
 }
+export class get_collections_body {
+  @ApiProperty()
+  readonly contract_address: string;
+}
+export class get_Nft_body {
+  @ApiProperty()
+  readonly contract_address: string;
+  @ApiProperty()
+  readonly token_id: string;
+}
