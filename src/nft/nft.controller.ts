@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getnft, transactions } from './nftitems/tokeninfo.dto';
+import { getcontract, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
   ApiBody,
@@ -123,14 +123,14 @@ export class NftController {
   // For Docs
   // You can Specify access to single person or multiple persons
   // You can give permissions to as many people as you want
-  @SetMetadata('roles', [Role.Admin, Role.User])
-  @Get('get-all-nfts/:jwt')
-  // @ApiOperation({ summary: 'To Get All Nfts' })
-  @ApiCreatedResponse({
-    status: 201,
-    description: 'The records has been fetched successfully.',
-    type: [getnft],
-  })
+  // @SetMetadata('roles', [Role.Admin, Role.User])
+  // @Get('get-all-nfts/:jwt')
+  // // @ApiOperation({ summary: 'To Get All Nfts' })
+  // @ApiCreatedResponse({
+  //   status: 201,
+  //   description: 'The records has been fetched successfully.',
+  //   type: [getnft],
+  // })
   //
   // Logic
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -160,22 +160,22 @@ export class NftController {
     return 55;
   }
 
-  //   Get route
-  @Get(':cntraddr/:id')
-  @ApiResponse({
-    status: 201,
-    description: 'To fetch the details the Token URI',
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getTokenImage(@Param() NftData: getnft): Promise<string> {
-    console.log('The data is: ', NftData.cntraddr, NftData.id);
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
-    // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
-    console.log('Contract Instance: ', nftCntr);
-    const tokenURI = await nftCntr.tokenURI(NftData.id);
-    console.log('TokenURI: ', tokenURI);
-    return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
-  }
+  // //   Get route
+  // @Get(':cntraddr/:id')
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'To fetch the details the Token URI',
+  // })
+  // @ApiResponse({ status: 403, description: 'Forbidden.' })
+  // async getTokenImage(@Param() NftData: getnft): Promise<string> {
+  //   console.log('The data is: ', NftData.cntraddr, NftData.id);
+  //   const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
+  //   // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
+  //   console.log('Contract Instance: ', nftCntr);
+  //   const tokenURI = await nftCntr.tokenURI(NftData.id);
+  //   console.log('TokenURI: ', tokenURI);
+  //   return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
+  // }
 
   // To fetch Contract Details
   @Get('contract-details')
@@ -191,27 +191,33 @@ export class NftController {
   async getransactions(@Param() transactions: transactions): Promise<string> {
     return `ddf`;
   }
+
   @Post('get-nft/contract-address/token-id')
   async get_Nft(@Body() body: get_Nft_body): Promise<any> {
     // Validations
     // check in Db
     // return await this.nftservice.get
   }
+
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections')
   async getcollections(): Promise<any> {
     return await this.nftservice.getcollections();
   }
+
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
   @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
   @Get('collection/:contract_address')
   async get_collections_by_contract_address(
-    @Param('Contract_address') contract_address: string,
+    @Param() contract: getcontract,
   ): Promise<any> {
-    console.log(contract_address);
-    return await this.nftservice.get_Nfts_by_Collection(contract_address);
+    console.log(contract.contract_address);
+    return await this.nftservice.get_Nfts_by_Collection(
+      contract.contract_address,
+    );
   }
+
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
