@@ -44,4 +44,27 @@ export class NftService {
   async get_Nfts_by_Collection(Contract_Address: string): Promise<any> {
     return await this.NftModel.find({ contract_address: Contract_Address });
   }
+  async getUniqueOwners(contract_address: string): Promise<any> {
+    try {
+      return await this.NftModel.distinct('token_owner', {
+        contract_address: contract_address,
+      });
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went Wrong ,Our team is Looking into it' };
+    }
+  }
+  async GetContract(contract_address: string): Promise<any> {
+    return await this.ContractModel.findOne({
+      contractaddress: contract_address,
+    });
+  }
+  async PushImagesToCollection(contract_address: string, image_uri: string) {
+    return await this.ContractModel.findOneAndUpdate(
+      {
+        contractaddress: contract_address,
+      },
+      { $push: { imageuri: image_uri } },
+    );
+  }
 }

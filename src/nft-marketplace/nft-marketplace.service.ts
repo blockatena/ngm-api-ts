@@ -41,7 +41,7 @@ export class NftMarketplaceService {
     OfferModel;
   }
   /*********************[AUCTION-SERVICES]**********************/
-  async create_auction(createAuction: CreateAuctionBody): Promise<any> {
+  async CreateAuction(createAuction: CreateAuctionBody): Promise<any> {
     let data = await (await this.AuctionModel.create(createAuction)).save();
     await this.update_nft(
       {
@@ -83,7 +83,7 @@ export class NftMarketplaceService {
     return data;
   }
   /*********[CANCEL-AUCTION-SERVICE]*******/
-  async cancel_auction(auction_id: string, cronjob_id: string): Promise<any> {
+  async CancelAuction(auction_id: string, cronjob_id: string): Promise<any> {
     console.log('auction_id', auction_id);
     // this.schedulerRegistry.deleteCronJob(cronjob_id);
     try {
@@ -111,7 +111,7 @@ export class NftMarketplaceService {
   }
   /************************************/
   /****************[BID_SERVICES]*************/
-  async create_bid(createBid: CreateBidBody): Promise<any> {
+  async CreateBid(createBid: CreateBidBody): Promise<any> {
     const data = await (await this.BidModel.create(createBid)).save();
     this.Cron_job.addCornJob(
       `${data.bidder_address}${data.token_id}`,
@@ -124,7 +124,7 @@ export class NftMarketplaceService {
     return data;
   }
   /**********[CANCEL-BID-SERVICE]*********/
-  async cancel_bid(bid_data: CancelBidBody): Promise<any> {
+  async CancelBid(bid_data: CancelBidBody): Promise<any> {
     try {
       const message = await this.update_bid(
         { _id: bid_data.bid_id },
@@ -147,7 +147,7 @@ export class NftMarketplaceService {
   }
   /***************************/
   /******************[CREATE SALE]**************/
-  async create_sale(sale: Create_Sale_Body): Promise<any> {
+  async CreateSale(sale: Create_Sale_Body): Promise<any> {
     // save in DB
     const save_in_db = await (await this.SalesModel.create(sale)).save();
     //create cron job
@@ -156,7 +156,7 @@ export class NftMarketplaceService {
       sale.end_date,
       async () => {
         console.log('sale ended');
-        await this.update_sale({ _id: save_in_db._id }, { status: 'ended' });
+        await this.UpdateSale({ _id: save_in_db._id }, { status: 'ended' });
         await this.update_nft(
           {
             contract_address: sale.contract_address,
@@ -173,12 +173,12 @@ export class NftMarketplaceService {
     );
     return { save_in_db, update_nft };
   }
-  async cancel_sale(cancel: Cancel_Sale_Body): Promise<any> {
+  async CancelSale(cancel: Cancel_Sale_Body): Promise<any> {
     //delete cron job
     try {
       this.Cron_job.deleteCron(cancel.cronjob_id);
       //update status of the sale
-      const sales_update = await this.update_sale(
+      const sales_update = await this.UpdateSale(
         { _id: cancel.sale_id },
         { status: 'cancelled' },
       );
@@ -196,21 +196,21 @@ export class NftMarketplaceService {
     }
   }
   //CRUD for sale schema
-  async get_sale(saleData: any) {
+  async GetSale(saleData: any) {
     return await this.SalesModel.findOne({ _id: saleData });
   }
-  async update_sale(data: any, update_data: any) {
+  async UpdateSale(data: any, update_data: any) {
     await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
   }
 
   //************************************************* */
   //********[CREATE-OFFER]*******/
-  async create_offer(offer: create_Offer_Body) {
+  async CreateOffer(offer: create_Offer_Body) {
     return await (await this.OfferModel.create(offer)).save();
   }
-  async accept_offer(accept_Data: accept_Offer_Body) {
+  async AcceptOffer(accept_Data: accept_Offer_Body) {
     try {
-      const offer_msg = await this.update_offer(
+      const offer_msg = await this.UpdateOffer(
         { _id: accept_Data.offer_id },
         { offer_status: 'accepted' },
       );
@@ -224,13 +224,13 @@ export class NftMarketplaceService {
       };
     }
   }
-  async get_offer(offer_Data: any): Promise<any> {
+  async GetOffer(offer_Data: any): Promise<any> {
     return await this.OfferModel.findOne(offer_Data);
   }
-  async get_all_offers(saleData: get_all_offers_Body) {
+  async GetAllOffers(saleData: get_all_offers_Body) {
     return await this.OfferModel.find({ sale_id: saleData.sale_id });
   }
-  async update_offer(offer_data: Object, update_data: Object) {
+  async UpdateOffer(offer_data: Object, update_data: Object) {
     return await this.OfferModel.findOneAndUpdate(offer_data, {
       $set: update_data,
     });

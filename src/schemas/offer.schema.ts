@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 export type OfferDocument = OfferSchema & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class OfferSchema {
   @Prop()
   sale_id: string;

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 export type AuctionDocument = AuctionSchema & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class AuctionSchema {
   @Prop()
   token_owner: string;

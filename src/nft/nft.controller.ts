@@ -181,41 +181,55 @@ export class NftController {
   @Get('contract-details')
   @ApiResponse({ status: 201, description: 'Fetching the contract details' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async contractdetails(): Promise<string> {
+  async ContractDetails(): Promise<string> {
     return `Contract`;
   }
 
   @Get('get-transactions/:tokenid/:cntraddr')
   @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getransactions(@Param() transactions: transactions): Promise<string> {
+  async Getransactions(@Param() transactions: transactions): Promise<string> {
     return `ddf`;
   }
 
-  @Post('get-nft/contract-address/token-id')
-  async get_Nft(@Body() body: get_Nft_body): Promise<any> {
+  @Get('get-nft/:contract_address/:token_id')
+  async GetNft(@Param() body: get_Nft_body): Promise<any> {
     // Validations
     // check in Db
-    // return await this.nftservice.get
+    //  return await this.nftservice.
+    //  const get_nft=await this.nftservice.
   }
 
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections')
-  async getcollections(): Promise<any> {
+  async GetCollections(): Promise<any> {
     return await this.nftservice.getcollections();
   }
 
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
   @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
   @Get('collection/:contract_address')
-  async get_collections_by_contract_address(
+  async GetCollectionsByContractAddress(
     @Param() contract: getcontract,
   ): Promise<any> {
     console.log(contract.contract_address);
-    return await this.nftservice.get_Nfts_by_Collection(
+    const nfts = await this.nftservice.get_Nfts_by_Collection(
       contract.contract_address,
     );
+    const total_volume = nfts.length;
+    const floor_price = 0;
+    const best_offer = 0;
+    const owners = await this.nftservice.getUniqueOwners(
+      contract.contract_address,
+    );
+    return {
+      total_volume,
+      floor_price,
+      best_offer,
+      owners,
+      nfts,
+    };
   }
 
   // *****************************************//
@@ -267,8 +281,22 @@ export class NftController {
         'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
       const meta_data_url = `${textileUri}/${body.contract_address}/${tokenId}.json`;
 
-      // savng in Db************
+      /**********saving in Db************/
 
+      /******for collection Images******/
+      const collection = await this.nftservice.get_Nfts_by_Collection(
+        body.contract_address,
+      );
+      console.log(collection);
+      console.log('here', collection.length);
+      if (collection.length < 3) {
+        console.log(collection.length);
+        this.nftservice.PushImagesToCollection(
+          body.contract_address,
+          body.image_uri,
+        );
+      }
+      //
       const arrdb = {
         contract_address: body.contract_address,
         contract_type: body.contract_type || 'NGM721PSI',
