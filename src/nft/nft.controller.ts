@@ -220,9 +220,9 @@ export class NftController {
     const total_volume = nfts.length;
     const floor_price = 0;
     const best_offer = 0;
-    const owners = await this.nftservice.getUniqueOwners(
-      contract.contract_address,
-    );
+    const owners = (
+      await this.nftservice.getUniqueOwners(contract.contract_address)
+    ).length;
     return {
       total_volume,
       floor_price,
@@ -289,7 +289,7 @@ export class NftController {
       );
       console.log(collection);
       console.log('here', collection.length);
-      if (collection.length < 3) {
+      if (collection.length < 2) {
         console.log(collection.length);
         this.nftservice.PushImagesToCollection(
           body.contract_address,
