@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
 export type SalesDocument = SalesSchema & Document;
-@Schema()
+@Schema({ timestamps: true })
 export class SalesSchema {
   @Prop()
   token_owner: string;

@@ -1,4 +1,4 @@
-export class Market_Place_Constants {
-  STARTED: 'started';
-  CANCELLED: 'cancelled';
-}
+export const Market_Place_Constants = {
+  STARTED: 'started',
+  CANCELLED: 'cancelled',
+};

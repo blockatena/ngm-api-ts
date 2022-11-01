@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 export type AuctionDocument = AuctionSchema & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class AuctionSchema {
   @Prop()
   token_owner: string;
@@ -22,6 +22,7 @@ export class AuctionSchema {
   winner: Array<any>;
   @Prop()
   transaction_status: string;
+  // add cron job exclude
 }
 export const auctionSchema = SchemaFactory.createForClass(AuctionSchema);
 // DB functions
