@@ -35,7 +35,7 @@ export class NftService {
     return await (await this.NftModel.create(data)).save();
   }
   async getallnfts() {
-    return await this.NftModel.find();
+    return await this.NftModel.find({});
   }
 
   async getcollections() {
@@ -54,10 +54,8 @@ export class NftService {
       return { message: 'Something went Wrong ,Our team is Looking into it' };
     }
   }
-  async GetContract(contract_address: string): Promise<any> {
-    return await this.ContractModel.findOne({
-      contractaddress: contract_address,
-    });
+  async GetContract(contract_address: any): Promise<any> {
+    return await this.ContractModel.findOne(contract_address);
   }
   async PushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
