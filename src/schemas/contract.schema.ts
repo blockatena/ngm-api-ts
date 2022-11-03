@@ -8,7 +8,7 @@ export class ContractSchema {
   symbol: string;
   @Prop()
   ownerAddress: string;
-  @Prop()
+  @Prop({ unique: true })
   collectionName: string;
   @Prop()
   chain: string;

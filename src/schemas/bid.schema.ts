@@ -5,9 +5,9 @@ export type BidDocument = BidSchema & Document;
 @Schema({ timestamps: true })
 export class BidSchema {
   @Prop()
-  auction_id: string;
-  @Prop()
   bidder_address: string;
+  @Prop()
+  contract_address: string;
   @Prop()
   token_id: string;
   @Prop()

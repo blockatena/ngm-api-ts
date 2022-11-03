@@ -204,6 +204,8 @@ export class NftController {
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections')
   async GetCollections(): Promise<any> {
+    // if no collctions ,return some message ,
+    //  is this route available to all
     return await this.nftservice.getcollections();
   }
 
@@ -214,23 +216,46 @@ export class NftController {
     @Param() contract: getcontract,
   ): Promise<any> {
     console.log(contract.contract_address);
-    const nfts = await this.nftservice.get_Nfts_by_Collection(
-      contract.contract_address,
-    );
-    const total_volume = nfts.length;
-    const floor_price = 0;
-    const best_offer = 0;
-    const owners = (
-      await this.nftservice.getUniqueOwners(contract.contract_address)
-    ).length;
-    return {
-      total_volume,
-      floor_price,
-      best_offer,
-      owners,
-      nfts,
-    };
+    try {
+      // Fetching Contract details
+      const collection = await this.nftservice.GetContract({
+        contract_address: contract.contract_address,
+      });
+      // fetching all Nfts
+      const nfts = await this.nftservice.get_Nfts_by_Collection(
+        contract.contract_address,
+      );
+      // fetching data for analysis
+      const total_volume = nfts.length;
+      const floor_price = 0;
+      const best_offer = 0;
+      const owners = (
+        await this.nftservice.getUniqueOwners(contract.contract_address)
+      ).length;
+      return {
+        collection,
+        total_volume,
+        floor_price,
+        best_offer,
+        owners,
+        nfts,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went wrong ,Our Team is Looking into it ',
+        contact: 'For Any Queries You can mail us hello@gmail.com',
+        error,
+      };
+    }
   }
+
+  /* PENDING
+  [GET NFTS WHICH ARE IN AUCTION] 
+  [GET NFTS WHICH ARE IN SALE]
+  [GET NFTS owned by user]
+  wheather price is present on nft or not , if he owns it 
+*/
 
   // *****************************************//
   //                POST APIs                 //
