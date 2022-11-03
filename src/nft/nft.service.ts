@@ -2,12 +2,15 @@ import { HttpService } from '@nestjs/axios';
 import { Body, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { createNFT, getNft } from './nftitems/createNft.dto';
 
 @Injectable()
 export class NftService {
   constructor(
+    @InjectModel(ContractSchema.name)
+    private ContractModel: Model<ContractDocument>,
     private readonly httpService: HttpService,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
   ) {
@@ -28,20 +31,38 @@ export class NftService {
   tokeninfo() {
     return { msg: 'Metadata Fetched' };
   }
-
-  async createNFT(nftData: any): Promise<any> {
-    console.log('from service', nftData);
-    return await (await this.NftModel.create(nftData)).save();
+  async createNFT(data: any): Promise<any> {
+    return await (await this.NftModel.create(data)).save();
   }
-
   async getallnfts() {
-    return await this.NftModel.find();
+    return await this.NftModel.find({});
   }
 
-  // test
-  // async get_Nft(details: getNft): Promise<any> {
-  //   console.log(details);
-  //   return await this.NftModel.findOne(details);
-  // }
-  // test
+  async getcollections() {
+    return await this.ContractModel.find({});
+  }
+  async get_Nfts_by_Collection(Contract_Address: string): Promise<any> {
+    return await this.NftModel.find({ contract_address: Contract_Address });
+  }
+  async getUniqueOwners(contract_address: string): Promise<any> {
+    try {
+      return await this.NftModel.distinct('token_owner', {
+        contract_address: contract_address,
+      });
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went Wrong ,Our team is Looking into it' };
+    }
+  }
+  async GetContract(contract_address: any): Promise<any> {
+    return await this.ContractModel.findOne(contract_address);
+  }
+  async PushImagesToCollection(contract_address: string, image_uri: string) {
+    return await this.ContractModel.findOneAndUpdate(
+      {
+        contractaddress: contract_address,
+      },
+      { $push: { imageuri: image_uri } },
+    );
+  }
 }

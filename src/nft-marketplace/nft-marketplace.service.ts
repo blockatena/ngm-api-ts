@@ -5,76 +5,121 @@ import { AuctionDocument, AuctionSchema } from 'src/schemas/auction.schema';
 import { BidDocument, BidSchema } from 'src/schemas/bid.schema';
 import { CreateAuctionBody } from './dtos/create_auction.dto';
 import { CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
-import { Cron, SchedulerRegistry } from '@nestjs/schedule';
-import { CronJob } from 'cron';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
-import { Market_Place_Constants } from 'src/utils/constants/MARKETPLACE/marketplace.constants';
-import { async } from 'rxjs';
+import { CronjobService } from 'src/cronjob/cronjob.service';
+import { Cancel_Sale_Body, Create_Sale_Body } from './dtos/create-sale.dto';
+import { SalesDocument, SalesSchema } from 'src/schemas/sales.schema';
+import {
+  OfferDocument,
+  offerSchema,
+  OfferSchema,
+} from 'src/schemas/offer.schema';
+import {
+  accept_Offer_Body,
+  create_Offer_Body,
+  get_all_offers_Body,
+} from './dtos/create_offer.dto';
 @Injectable()
 export class NftMarketplaceService {
-  private readonly logger = new Logger(NftMarketplaceService.name);
   constructor(
-    private mrkt_constants: Market_Place_Constants,
-    private schedulerRegistry: SchedulerRegistry,
+    private Cron_job: CronjobService,
     @InjectModel(ContractSchema.name)
     private ContractModel: Model<ContractDocument>,
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
+    @InjectModel(SalesSchema.name) private SalesModel: Model<SalesDocument>,
+    @InjectModel(OfferSchema.name) private OfferModel: Model<OfferDocument>,
   ) {
     AuctionModel;
     BidModel;
     NftModel;
     ContractModel;
+    SalesModel;
+    OfferModel;
   }
-
-  async create_auction(createAuction: CreateAuctionBody): Promise<any> {
-    createAuction[`status`] = this.mrkt_constants.STARTED || 'started';
-    let data = await (await this.AuctionModel.create(createAuction)).save();
-    await this.update_nft(
-      {
-        contract_address: createAuction.contract_address,
-        token_id: createAuction.token_id,
-      },
-      { is_in_auction: true },
-    );
-    console.log(data.end_date);
-    //  Adding Cron Job
-    this.addCornJob(
-      `${createAuction.contract_address}${createAuction.token_id}`,
-      data.end_date,
-      async () => {
-        console.log('winner is ');
-        const winnerdata = await this.declareWinner(data._id);
-        //update status to bid and auction add winner also
-        // update after auction ,set auction status to false
-        await this.update_nft(
-          {
-            contract_address: createAuction.contract_address,
-            token_id: createAuction.token_id,
-          },
-          { is_in_auction: false },
-        );
-        const winner_info =
-          winnerdata.length === 0 ? 'No bids for this auction' : winnerdata;
-        console.log(winner_info);
-        await this.update_auction(
-          { _id: data._id },
-          { status: 'expired', winner: winner_info },
-        );
-      },
-    );
-    return data;
-  }
-
-  async cancel_auction(auction_id: string, cronjob_id: string): Promise<any> {
-    console.log('auction_id', auction_id);
-    // this.schedulerRegistry.deleteCronJob(cronjob_id);
+  /*********************[AUCTION-SERVICES]**********************/
+  async CreateAuction(createAuction: CreateAuctionBody): Promise<any> {
     try {
-      this.deleteCron(cronjob_id);
-      const auction_data = await this.get_auction({ _id: auction_id });
+      await this.update_nft(
+        {
+          contract_address: createAuction.contract_address,
+          token_id: createAuction.token_id,
+        },
+        { is_in_auction: true },
+      );
+      //  Adding Cron Job
+      this.Cron_job.addCornJob(
+        `${createAuction.contract_address}${createAuction.token_id}`,
+        createAuction.end_date,
+        async () => {
+          console.log('winner is ');
+          const winnerdata = await this.declareWinner(data._id);
+          //update status to bid and auction add winner also
+          // update after auction ,set auction status to false
+          await this.update_nft(
+            {
+              contract_address: createAuction.contract_address,
+              token_id: createAuction.token_id,
+            },
+            { is_in_auction: false },
+          );
+          const winner_info =
+            winnerdata.length === 0 ? 'No bids for this auction' : winnerdata;
+          console.log(winner_info);
+          await this.update_auction(
+            {
+              contract_address: createAuction.contract_address,
+              token_id: createAuction.token_id,
+
+              status: 'started',
+              // can add more validations if you want
+            },
+            { status: 'expired', winner: winner_info },
+          );
+          // After auction this cron job will be deleted // need to fix with unique id
+          this.Cron_job.deleteCron(
+            `${createAuction.contract_address}${createAuction.token_id}`,
+          );
+        },
+      );
+      const data = await (await this.AuctionModel.create(createAuction)).save();
+
+      return data;
+    } catch (error) {
+      console.log(error);
+      /* if anything goes wrong we need to revert back to earlier status */
+      await this.update_nft(
+        {
+          contract_address: createAuction.contract_address,
+          token_id: createAuction.token_id,
+        },
+        { is_in_auction: true },
+      );
+      return {
+        message: 'something went wrong',
+      };
+    }
+  }
+  /*********[CANCEL-AUCTION-SERVICE]*******/
+  async CancelAuction(
+    contract_address: string,
+    token_id: string,
+  ): Promise<any> {
+    console.log('auction_id', contract_address, token_id);
+    // this.schedulerRegistry.deleteCronJob(cronjob_id);
+    const cronjob_id = `${contract_address}${token_id}`;
+
+    try {
+      this.Cron_job.deleteCron(cronjob_id);
+      const auction_data = await this.get_auction({
+        contract_address,
+        token_id,
+        status: 'started',
+        // need to add one more ,which is date
+      });
       this.update_nft(
         {
           contract_address: auction_data.contract_address,
@@ -82,10 +127,16 @@ export class NftMarketplaceService {
         },
         { is_in_auction: false },
       );
-      return await this.update_auction(
-        { _id: auction_id },
-        { status: this.mrkt_constants.CANCELLED || 'cancelled' },
+      const success_data = await this.update_auction(
+        {
+          _id: auction_data._id,
+          contract_address,
+          token_id,
+          status: 'started',
+        },
+        { status: 'cancelled' },
       );
+      return { success_data, message: 'Successfully deleted' };
     } catch (error) {
       console.log(error);
       return {
@@ -95,13 +146,40 @@ export class NftMarketplaceService {
       };
     }
   }
-  async cancel_bid(bid_data: CancelBidBody): Promise<any> {
+  /************************************/
+  /****************[BID_SERVICES]*************/
+  async CreateBid(createBid: CreateBidBody): Promise<any> {
+    const { token_id, contract_address, bid_expiresin, bidder_address } =
+      createBid;
+    // Id creation for cron job may be changed in future
+    try {
+      this.Cron_job.addCornJob(
+        `${contract_address}${token_id}`,
+        createBid.bid_expiresin,
+        async () => {
+          await this.update_bid(
+            { token_id, contract_address, status: 'started' },
+            { status: 'expired' },
+          );
+          console.log('bid expired');
+        },
+      );
+      const data = await (await this.BidModel.create(createBid)).save();
+
+      return data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
+  /**********[CANCEL-BID-SERVICE]*********/
+  async CancelBid(bid_data: CancelBidBody): Promise<any> {
+    const { contract_address, bidder_address, token_id } = bid_data;
     try {
       const message = await this.update_bid(
-        { _id: bid_data.bid_id },
-        { status: this.mrkt_constants.CANCELLED || 'cancelled' },
+        { contract_address, bidder_address, token_id, status: 'started' },
+        { status: 'cancelled' },
       );
-      this.deleteCron(`${bid_data.bidder_address}${bid_data.token_id}`);
+      this.Cron_job.deleteCron(`${contract_address}${token_id}`);
       return {
         message,
       };
@@ -114,53 +192,97 @@ export class NftMarketplaceService {
       };
     }
   }
-
-  async create_bid(createBid: CreateBidBody): Promise<any> {
-    createBid[`status`] = 'started';
-    const data = await (await this.BidModel.create(createBid)).save();
-    this.addCornJob(
-      `${data.bidder_address}${data.token_id}`,
-      createBid.bid_expiresin,
+  /***************************/
+  /******************[CREATE SALE]**************/
+  async CreateSale(sale: Create_Sale_Body): Promise<any> {
+    // save in DB
+    const save_in_db = await (await this.SalesModel.create(sale)).save();
+    //create cron job
+    this.Cron_job.addCornJob(
+      `${sale.contract_address}${sale.token_id}`,
+      sale.end_date,
       async () => {
-        await this.update_bid({ _id: data._id }, { status: 'expired' });
-        console.log('bid expired');
+        console.log('sale ended');
+        await this.UpdateSale({ _id: save_in_db._id }, { status: 'ended' });
+        await this.update_nft(
+          {
+            contract_address: sale.contract_address,
+            token_id: sale.token_id,
+          },
+          { is_in_sale: false },
+        );
       },
     );
-    return data;
+    //update in nft is in auction is true
+    const update_nft = await this.update_nft(
+      { contract_address: sale.contract_address, token_id: sale.token_id },
+      { is_in_sale: true },
+    );
+    return { save_in_db, update_nft };
   }
-
-  addCornJob(name: string, date: string, callback: any) {
-    console.log('date', date);
-    const job = new CronJob(new Date(date), callback);
-    this.schedulerRegistry.addCronJob(name, job);
-    job.start();
-    this.logger.warn(`job ${name} added for each minute at ${date} seconds!`);
-  }
-  deleteCron(name: string) {
+  async CancelSale(cancel: Cancel_Sale_Body): Promise<any> {
+    //delete cron job
     try {
-      console.log(name);
-      const job = this.getCrons();
-      console.log(job);
-      this.schedulerRegistry.deleteCronJob(name);
-      this.logger.warn(`job ${name} deleted!`);
-    } catch (err) {
-      console.log(err);
+      this.Cron_job.deleteCron(cancel.cronjob_id);
+      //update status of the sale
+      const sales_update = await this.UpdateSale(
+        { _id: cancel.sale_id },
+        { status: 'cancelled' },
+      );
+      const nft_update = await this.update_nft(
+        {
+          contract_address: cancel.contract_address,
+          token_id: cancel.token_id,
+        },
+        { is_in_sale: false },
+      );
+      return { sales_update, nft_update };
+    } catch (error) {
+      console.log(error);
+      return { message: 'something wrong in DB or with Cron Jobs' };
     }
   }
-  getCrons() {
-    const jobs = this.schedulerRegistry.getCronJobs();
-    let arr = [];
-    jobs.forEach((value, key, map) => {
-      let next;
-      try {
-        next = value.nextDates().toJSDate();
-      } catch (e) {
-        next = 'error: next fire date is in the past!';
-      }
-      arr.push(`job: ${key} next: ${next}`);
-    });
-    return arr;
+  //CRUD for sale schema
+  async GetSale(saleData: any) {
+    return await this.SalesModel.findOne({ _id: saleData });
   }
+  async UpdateSale(data: any, update_data: any) {
+    await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
+  }
+
+  //************************************************* */
+  //********[CREATE-OFFER]*******/
+  async CreateOffer(offer: create_Offer_Body) {
+    return await (await this.OfferModel.create(offer)).save();
+  }
+  async AcceptOffer(accept_Data: accept_Offer_Body) {
+    try {
+      const offer_msg = await this.UpdateOffer(
+        { _id: accept_Data.offer_id },
+        { offer_status: 'accepted' },
+      );
+      // const Nft_msg = await this.update_nft({},{})
+      return;
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went Wrong in DB',
+        status: 'Our Team is looking into it ',
+      };
+    }
+  }
+  async GetOffer(offer_Data: any): Promise<any> {
+    return await this.OfferModel.findOne(offer_Data);
+  }
+  async GetAllOffers(saleData: get_all_offers_Body) {
+    return await this.OfferModel.find({ sale_id: saleData.sale_id });
+  }
+  async UpdateOffer(offer_data: Object, update_data: Object) {
+    return await this.OfferModel.findOneAndUpdate(offer_data, {
+      $set: update_data,
+    });
+  }
+  // *************************/
   async declareWinner(Auction_id: any) {
     //currently its a demo version need to add actual functionality later
     let data = await this.BidModel.find({
@@ -191,9 +313,11 @@ export class NftMarketplaceService {
 
   //
   async update_auction(data: any, update_data: any) {
-    return await this.AuctionModel.updateOne(data, {
+    console.log('From Update Auction', data);
+    const dat = await this.AuctionModel.findOneAndUpdate(data, {
       $set: update_data,
     });
+    return dat;
   }
 
   //
@@ -208,7 +332,8 @@ export class NftMarketplaceService {
     return await this.BidModel.findOne(details);
   }
   // get routes
-  async getcollections() {
-    return await this.ContractModel.find({});
+
+  async getCrons() {
+    return this.Cron_job.getCrons();
   }
 }

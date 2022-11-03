@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getnft, transactions } from './nftitems/tokeninfo.dto';
+import { getcontract, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
   ApiBody,
@@ -36,7 +36,7 @@ import { Bucket } from 'src/textile/helper/textileHelper';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { arrayBuffer } from 'stream/consumers';
+import { get_collections_body, get_Nft_body } from './nftitems/createNft.dto';
 
 require('dotenv').config();
 
@@ -60,6 +60,9 @@ export class NftController {
     private deploymentService: DeploymentService,
   ) {}
   // File Upload
+  @ApiOperation({
+    summary: 'This Api will upload your asset and gets you URI of that asset',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
@@ -120,14 +123,14 @@ export class NftController {
   // For Docs
   // You can Specify access to single person or multiple persons
   // You can give permissions to as many people as you want
-  @SetMetadata('roles', [Role.Admin, Role.User])
-  @Get('get-all-nfts/:jwt')
-  @ApiOperation({ summary: 'To Get All Nfts' })
-  @ApiCreatedResponse({
-    status: 201,
-    description: 'The records has been fetched successfully.',
-    type: [getnft],
-  })
+  // @SetMetadata('roles', [Role.Admin, Role.User])
+  // @Get('get-all-nfts/:jwt')
+  // // @ApiOperation({ summary: 'To Get All Nfts' })
+  // @ApiCreatedResponse({
+  //   status: 201,
+  //   description: 'The records has been fetched successfully.',
+  //   type: [getnft],
+  // })
   //
   // Logic
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -157,46 +160,113 @@ export class NftController {
     return 55;
   }
 
-  //   Get route
-  @Get(':cntraddr/:id')
-  @ApiResponse({
-    status: 201,
-    description: 'To fetch the details the Token URI',
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getTokenImage(@Param() NftData: getnft): Promise<string> {
-    console.log('The data is: ', NftData.cntraddr, NftData.id);
-    const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
-    // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
-    console.log('Contract Instance: ', nftCntr);
-    const tokenURI = await nftCntr.tokenURI(NftData.id);
-    console.log('TokenURI: ', tokenURI);
-    return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
-  }
+  // //   Get route
+  // @Get(':cntraddr/:id')
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'To fetch the details the Token URI',
+  // })
+  // @ApiResponse({ status: 403, description: 'Forbidden.' })
+  // async getTokenImage(@Param() NftData: getnft): Promise<string> {
+  //   console.log('The data is: ', NftData.cntraddr, NftData.id);
+  //   const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
+  //   // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
+  //   console.log('Contract Instance: ', nftCntr);
+  //   const tokenURI = await nftCntr.tokenURI(NftData.id);
+  //   console.log('TokenURI: ', tokenURI);
+  //   return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
+  // }
 
   // To fetch Contract Details
   @Get('contract-details')
   @ApiResponse({ status: 201, description: 'Fetching the contract details' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async contractdetails(): Promise<string> {
+  async ContractDetails(): Promise<string> {
     return `Contract`;
   }
 
   @Get('get-transactions/:tokenid/:cntraddr')
   @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getransactions(@Param() transactions: transactions): Promise<string> {
+  async Getransactions(@Param() transactions: transactions): Promise<string> {
     return `ddf`;
   }
+
+  @Get('get-nft/:contract_address/:token_id')
+  async GetNft(@Param() body: get_Nft_body): Promise<any> {
+    // Validations
+    // check in Db
+    //  return await this.nftservice.
+    //  const get_nft=await this.nftservice.
+  }
+
+  //******************[GET_ALL_COLLECTIONS]************************/
+  @ApiOperation({ summary: 'This Api Will get all the Collections' })
+  @Get('get-collections')
+  async GetCollections(): Promise<any> {
+    // if no collctions ,return some message ,
+    //  is this route available to all
+    return await this.nftservice.getcollections();
+  }
+
+  /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
+  @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
+  @Get('collection/:contract_address')
+  async GetCollectionsByContractAddress(
+    @Param() contract: getcontract,
+  ): Promise<any> {
+    console.log(contract.contract_address);
+    try {
+      // Fetching Contract details
+      const collection = await this.nftservice.GetContract({
+        contract_address: contract.contract_address,
+      });
+      // fetching all Nfts
+      const nfts = await this.nftservice.get_Nfts_by_Collection(
+        contract.contract_address,
+      );
+      // fetching data for analysis
+      const total_volume = nfts.length;
+      const floor_price = 0;
+      const best_offer = 0;
+      const owners = (
+        await this.nftservice.getUniqueOwners(contract.contract_address)
+      ).length;
+      return {
+        collection,
+        total_volume,
+        floor_price,
+        best_offer,
+        owners,
+        nfts,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went wrong ,Our Team is Looking into it ',
+        contact: 'For Any Queries You can mail us hello@gmail.com',
+        error,
+      };
+    }
+  }
+
+  /* PENDING
+  [GET NFTS WHICH ARE IN AUCTION] 
+  [GET NFTS WHICH ARE IN SALE]
+  [GET NFTS owned by user]
+  wheather price is present on nft or not , if he owns it 
+*/
 
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
-
   //
   // @Roles(Role.Admin)
   // @Post()
   //
+  @ApiOperation({
+    summary: 'This Api will Mint Nft and its details stores it info in DB ',
+  })
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
     try {
@@ -236,8 +306,22 @@ export class NftController {
         'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
       const meta_data_url = `${textileUri}/${body.contract_address}/${tokenId}.json`;
 
-      // savng in Db************
+      /**********saving in Db************/
 
+      /******for collection Images******/
+      const collection = await this.nftservice.get_Nfts_by_Collection(
+        body.contract_address,
+      );
+      console.log(collection);
+      console.log('here', collection.length);
+      if (collection.length < 2) {
+        console.log(collection.length);
+        this.nftservice.PushImagesToCollection(
+          body.contract_address,
+          body.image_uri,
+        );
+      }
+      //
       const arrdb = {
         contract_address: body.contract_address,
         contract_type: body.contract_type || 'NGM721PSI',
@@ -258,13 +342,6 @@ export class NftController {
   }
   @Post('mint-batch-nft/:ERC_TOKEN')
   async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
-  @Post('put-for-sale/:tokenid/:cntraddr')
-  async putForSale(@Param() sale: transactions) {}
   @Post('blacklist-nft/:tokenid/:cntraddr')
   async blacklistNFT(@Param() blacklist: transactions) {}
-
-  @Post('createnft')
-  async nftcreate(@Body() nft: any): Promise<any> {
-    await this.nftservice.createNFT(nft);
-  }
 }

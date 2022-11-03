@@ -2,12 +2,12 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document } from 'mongoose';
 export type BidDocument = BidSchema & Document;
 
-@Schema()
+@Schema({ timestamps: true })
 export class BidSchema {
   @Prop()
-  auction_id: string;
-  @Prop()
   bidder_address: string;
+  @Prop()
+  contract_address: string;
   @Prop()
   token_id: string;
   @Prop()
@@ -20,3 +20,6 @@ export class BidSchema {
   won: boolean;
 }
 export const bidSchema = SchemaFactory.createForClass(BidSchema);
+bidSchema.pre('save', function () {
+  this.status = 'started';
+});
