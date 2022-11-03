@@ -19,6 +19,7 @@ import {
   ApiCreatedResponse,
   ApiHeader,
   ApiOperation,
+  ApiProperty,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -192,12 +193,48 @@ export class NftController {
     return `ddf`;
   }
 
+  @ApiOperation({
+    summary: 'This Api will gets you all the Assets',
+  })
+  @Get('Get-all-nfts')
+  async GetAllNfts(): Promise<any> {
+    try {
+      const data = await this.nftservice.GetAllNfts();
+      if (!data) {
+        return {
+          message: 'There are no nfts present',
+        };
+      }
+      return data;
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went wrong' };
+    }
+  }
+  @ApiOperation({
+    summary:
+      'This Api will gets you Specific asset given by contract_address and Token_id in Params',
+  })
+  // ***************/
+  // get owner assets pending
+  //************ */
   @Get('get-nft/:contract_address/:token_id')
   async GetNft(@Param() body: get_Nft_body): Promise<any> {
     // Validations
     // check in Db
     //  return await this.nftservice.
     //  const get_nft=await this.nftservice.
+    const { contract_address, token_id } = body;
+    try {
+      const data = await this.nftservice.GetNft({ contract_address, token_id });
+      if (!data) {
+        return 'Nft is not present with that details';
+      }
+      return data;
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went wrong' };
+    }
   }
 
   //******************[GET_ALL_COLLECTIONS]************************/
