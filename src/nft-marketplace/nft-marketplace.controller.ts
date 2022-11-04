@@ -157,6 +157,7 @@ export class NftMarketplaceController {
   @Post('accept-bid')
   async accept_bid(@Body() body: Acceptbid) {
     try {
+      console.log(body);
       const { contract_address, token_id, token_owner, bidder_address } = body;
       const auction_data = await this.nftMarketplaceService.get_auction({
         contract_address,
