@@ -7,9 +7,9 @@ export class ContractSchema {
   @Prop()
   symbol: string;
   @Prop()
-  ownerAddress: string;
+  owner_address: string;
   @Prop({ unique: true })
-  collectionName: string;
+  collection_name: string;
   @Prop()
   chain: string;
   @Prop()
@@ -17,7 +17,7 @@ export class ContractSchema {
   @Prop()
   transactionhash: string;
   @Prop({ unique: true })
-  contractaddress: string;
+  contract_address: string;
   @Prop()
   baseuri: string;
   @Prop()
