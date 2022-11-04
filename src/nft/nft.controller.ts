@@ -265,7 +265,7 @@ export class NftController {
     try {
       // Fetching Contract details
       const collection = await this.nftservice.GetContract({
-        contractaddress: contract.contract_address,
+        contract_address: contract.contract_address,
       });
       // fetching all Nfts
       const nfts = await this.nftservice.get_Nfts_by_Collection(
