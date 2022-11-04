@@ -37,7 +37,11 @@ import { Bucket } from 'src/textile/helper/textileHelper';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { get_collections_body, get_Nft_body } from './nftitems/createNft.dto';
+import {
+  get_collections_body,
+  get_Nft_body,
+  paginate,
+} from './nftitems/createNft.dto';
 
 require('dotenv').config();
 
@@ -196,10 +200,15 @@ export class NftController {
   @ApiOperation({
     summary: 'This Api will gets you all the Assets',
   })
-  @Get('Get-all-nfts')
-  async GetAllNfts(): Promise<any> {
+  /** [GET ALL NFTS WITH PAGINATION]*/
+  @Get('Get-all-nfts/:page_number/:items_per_page')
+  async GetAllNfts(@Param() pagination: paginate): Promise<any> {
+    const { page_number, items_per_page } = pagination;
     try {
-      const data = await this.nftservice.GetAllNfts();
+      const data = await this.nftservice.GetAllNfts({
+        page_number,
+        items_per_page,
+      });
       if (!data) {
         return {
           message: 'There are no nfts present',
@@ -256,7 +265,7 @@ export class NftController {
     try {
       // Fetching Contract details
       const collection = await this.nftservice.GetContract({
-        contract_address: contract.contract_address,
+        contractaddress: contract.contract_address,
       });
       // fetching all Nfts
       const nfts = await this.nftservice.get_Nfts_by_Collection(

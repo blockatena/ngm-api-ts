@@ -154,7 +154,7 @@ export class NftMarketplaceService {
     // Id creation for cron job may be changed in future
     try {
       this.Cron_job.addCornJob(
-        `${contract_address}${token_id}`,
+        `${contract_address}${token_id}${bidder_address}`,
         createBid.bid_expiresin,
         async () => {
           await this.update_bid(
@@ -179,7 +179,9 @@ export class NftMarketplaceService {
         { contract_address, bidder_address, token_id, status: 'started' },
         { status: 'cancelled' },
       );
-      this.Cron_job.deleteCron(`${contract_address}${token_id}`);
+      this.Cron_job.deleteCron(
+        `${contract_address}${token_id}${bidder_address}`,
+      );
       return {
         message,
       };
@@ -261,6 +263,7 @@ export class NftMarketplaceService {
         { _id: accept_Data.offer_id },
         { offer_status: 'accepted' },
       );
+      // change owner
       // const Nft_msg = await this.update_nft({},{})
       return;
     } catch (error) {
