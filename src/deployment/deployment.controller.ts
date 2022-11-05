@@ -58,9 +58,9 @@ export class DeploymentController {
     const abi = fs.readFileSync(abiPath, 'utf-8');
     const bin = fs.readFileSync(binPath, 'utf-8');
     //
-
+    console.log('fil read completed');
     const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
-
+    console.log('connect to blockchain');
     // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
     // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
     // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
@@ -69,6 +69,7 @@ export class DeploymentController {
       deploymentBody.symbol,
       ' ',
     );
+    console.log('deployed');
     const uri =
       'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
     const confirm = await contract.deployed();
@@ -99,6 +100,7 @@ export class DeploymentController {
     });
     arr[`transactionhash`] = hash;
     arr[`contract_address`] = address;
+    arr[`description`] = deploymentBody.description;
     //  /`${uri}/${address}/`
     arr[`baseuri`] = uri;
     arr[`imageuri`] = deploymentBody.imageuri;

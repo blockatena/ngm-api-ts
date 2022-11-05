@@ -23,4 +23,6 @@ export class CreateDeploymentDto {
   readonly type: string;
   @ApiProperty({ description: 'Image of the contract for front-end' })
   readonly imageuri?: string;
+  @ApiProperty()
+  readonly description: string;
 }
