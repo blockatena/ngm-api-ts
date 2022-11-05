@@ -34,7 +34,7 @@ export class DeploymentController {
     //  create a constant ***
     if (
       (await this.deploymentService.ContractCount(
-        deploymentBody.ownerAddress,
+        deploymentBody.owner_address,
       )) > process.env.deploy_limit
     ) {
       console.log('in');
@@ -65,7 +65,7 @@ export class DeploymentController {
     // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
     // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
     let contract = await contractFactory.deploy(
-      deploymentBody.collectionName,
+      deploymentBody.collection_name,
       deploymentBody.symbol,
       ' ',
     );
@@ -86,13 +86,19 @@ export class DeploymentController {
     //
     console.log(`address: ${address}, txHash: ${hash} \n\n\n${confirm}`);
     //
-    const keys = ['ownerAddress', 'symbol', 'chain', 'collectionName', 'type'];
+    const keys = [
+      'owner_address',
+      'symbol',
+      'chain',
+      'collection_name',
+      'type',
+    ];
     const arr = {};
     keys.forEach((element) => {
       arr[`${element}`] = deploymentBody[element];
     });
     arr[`transactionhash`] = hash;
-    arr[`contractaddress`] = address;
+    arr[`contract_address`] = address;
     //  /`${uri}/${address}/`
     arr[`baseuri`] = uri;
     arr[`imageuri`] = deploymentBody.imageuri;
