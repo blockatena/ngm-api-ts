@@ -360,7 +360,7 @@ export class NftController {
       );
       console.log(collection);
       console.log('here', collection.length);
-      if (collection.length < 2) {
+      if (collection.length < 3) {
         console.log(collection.length);
         this.nftservice.PushImagesToCollection(
           body.contract_address,

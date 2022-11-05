@@ -34,7 +34,7 @@ export class DeploymentController {
     //  create a constant ***
     if (
       (await this.deploymentService.ContractCount(
-        deploymentBody.ownerAddress,
+        deploymentBody.owner_address,
       )) > process.env.deploy_limit
     ) {
       console.log('in');
@@ -58,17 +58,18 @@ export class DeploymentController {
     const abi = fs.readFileSync(abiPath, 'utf-8');
     const bin = fs.readFileSync(binPath, 'utf-8');
     //
-
+    console.log('fil read completed');
     const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
-
+    console.log('connect to blockchain');
     // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
     // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
     // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
     let contract = await contractFactory.deploy(
-      deploymentBody.collectionName,
+      deploymentBody.collection_name,
       deploymentBody.symbol,
       ' ',
     );
+    console.log('deployed');
     const uri =
       'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
     const confirm = await contract.deployed();
@@ -86,13 +87,20 @@ export class DeploymentController {
     //
     console.log(`address: ${address}, txHash: ${hash} \n\n\n${confirm}`);
     //
-    const keys = ['ownerAddress', 'symbol', 'chain', 'collectionName', 'type'];
+    const keys = [
+      'owner_address',
+      'symbol',
+      'chain',
+      'collection_name',
+      'type',
+    ];
     const arr = {};
     keys.forEach((element) => {
       arr[`${element}`] = deploymentBody[element];
     });
     arr[`transactionhash`] = hash;
-    arr[`contractaddress`] = address;
+    arr[`contract_address`] = address;
+    arr[`description`] = deploymentBody.description;
     //  /`${uri}/${address}/`
     arr[`baseuri`] = uri;
     arr[`imageuri`] = deploymentBody.imageuri;

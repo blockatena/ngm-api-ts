@@ -13,7 +13,7 @@ export class NftSchema {
   @Prop()
   token_id: string;
 
-  @Prop()
+  @Prop({ unique: true })
   meta_data_url: string;
 
   @Prop({ default: false })

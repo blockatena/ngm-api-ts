@@ -91,7 +91,7 @@ export class NftService {
   async PushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
       {
-        contractaddress: contract_address,
+        contract_address,
       },
       { $push: { imageuri: image_uri } },
     );

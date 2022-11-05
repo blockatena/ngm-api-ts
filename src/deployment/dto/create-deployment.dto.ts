@@ -7,11 +7,11 @@ export class CreateDeploymentDto {
     description: 'Owner of the contract',
     default: '0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72',
   })
-  readonly ownerAddress: string;
+  readonly owner_address: string;
   @ApiProperty({ description: 'Role of the player', enum: ['admin', 'user'] })
   readonly roles: any[];
   @ApiProperty({ default: 'Avengers' })
-  readonly collectionName: string;
+  readonly collection_name: string;
   @ApiProperty({ default: 'polygon' })
   readonly chain: string;
   @ApiProperty({
@@ -23,4 +23,6 @@ export class CreateDeploymentDto {
   readonly type: string;
   @ApiProperty({ description: 'Image of the contract for front-end' })
   readonly imageuri?: string;
+  @ApiProperty()
+  readonly description: string;
 }

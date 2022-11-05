@@ -19,6 +19,8 @@ export class ContractSchema {
   @Prop({ unique: true })
   contract_address: string;
   @Prop()
+  description: string;
+  @Prop()
   baseuri: string;
   @Prop()
   imageuri: Array<string>;
