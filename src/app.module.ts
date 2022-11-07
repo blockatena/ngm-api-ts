@@ -10,6 +10,7 @@ import { NftMarketplaceModule } from './nft-marketplace/nft-marketplace.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { CronjobService } from './cronjob/cronjob.service';
+import { MetadataModule } from './metadata/metadata.module';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -21,6 +22,7 @@ import { CronjobService } from './cronjob/cronjob.service';
     TextileModule,
     UsersModule,
     NftMarketplaceModule,
+    MetadataModule,
   ],
   providers: [CronjobService],
 })

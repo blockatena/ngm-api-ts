@@ -10,6 +10,7 @@ import { DeploymentService } from 'src/deployment/deployment.service';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NftSchema, nftSchema } from 'src/schemas/nft.schema';
+import { metadata, metadataSchema } from 'src/schemas/metadata.schema';
 
 require('dotenv').config();
 @Module({
@@ -20,6 +21,10 @@ require('dotenv').config();
       {
         name: ContractSchema.name,
         schema: contractSchema,
+      },
+      {
+        name: metadata.name,
+        schema: metadataSchema,
       },
     ]),
     JwtModule.register({
