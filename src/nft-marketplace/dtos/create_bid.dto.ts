@@ -30,3 +30,9 @@ export class Acceptbid {
   @ApiProperty()
   token_id: string;
 }
+export class GetBids {
+  @ApiProperty()
+  contract_address: string;
+  @ApiProperty()
+  token_id: string;
+}

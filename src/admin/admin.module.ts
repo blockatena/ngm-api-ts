@@ -1,0 +1,26 @@
+import { Module } from '@nestjs/common';
+import { AdminService } from './admin.service';
+import { AdminController } from './admin.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
+import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
+import { ContractSchema, contractSchema } from 'src/schemas/contract.schema';
+import { NftSchema, nftSchema } from 'src/schemas/nft.schema';
+import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
+import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: AuctionSchema.name, schema: auctionSchema },
+      { name: BidSchema.name, schema: bidSchema },
+      { name: NftSchema.name, schema: nftSchema },
+      { name: ContractSchema.name, schema: contractSchema },
+      { name: SalesSchema.name, schema: salesSchema },
+      { name: OfferSchema.name, schema: offerSchema },
+    ]),
+  ],
+  controllers: [AdminController],
+  providers: [AdminService],
+})
+export class AdminModule {}

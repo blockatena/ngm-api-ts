@@ -68,6 +68,30 @@ export class NftService {
       return { message: 'Something went Wrong' };
     }
   }
+  async GetNftsListed(listed: string): Promise<any> {
+    try {
+      if (listed == 'auction')
+        return await this.NftModel.find({ is_in_auction: true });
+      if (listed == 'sale')
+        return await this.NftModel.find({ is_in_sale: true });
+    } catch (error) {
+      return {
+        error,
+        message: 'Something went wrong in service',
+      };
+    }
+  }
+
+  async GetNftsOwned(): Promise<any> {
+    try {
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went wrong in service',
+        error,
+      };
+    }
+  }
   async getcollections() {
     return await this.ContractModel.find({});
   }
