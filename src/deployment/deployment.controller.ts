@@ -8,7 +8,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
 import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
@@ -25,7 +25,7 @@ const wallet = new ethers.Wallet(process.env.PRIV_KEY, provider);
 @Controller('deployment')
 export class DeploymentController {
   constructor(private readonly deploymentService: DeploymentService) {}
-
+@ApiOperation({summary:"This Api will create a collection"})
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
     console.log(deploymentBody);
@@ -70,11 +70,13 @@ export class DeploymentController {
       ' ',
     );
     console.log('deployed');
-    const uri =
-      'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
+    // const uri =
+    //   'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
+    const uri = process.env.API_BASE_URL || 'http://localhost:8080/';
     const confirm = await contract.deployed();
     const address = contract.address;
-    const res = await contract.setBaseURI(`${uri}/${address}/`);
+    const baseUri = `${uri}/metadata/${address}/`;
+    const res = await contract.setBaseURI(baseUri);
     const hash = confirm.deployTransaction.hash;
 
     // Contract Deployment End
@@ -102,7 +104,7 @@ export class DeploymentController {
     arr[`contract_address`] = address;
     arr[`description`] = deploymentBody.description;
     //  /`${uri}/${address}/`
-    arr[`baseuri`] = uri;
+    arr[`baseuri`] = baseUri;
     arr[`imageuri`] = deploymentBody.imageuri;
     return await this.deploymentService.InsertContract(arr);
   }

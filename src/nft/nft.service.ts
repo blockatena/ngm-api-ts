@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
+import { metadataDocument, metadata } from 'src/schemas/metadata.schema';
 import {
   createNFT,
   getNft,
@@ -18,6 +19,7 @@ export class NftService {
     private ContractModel: Model<ContractDocument>,
     private readonly httpService: HttpService,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
+    @InjectModel(metadata.name) private MetadataModel: Model<metadataDocument>,
   ) {
     NftModel;
   }
@@ -68,6 +70,30 @@ export class NftService {
       return { message: 'Something went Wrong' };
     }
   }
+  async GetNftsListed(listed: string): Promise<any> {
+    try {
+      if (listed == 'auction')
+        return await this.NftModel.find({ is_in_auction: true });
+      if (listed == 'sale')
+        return await this.NftModel.find({ is_in_sale: true });
+    } catch (error) {
+      return {
+        error,
+        message: 'Something went wrong in service',
+      };
+    }
+  }
+
+  async GetNftsOwned(): Promise<any> {
+    try {
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went wrong in service',
+        error,
+      };
+    }
+  }
   async getcollections() {
     return await this.ContractModel.find({});
   }
@@ -95,5 +121,43 @@ export class NftService {
       },
       { $push: { imageuri: image_uri } },
     );
+  }
+
+  async pushTokenUriToDocArray(
+    contract_address: string,
+    tokenUri: string,
+    tokenId: number,
+    contract_type: string,
+    chain = 'Polygon', //will use it later
+  ) {
+    const doc = await this.MetadataModel.findOne({
+      contract_address,
+      contract_type,
+      chain,
+    });
+    
+    if (doc) {
+      const doc = await this.MetadataModel.findOneAndUpdate(
+        {
+          contract_address,
+          contract_type,
+          chain,
+        },
+        {
+          $addToSet: {
+            tokenUri: { tokenId, uri: tokenUri },
+          },
+        },
+      );
+      return doc;
+    } else {
+      const metadata = await this.MetadataModel.create({
+        contract_address,
+        contract_type,
+        tokenUri: [{ tokenId, uri: tokenUri }],
+        chain,
+      });
+      return metadata;
+    }
   }
 }
