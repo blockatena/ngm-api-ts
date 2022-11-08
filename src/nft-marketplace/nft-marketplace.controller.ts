@@ -10,7 +10,12 @@ import {
   CreateAuctionBody,
   get_All_Bids,
 } from './dtos/create_auction.dto';
-import { Acceptbid, CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
+import {
+  Acceptbid,
+  CancelBidBody,
+  CreateBidBody,
+  GetBids,
+} from './dtos/create_bid.dto';
 import { NftMarketplaceService } from './nft-marketplace.service';
 import { Cancel_Sale_Body, Create_Sale_Body } from './dtos/create-sale.dto';
 @ApiTags('market-place')
@@ -90,11 +95,6 @@ export class NftMarketplaceController {
       contract_address,
     } = Create_Bid;
     try {
-      // is bidder exists
-      //write code here
-
-      //
-      // wallet adderes
       const is_nft_exists = await this.nftMarketplaceService.get_Nft({
         token_id,
         contract_address,
@@ -122,6 +122,7 @@ export class NftMarketplaceController {
       }
 
       const is_already_bidded = await this.nftMarketplaceService.get_bid({
+        bidder_address,
         contract_address,
         token_id,
         status: 'started',
@@ -157,6 +158,7 @@ export class NftMarketplaceController {
   @Post('accept-bid')
   async accept_bid(@Body() body: Acceptbid) {
     try {
+      console.log(body);
       const { contract_address, token_id, token_owner, bidder_address } = body;
       const auction_data = await this.nftMarketplaceService.get_auction({
         contract_address,
@@ -208,7 +210,33 @@ export class NftMarketplaceController {
       };
     }
   }
-
+  @ApiOperation({
+    summary: 'This Api will get all the bids of particular Auction',
+  })
+  @Get('get-bids-of-auction')
+  async GetBidsOfAuction(body: GetBids): Promise<any> {
+    // that nft is present
+    // That nft is in auction ?
+    // check bids question ?
+    try {
+      const { contract_address, token_id } = body;
+      const check_nft = await this.nftMarketplaceService.get_Nft({
+        contract_address,
+        token_id,
+      });
+      if (!check_nft) {
+        return `check contract address is correct or not .May be that Nft might not be existed`;
+      }
+      if (!check_nft.is_in_auction) {
+        return `Nft is not in Auction`;
+      }
+    } catch (error) {
+      console.log(error);
+      return {
+        message: '',
+      };
+    }
+  }
   /******************[ SALE AND OFFER ]******************************** */
   @ApiOperation({
     summary: 'This Api will put your Nft in sale with Timer',

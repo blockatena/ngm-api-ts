@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { AuctionDocument, AuctionSchema } from 'src/schemas/auction.schema';
 import { BidDocument, BidSchema } from 'src/schemas/bid.schema';
 import { CreateAuctionBody } from './dtos/create_auction.dto';
-import { CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
+import { CancelBidBody, CreateBidBody, GetBids } from './dtos/create_bid.dto';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';
@@ -154,7 +154,7 @@ export class NftMarketplaceService {
     // Id creation for cron job may be changed in future
     try {
       this.Cron_job.addCornJob(
-        `${contract_address}${token_id}`,
+        `${contract_address}${token_id}${bidder_address}`,
         createBid.bid_expiresin,
         async () => {
           await this.update_bid(
@@ -179,7 +179,9 @@ export class NftMarketplaceService {
         { contract_address, bidder_address, token_id, status: 'started' },
         { status: 'cancelled' },
       );
-      this.Cron_job.deleteCron(`${contract_address}${token_id}`);
+      this.Cron_job.deleteCron(
+        `${contract_address}${token_id}${bidder_address}`,
+      );
       return {
         message,
       };
@@ -191,6 +193,13 @@ export class NftMarketplaceService {
         contact: 'emailaddress@gmail.com',
       };
     }
+  }
+  /************[GET BIDS FOR AUCTION]**********/
+  async GetBidsForAuction(bid: GetBids): Promise<any> {
+    try {
+      const { contract_address, token_id } = bid;
+      const bid_data = await this.BidModel.find({ contract_address, token_id });
+    } catch (error) {}
   }
   /***************************/
   /******************[CREATE SALE]**************/
@@ -261,6 +270,7 @@ export class NftMarketplaceService {
         { _id: accept_Data.offer_id },
         { offer_status: 'accepted' },
       );
+      // change owner
       // const Nft_msg = await this.update_nft({},{})
       return;
     } catch (error) {

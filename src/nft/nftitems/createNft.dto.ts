@@ -28,3 +28,9 @@ export class get_Nft_body {
   @ApiProperty()
   readonly token_id: string;
 }
+export class paginate {
+  @ApiProperty()
+  readonly page_number: number;
+  @ApiProperty()
+  readonly items_per_page: number;
+}
