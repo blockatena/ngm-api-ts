@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, PromiseProvider, Types } from 'mongoose';
+import { type } from 'os';
 export type NftDocument = NftSchema & Document;
 
 @Schema({ timestamps: true })
@@ -21,6 +22,15 @@ export class NftSchema {
 
   @Prop()
   token_owner: string;
+
+  @Prop({ type: Object })
+  meta_data: {
+    name: string;
+    description: string;
+    attributes: string;
+    external_url: string;
+    image: string;
+  };
 }
 
 export const nftSchema = SchemaFactory.createForClass(NftSchema);
