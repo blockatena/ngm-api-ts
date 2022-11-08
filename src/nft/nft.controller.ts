@@ -54,6 +54,7 @@ const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
 const ipfsDecorator = 'ipfs://';
 const token = process.env.NFT_STORAGE_KEY;
 const wallet = new ethers.Wallet(process.env.PRIV_KEY, mum_provider);
+const storage = new NFTStorage({ token });
 
 @ApiTags('NGM APIs')
 @Controller('nft')
@@ -105,8 +106,6 @@ export class NftController {
   ) {
     try {
       console.log(file);
-
-      const storage = new NFTStorage({ token });
       const blob = new Blob([file.buffer]);
       const toUploadFile = new File([blob], `/${file.originalname}`, {
         type: file.mimetype,
@@ -316,7 +315,6 @@ export class NftController {
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
     try {
-      const buckInstance = new Bucket();
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           body.contract_address,
@@ -331,7 +329,7 @@ export class NftController {
 
       // mint token using ethersjs
       const nftCntr = new ethers.Contract(body.contract_address, abi, wallet); // abi and provider to be declared
-      console.log('nftContract: ', nftCntr);
+      // console.log('nftContract: ', nftCntr);
       const mintToken = await nftCntr.mint(body.token_owner, 1);
       const res = await mintToken.wait(1);
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
@@ -343,15 +341,24 @@ export class NftController {
         external_uri: body.external_uri || '',
         attributes: body.attributes,
       };
-      const response = await buckInstance.pushJSON(
-        String(tokenId),
-        jsonData,
-        body.contract_address,
-      );
-      const textileUri =
-        'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
-      const meta_data_url = `${textileUri}/${body.contract_address}/${tokenId}.json`;
+      const jsonBlob = new Blob([JSON.stringify(jsonData)])
+      const cid = await storage.storeBlob(jsonBlob)
+      const nftStorageUri = `https://nftstorage.link/ipfs`
+      const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
+      console.log(baseApiUri,'baseApiUri')
+      const meta_data_url = `${baseApiUri}/metadata/${body.contract_address}/${tokenId}`;
+      const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
+      /**********saving in Db************/
 
+      /******for collection metadata******/
+      console.log('ipfsMetadataUri', ipfsMetadataUri);
+      
+      const metadata = await this.nftservice.pushTokenUriToDocArray(
+        body.contract_address,
+        ipfsMetadataUri,
+        tokenId,
+        body.contract_type,
+      )
       /**********saving in Db************/
 
       /******for collection Images******/
