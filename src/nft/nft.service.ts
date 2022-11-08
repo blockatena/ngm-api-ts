@@ -7,6 +7,7 @@ import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { metadataDocument, metadata } from 'src/schemas/metadata.schema';
 import {
   createNFT,
+  GetListedCollections,
   getNft,
   get_Nft_body,
   paginate,
@@ -64,7 +65,12 @@ export class NftService {
   // To get single Nft
   async GetNft(data: get_Nft_body): Promise<any> {
     try {
-      return await this.NftModel.findOne(data);
+      const nft = await this.NftModel.findOne(data);
+      const contract_details = await this.GetContract({
+        contract_address: data.contract_address,
+      });
+
+      return { contract_details, nft };
     } catch (error) {
       console.log(error);
       return { message: 'Something went Wrong' };
@@ -99,6 +105,44 @@ export class NftService {
   }
   async get_Nfts_by_Collection(Contract_Address: string): Promise<any> {
     return await this.NftModel.find({ contract_address: Contract_Address });
+  }
+  async GetNftssListed(data: GetListedCollections): Promise<any> {
+    const {
+      contract_address,
+      listed_in,
+      page_number,
+      items_per_page,
+      order,
+      alphabetical_order,
+    } = data;
+    try {
+      console.log(
+        contract_address,
+        listed_in,
+        page_number,
+        items_per_page,
+        order,
+        alphabetical_order,
+      );
+      const filter =
+        listed_in == 'auction' ? { is_in_auction: true } : { is_in_sale: true };
+      // 'OldToNew', 'NewToOld';
+      //'AtoZ', 'ZtoA';
+      // const orderr = alphabetical_order == 'ZtoA' ? -1 : 1;
+      console.log(filter);
+      const recent = order == 'NewToOld' ? -1 : 1;
+      console.log(recent);
+      return await this.NftModel.find({ contract_address, ...filter })
+        .sort({ createdAt: recent })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
+      //
+      //
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong', error };
+    }
   }
   async getUniqueOwners(contract_address: string): Promise<any> {
     try {
@@ -135,7 +179,7 @@ export class NftService {
       contract_type,
       chain,
     });
-    
+
     if (doc) {
       const doc = await this.MetadataModel.findOneAndUpdate(
         {

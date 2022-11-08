@@ -10,10 +10,6 @@ export class NftSchema {
   contract_type: string;
   @Prop()
   token_id: string;
-
-  @Prop({ type: Object })
-  contract_details: Object;
-
   @Prop({ unique: true })
   meta_data_url: string;
 
