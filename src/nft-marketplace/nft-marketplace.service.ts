@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { AuctionDocument, AuctionSchema } from 'src/schemas/auction.schema';
 import { BidDocument, BidSchema } from 'src/schemas/bid.schema';
 import { CreateAuctionBody } from './dtos/create_auction.dto';
-import { CancelBidBody, CreateBidBody } from './dtos/create_bid.dto';
+import { CancelBidBody, CreateBidBody, GetBids } from './dtos/create_bid.dto';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';
@@ -193,6 +193,13 @@ export class NftMarketplaceService {
         contact: 'emailaddress@gmail.com',
       };
     }
+  }
+  /************[GET BIDS FOR AUCTION]**********/
+  async GetBidsForAuction(bid: GetBids): Promise<any> {
+    try {
+      const { contract_address, token_id } = bid;
+      const bid_data = await this.BidModel.find({ contract_address, token_id });
+    } catch (error) {}
   }
   /***************************/
   /******************[CREATE SALE]**************/

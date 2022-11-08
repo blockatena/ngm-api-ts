@@ -253,7 +253,18 @@ export class NftController {
     //  is this route available to all
     return await this.nftservice.getcollections();
   }
-
+  /******************************[GET_NFTS_IN_AUCTION]******************/
+  @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
+  @Get('get-nfts-listed/:listed')
+  async GetNftsListed(@Param('listed') listed: string): Promise<any> {
+    try {
+      const data = await this.nftservice.GetNftsListed(listed);
+      return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong in controller', error };
+    }
+  }
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
   @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
   @Get('collection/:contract_address')
@@ -319,7 +330,13 @@ export class NftController {
         await this.deploymentService.getContractDetailsByContractAddress(
           body.contract_address,
         );
+
       const type = contract_details.type;
+      //
+      if (body.contract_type != type) {
+        return `The contract is of type ${type} but you entered ${body.contract_type}`;
+      }
+      //
       const abiPath = path.join(
         process.cwd(),
         `src/utils/constants/${type}/${type}.abi`,
@@ -367,6 +384,7 @@ export class NftController {
       );
       console.log(collection);
       console.log('here', collection.length);
+
       if (collection.length < 3) {
         console.log(collection.length);
         this.nftservice.PushImagesToCollection(
@@ -379,6 +397,7 @@ export class NftController {
         contract_address: body.contract_address,
         contract_type: body.contract_type || 'NGM721PSI',
         token_id: tokenId,
+        contract_details,
         meta_data_url: meta_data_url,
         is_in_auction: false,
         token_owner: body.token_owner,

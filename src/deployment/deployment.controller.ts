@@ -8,7 +8,7 @@ import {
   Param,
   Delete,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
 import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
@@ -25,7 +25,7 @@ const wallet = new ethers.Wallet(process.env.PRIV_KEY, provider);
 @Controller('deployment')
 export class DeploymentController {
   constructor(private readonly deploymentService: DeploymentService) {}
-
+@ApiOperation({summary:"This Api will create a collection"})
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
     console.log(deploymentBody);
