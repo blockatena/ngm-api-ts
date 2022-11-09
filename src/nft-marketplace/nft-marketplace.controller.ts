@@ -73,19 +73,37 @@ export class NftMarketplaceController {
   @ApiOperation({
     summary: 'This Api Cancels the Auction',
   })
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully Cancelled the Auction',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Something went Wrong',
+  })
   @Post('cancel-auction')
   async CancelAuction(@Body() auction_id: CancelAuctionBody): Promise<any> {
-    return await this.nftMarketplaceService.CancelAuction(
-      auction_id.contract_address,
-      auction_id.token_id,
-    );
+    const { contract_address, token_id } = auction_id;
+    try {
+      return await this.nftMarketplaceService.CancelAuction(
+        contract_address,
+        token_id,
+      );
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went Wrong',
+        error,
+      };
+    }
   }
+  /******** */
   /*********************[CREATE-BID]***********************/
   @ApiOperation({
     summary: 'This Api will  Place a bid for an NFT which is in auction',
   })
   @Post('place-nft-bid')
-  async CreateBid(@Body() Create_Bid: CreateBidBody) {
+  async CreateBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
     const {
       token_id,
@@ -93,7 +111,7 @@ export class NftMarketplaceController {
       bidder_address,
       bid_expiresin,
       contract_address,
-    } = Create_Bid;
+    } = create_bid;
     try {
       const is_nft_exists = await this.nftMarketplaceService.get_Nft({
         token_id,
@@ -132,7 +150,7 @@ export class NftMarketplaceController {
         return 'You alread bidded for that Nft want to lower the price ?';
       }
       console.log('no problem in controller');
-      return await this.nftMarketplaceService.CreateBid(Create_Bid);
+      return await this.nftMarketplaceService.CreateBid(create_bid);
     } catch (error) {
       console.log(error);
       return {
