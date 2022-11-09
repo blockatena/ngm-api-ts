@@ -116,6 +116,7 @@ export class NftMarketplaceController {
     //  nft_id auction id bidding price
     const { token_id, bid_amount, bidder_address, contract_address } =
       create_bid;
+
     try {
       const is_nft_exists = await this.nftMarketplaceService.GetNft({
         token_id,
@@ -155,6 +156,7 @@ export class NftMarketplaceController {
       }
       console.log('no problem in controller');
       return await this.nftMarketplaceService.createBid(create_bid);
+
     } catch (error) {
       console.log(error);
       return {

@@ -423,6 +423,7 @@ export class NftController {
         is_in_auction: false,
         token_owner: body.token_owner,
         meta_data: jsonData,
+
       };
       console.log(arrdb);
 
