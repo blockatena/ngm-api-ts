@@ -42,11 +42,11 @@ export class NftMarketplaceController {
 
     console.log(Create_Auction);
 
-    const checkCretedetials = { token_owner, token_id };
+    const checkCredentials = { token_owner, token_id };
     // if he/she is the owner then only he/she can put the nft ITEM on Auction
     try {
-      let check_is_owner = await this.nftMarketplaceService.get_Nft(
-        checkCretedetials,
+      let check_is_owner = await this.nftMarketplaceService.GetNft(
+        checkCredentials,
       );
       if (!check_is_owner) {
         return 'You are not the owner of the NFT';
@@ -66,7 +66,7 @@ export class NftMarketplaceController {
       return await this.nftMarketplaceService.CreateAuction(Create_Auction);
     } catch (err) {
       console.log(err);
-      return 'something wrontg in the system';
+      return 'something wrong in the system';
     }
   }
   /*********************[CANCEL-AUCTION]*******************/
@@ -102,6 +102,14 @@ export class NftMarketplaceController {
   @ApiOperation({
     summary: 'This Api will  Place a bid for an NFT which is in auction',
   })
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully created the bid',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Post('place-nft-bid')
   async CreateBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
@@ -113,7 +121,7 @@ export class NftMarketplaceController {
       contract_address,
     } = create_bid;
     try {
-      const is_nft_exists = await this.nftMarketplaceService.get_Nft({
+      const is_nft_exists = await this.nftMarketplaceService.GetNft({
         token_id,
         contract_address,
       });
@@ -125,7 +133,7 @@ export class NftMarketplaceController {
         return 'Nft is not available for auction';
       }
       console.log(is_nft_exists.is_in_auction);
-      const is_auction_exists = await this.nftMarketplaceService.get_auction({
+      const is_auction_exists = await this.nftMarketplaceService.GetAuction({
         contract_address,
         token_id,
         status: 'started',
@@ -162,6 +170,14 @@ export class NftMarketplaceController {
   @ApiOperation({
     summary: 'This Api will Cancel  a bid for an NFT which is in auction',
   })
+  @ApiResponse({
+    status: 201,
+    description: 'The bid is cancelled for the NFT',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Post('cancel-bid')
   async CancelBid(@Body() body: CancelBidBody) {
     //  write validations
@@ -173,12 +189,17 @@ export class NftMarketplaceController {
 
   /*********************[ACCEPT-BID]***********************/
   @ApiOperation({ summary: 'This Api will accept a bid ' })
+  @ApiResponse({
+    status: 201,
+    description: 'This Bid is acccepted',
+  })
+  @ApiResponse({ status: 400, description: 'Something went wrong' })
   @Post('accept-bid')
-  async accept_bid(@Body() body: Acceptbid) {
+  async AcceptBid(@Body() body: Acceptbid) {
     try {
       console.log(body);
       const { contract_address, token_id, token_owner, bidder_address } = body;
-      const auction_data = await this.nftMarketplaceService.get_auction({
+      const auction_data = await this.nftMarketplaceService.GetAuction({
         contract_address,
         token_id,
         token_owner,
@@ -188,7 +209,7 @@ export class NftMarketplaceController {
         return 'Invalid Auction Id, Please check auction is present or not';
       }
       // validate Nft
-      const nft_data = await this.nftMarketplaceService.get_Nft({
+      const nft_data = await this.nftMarketplaceService.GetNft({
         token_id,
         token_owner,
       });
@@ -238,7 +259,7 @@ export class NftMarketplaceController {
     // check bids question ?
     try {
       const { contract_address, token_id } = body;
-      const check_nft = await this.nftMarketplaceService.get_Nft({
+      const check_nft = await this.nftMarketplaceService.GetNft({
         contract_address,
         token_id,
       });
@@ -264,7 +285,7 @@ export class NftMarketplaceController {
     const { token_owner, contract_address, token_id, price } = body;
     try {
       //is Nft Exists
-      const CHECK_NFT_EXISTS = await this.nftMarketplaceService.get_Nft({
+      const CHECK_NFT_EXISTS = await this.nftMarketplaceService.GetNft({
         contract_address,
         token_id,
       });

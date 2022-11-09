@@ -114,7 +114,7 @@ export class NftMarketplaceService {
 
     try {
       this.Cron_job.deleteCron(cronjob_id);
-      const auction_data = await this.get_auction({
+      const auction_data = await this.GetAuction({
         contract_address,
         token_id,
         status: 'started',
@@ -304,7 +304,7 @@ export class NftMarketplaceService {
     return data;
   }
 
-  async get_Nft(details: any): Promise<any> {
+  async GetNft(details: any): Promise<any> {
     console.log(details);
     return await this.NftModel.findOne(details);
   }
@@ -335,7 +335,7 @@ export class NftMarketplaceService {
   async get_all_Nfts_inauction() {
     return await this.NftModel.findOne({ is_in_auction: true });
   }
-  async get_auction(details: any): Promise<any> {
+  async GetAuction(details: any): Promise<any> {
     return await this.AuctionModel.findOne(details);
   }
   async get_bid(details: any): Promise<any> {
