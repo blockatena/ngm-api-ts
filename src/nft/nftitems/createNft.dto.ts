@@ -34,3 +34,17 @@ export class paginate {
   @ApiProperty()
   readonly items_per_page: number;
 }
+export class GetListedCollections {
+  @ApiProperty()
+  contract_address: string;
+  @ApiProperty()
+  listed_in: string;
+  @ApiProperty()
+  page_number: number;
+  @ApiProperty()
+  items_per_page: number;
+  @ApiProperty({ enum: ['OldToNew', 'NewToOld'] })
+  order: string;
+  @ApiProperty({ enum: ['AtoZ', 'ZtoA'] })
+  alphabetical_order: string;
+}

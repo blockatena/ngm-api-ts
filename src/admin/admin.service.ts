@@ -8,6 +8,7 @@ import { ContractSchema, ContractDocument } from 'src/schemas/contract.schema';
 import { NftSchema, NftDocument } from 'src/schemas/nft.schema';
 import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
 import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
+import { DeleteKeyBody } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {
@@ -40,9 +41,20 @@ export class AdminService {
   async UpdateNft(body: any, updatee: any): Promise<any> {
     return await this.NftModel.updateMany(body, { $set: updatee });
   }
+  async DeleteKey(body: DeleteKeyBody): Promise<any> {
+    const { key } = body;
+
+    return this.NftModel.updateMany(
+      {},
+      { $unset: { contract_details: 1 } },
+      { multi: true },
+    ).exec(function (err) {
+      console.log(err);
+    });
+  }
   async GetNft(body: any): Promise<any> {}
   async GetCollection(body: any): Promise<any> {
-    return await this.ContractModel.findOne(body);
+    // return await this.ContractModel.;
   }
   async GetSale(body: any): Promise<any> {}
   async GetAuction(body: any): Promise<any> {}

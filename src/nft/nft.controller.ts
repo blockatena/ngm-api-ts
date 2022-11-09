@@ -24,7 +24,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
-import { baycAbi } from './abi';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -33,11 +32,11 @@ import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { mintToken } from './nftitems/mintToken.dto';
-import { Bucket } from 'src/textile/helper/textileHelper';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import {
+  GetListedCollections,
   get_collections_body,
   get_Nft_body,
   paginate,
@@ -219,6 +218,7 @@ export class NftController {
       return { message: 'Something went wrong' };
     }
   }
+  //
   @ApiOperation({
     summary:
       'This Api will gets you Specific asset given by contract_address and Token_id in Params',
@@ -253,13 +253,32 @@ export class NftController {
     //  is this route available to all
     return await this.nftservice.getcollections();
   }
-  /******************************[GET_NFTS_IN_AUCTION]******************/
+  /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
-  @Get('get-nfts-listed/:listed')
-  async GetNftsListed(@Param('listed') listed: string): Promise<any> {
+  @Get('get-nfts-listed/:listed_in')
+  async GetNftsListed(@Param('listed_in') listed: string): Promise<any> {
     try {
       const data = await this.nftservice.GetNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong in controller', error };
+    }
+  }
+  /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
+  @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
+  @Post('get-nfts-listed-collection')
+  async GetNftsListedCollection(
+    @Body() Collections_listed: GetListedCollections,
+  ): Promise<any> {
+    try {
+      console.log(Collections_listed);
+      const get_nfts = await this.nftservice.GetNftssListed({
+        ...Collections_listed,
+      });
+      //
+
+      return get_nfts;
     } catch (error) {
       console.log(error);
       return { message: 'something went wrong in controller', error };
@@ -358,24 +377,24 @@ export class NftController {
         external_uri: body.external_uri || '',
         attributes: body.attributes,
       };
-      const jsonBlob = new Blob([JSON.stringify(jsonData)])
-      const cid = await storage.storeBlob(jsonBlob)
-      const nftStorageUri = `https://nftstorage.link/ipfs`
+      const jsonBlob = new Blob([JSON.stringify(jsonData)]);
+      const cid = await storage.storeBlob(jsonBlob);
+      const nftStorageUri = `https://nftstorage.link/ipfs`;
       const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
-      console.log(baseApiUri,'baseApiUri')
+      console.log(baseApiUri, 'baseApiUri');
       const meta_data_url = `${baseApiUri}/metadata/${body.contract_address}/${tokenId}`;
       const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
       /**********saving in Db************/
 
       /******for collection metadata******/
       console.log('ipfsMetadataUri', ipfsMetadataUri);
-      
+
       const metadata = await this.nftservice.pushTokenUriToDocArray(
         body.contract_address,
         ipfsMetadataUri,
         tokenId,
         body.contract_type,
-      )
+      );
       /**********saving in Db************/
 
       /******for collection Images******/
