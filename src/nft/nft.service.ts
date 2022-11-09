@@ -12,6 +12,7 @@ import {
   get_Nft_body,
   paginate,
 } from './nftitems/createNft.dto';
+import { ignoreElements } from 'rxjs';
 
 @Injectable()
 export class NftService {
@@ -124,21 +125,34 @@ export class NftService {
         order,
         alphabetical_order,
       );
-      const filter =
-        listed_in == 'auction' ? { is_in_auction: true } : { is_in_sale: true };
-      // 'OldToNew', 'NewToOld';
-      //'AtoZ', 'ZtoA';
-      const orderr = alphabetical_order == 'ZtoA' ? -1 : 1;
-      console.log(filter);
+      const alpha_order = alphabetical_order == 'ZtoA' ? -1 : 1;
+
       const recent = order == 'NewToOld' ? -1 : 1;
-      console.log(recent);
-      return await this.NftModel.find({ contract_address, ...filter })
-        .sort({ createdAt: recent, 'meta_data.name': orderr })
+      console.log(recent, alpha_order);
+      const condition = {};
+      if (listed_in) {
+        condition[`filter`] =
+          listed_in == 'auction'
+            ? { is_in_auction: true }
+            : { is_in_sale: true };
+      }
+      if (contract_address) {
+        condition[`contract_address`] = contract_address;
+      }
+      const sort_order = {};
+      if (order) {
+        sort_order['createdAt'] = recent;
+      }
+      if (alphabetical_order) {
+        sort_order['meta_data.name'] = alpha_order;
+      }
+      console.log(sort_order);
+      console.log('condition', condition);
+      return await this.NftModel.find(condition)
+        .sort({ ...sort_order })
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
-      //
-      //
     } catch (error) {
       console.log(error);
       return { message: 'something went wrong', error };

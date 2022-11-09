@@ -8,11 +8,12 @@ import { ContractSchema, ContractDocument } from 'src/schemas/contract.schema';
 import { NftSchema, NftDocument } from 'src/schemas/nft.schema';
 import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
 import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
-import { DeleteKeyBody } from './dto/admin.dto';
+import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {
   constructor(
+    private Cron_job: CronjobService,
     @InjectModel(ContractSchema.name)
     private ContractModel: Model<ContractDocument>,
     @InjectModel(AuctionSchema.name)
@@ -42,11 +43,11 @@ export class AdminService {
     return await this.NftModel.updateMany(body, { $set: updatee });
   }
   async DeleteKey(body: DeleteKeyBody): Promise<any> {
-    const { key } = body;
+    const { key, id } = body;
 
     return this.NftModel.updateMany(
-      {},
-      { $unset: { contract_details: 1 } },
+      { _id: id },
+      { $unset: { meta_data: 1 } },
       { multi: true },
     ).exec(function (err) {
       console.log(err);
@@ -58,4 +59,7 @@ export class AdminService {
   }
   async GetSale(body: any): Promise<any> {}
   async GetAuction(body: any): Promise<any> {}
+  async deleteCron(cronjob_id: DeleteCronBody): Promise<any> {
+    return this.Cron_job.deleteCron(cronjob_id.cron_job_id);
+  }
 }
