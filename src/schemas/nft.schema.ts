@@ -24,13 +24,7 @@ export class NftSchema {
   token_owner: string;
 
   @Prop({ type: Object })
-  meta_data: {
-    name: string;
-    description: string;
-    attributes: string;
-    external_url: string;
-    image: string;
-  };
+  meta_data: Object;
 }
 
 export const nftSchema = SchemaFactory.createForClass(NftSchema);

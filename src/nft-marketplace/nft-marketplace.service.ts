@@ -10,11 +10,7 @@ import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';
 import { Cancel_Sale_Body, Create_Sale_Body } from './dtos/create-sale.dto';
 import { SalesDocument, SalesSchema } from 'src/schemas/sales.schema';
-import {
-  OfferDocument,
-  offerSchema,
-  OfferSchema,
-} from 'src/schemas/offer.schema';
+import { OfferDocument, OfferSchema } from 'src/schemas/offer.schema';
 import {
   accept_Offer_Body,
   create_Offer_Body,
@@ -41,7 +37,7 @@ export class NftMarketplaceService {
     OfferModel;
   }
   /*********************[AUCTION-SERVICES]**********************/
-  async CreateAuction(createAuction: CreateAuctionBody): Promise<any> {
+  async createAuction(createAuction: CreateAuctionBody): Promise<any> {
     try {
       await this.update_nft(
         {
@@ -104,7 +100,7 @@ export class NftMarketplaceService {
     }
   }
   /*********[CANCEL-AUCTION-SERVICE]*******/
-  async CancelAuction(
+  async cancelAuction(
     contract_address: string,
     token_id: string,
   ): Promise<any> {
@@ -114,7 +110,7 @@ export class NftMarketplaceService {
 
     try {
       this.Cron_job.deleteCron(cronjob_id);
-      const auction_data = await this.get_auction({
+      const auction_data = await this.getAuction({
         contract_address,
         token_id,
         status: 'started',
@@ -148,7 +144,7 @@ export class NftMarketplaceService {
   }
   /************************************/
   /****************[BID_SERVICES]*************/
-  async CreateBid(createBid: CreateBidBody): Promise<any> {
+  async createBid(createBid: CreateBidBody): Promise<any> {
     const { token_id, contract_address, bid_expiresin, bidder_address } =
       createBid;
     // Id creation for cron job may be changed in future
@@ -172,7 +168,7 @@ export class NftMarketplaceService {
     }
   }
   /**********[CANCEL-BID-SERVICE]*********/
-  async CancelBid(bid_data: CancelBidBody): Promise<any> {
+  async cancelBid(bid_data: CancelBidBody): Promise<any> {
     const { contract_address, bidder_address, token_id } = bid_data;
     try {
       const message = await this.update_bid(
@@ -195,7 +191,7 @@ export class NftMarketplaceService {
     }
   }
   /************[GET BIDS FOR AUCTION]**********/
-  async GetBidsForAuction(bid: GetBids): Promise<any> {
+  async getBidsForAuction(bid: GetBids): Promise<any> {
     try {
       const { contract_address, token_id } = bid;
       const bid_data = await this.BidModel.find({ contract_address, token_id });
@@ -203,7 +199,7 @@ export class NftMarketplaceService {
   }
   /***************************/
   /******************[CREATE SALE]**************/
-  async CreateSale(sale: Create_Sale_Body): Promise<any> {
+  async createSale(sale: Create_Sale_Body): Promise<any> {
     // save in DB
     const save_in_db = await (await this.SalesModel.create(sale)).save();
     //create cron job
@@ -212,7 +208,7 @@ export class NftMarketplaceService {
       sale.end_date,
       async () => {
         console.log('sale ended');
-        await this.UpdateSale({ _id: save_in_db._id }, { status: 'ended' });
+        await this.updateSale({ _id: save_in_db._id }, { status: 'ended' });
         await this.update_nft(
           {
             contract_address: sale.contract_address,
@@ -229,12 +225,12 @@ export class NftMarketplaceService {
     );
     return { save_in_db, update_nft };
   }
-  async CancelSale(cancel: Cancel_Sale_Body): Promise<any> {
+  async cancelSale(cancel: Cancel_Sale_Body): Promise<any> {
     //delete cron job
     try {
       this.Cron_job.deleteCron(cancel.cronjob_id);
       //update status of the sale
-      const sales_update = await this.UpdateSale(
+      const sales_update = await this.updateSale(
         { _id: cancel.sale_id },
         { status: 'cancelled' },
       );
@@ -252,21 +248,21 @@ export class NftMarketplaceService {
     }
   }
   //CRUD for sale schema
-  async GetSale(saleData: any) {
+  async getSale(saleData: any) {
     return await this.SalesModel.findOne({ _id: saleData });
   }
-  async UpdateSale(data: any, update_data: any) {
+  async updateSale(data: any, update_data: any) {
     await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
   }
 
   //************************************************* */
   //********[CREATE-OFFER]*******/
-  async CreateOffer(offer: create_Offer_Body) {
+  async createOffer(offer: create_Offer_Body) {
     return await (await this.OfferModel.create(offer)).save();
   }
-  async AcceptOffer(accept_Data: accept_Offer_Body) {
+  async acceptOffer(accept_Data: accept_Offer_Body) {
     try {
-      const offer_msg = await this.UpdateOffer(
+      const offer_msg = await this.updateOffer(
         { _id: accept_Data.offer_id },
         { offer_status: 'accepted' },
       );
@@ -281,13 +277,13 @@ export class NftMarketplaceService {
       };
     }
   }
-  async GetOffer(offer_Data: any): Promise<any> {
+  async getOffer(offer_Data: any): Promise<any> {
     return await this.OfferModel.findOne(offer_Data);
   }
-  async GetAllOffers(saleData: get_all_offers_Body) {
+  async getAllOffers(saleData: get_all_offers_Body) {
     return await this.OfferModel.find({ sale_id: saleData.sale_id });
   }
-  async UpdateOffer(offer_data: Object, update_data: Object) {
+  async updateOffer(offer_data: Object, update_data: Object) {
     return await this.OfferModel.findOneAndUpdate(offer_data, {
       $set: update_data,
     });
@@ -304,8 +300,8 @@ export class NftMarketplaceService {
     return data;
   }
 
-  async get_Nft(details: any): Promise<any> {
-    console.log(details);
+  async GetNft(details: any): Promise<any> {
+    console.log('From service', details);
     return await this.NftModel.findOne(details);
   }
   async update_bid(condition: Object, values: Object) {
@@ -335,7 +331,7 @@ export class NftMarketplaceService {
   async get_all_Nfts_inauction() {
     return await this.NftModel.findOne({ is_in_auction: true });
   }
-  async get_auction(details: any): Promise<any> {
+  async getAuction(details: any): Promise<any> {
     return await this.AuctionModel.findOne(details);
   }
   async get_bid(details: any): Promise<any> {

@@ -13,7 +13,7 @@ export class BidSchema {
   @Prop()
   bid_amount: number;
   @Prop()
-  bid_expiresin: string;
+  bid_expires_in: string;
   @Prop({ default: false })
   is_auction_ended: boolean;
   @Prop()

@@ -1,7 +1,12 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
-import { DeleteKeyBody, EmptyCollection, UpdateNft } from './dto/admin.dto';
+import {
+  DeleteCronBody,
+  DeleteKeyBody,
+  EmptyCollection,
+  UpdateNft,
+} from './dto/admin.dto';
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
@@ -13,20 +18,23 @@ export class AdminController {
   }
   @Post('update-nft')
   async UpdateNft(@Body() body: UpdateNft): Promise<any> {
-    // const { contract_address } = body;
-    // const data = await this.adminService.GetCollection({ contract_address });
-    // console.log(data);
-    // return await this.adminService.UpdateNft(
-    //   { contract_address },
-    //   { contract_details: data },
-    // );
+    const { id, json } = body;
+
+    return await this.adminService.UpdateNft({ _id: id }, { meta_data: json });
     return `you are not admin`;
   }
   @Post('delete-key')
   async DeleteKey(@Body() body: DeleteKeyBody): Promise<any> {
-    // const { key } = body;
-    // console.log(key);
-    // return await this.adminService.DeleteKey({ key });
-    return `you are not admin`;
+    const { key, id } = body;
+    console.log(key);
+    return await this.adminService.DeleteKey({ key, id });
+    // return `you are not admin`;
+  }
+
+  @Post('delete-cron')
+  async deleteCron(@Body() cronjob_id: DeleteCronBody): Promise<any> {
+    try {
+      return this.adminService.deleteCron(cronjob_id);
+    } catch (error) {}
   }
 }
