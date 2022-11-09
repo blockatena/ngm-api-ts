@@ -24,7 +24,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
-import { baycAbi } from './abi';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -33,7 +32,6 @@ import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { mintToken } from './nftitems/mintToken.dto';
-import { Bucket } from 'src/textile/helper/textileHelper';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
