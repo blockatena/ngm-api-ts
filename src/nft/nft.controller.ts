@@ -345,11 +345,12 @@ export class NftController {
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
     try {
+      console.log(body);
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           body.contract_address,
         );
-
+      console.log(contract_details);
       const type = contract_details.type;
       //
       if (body.contract_type != type) {
@@ -403,7 +404,6 @@ export class NftController {
       );
       console.log(collection);
       console.log('here', collection.length);
-
       if (collection.length < 3) {
         console.log(collection.length);
         this.nftservice.PushImagesToCollection(
@@ -412,6 +412,8 @@ export class NftController {
         );
       }
       //
+
+      console.log('metadata');
       const arrdb = {
         contract_address: body.contract_address,
         contract_type: body.contract_type || 'NGM721PSI',
@@ -420,7 +422,7 @@ export class NftController {
         meta_data_url: meta_data_url,
         is_in_auction: false,
         token_owner: body.token_owner,
-        metadata,
+        meta_data: jsonData,
       };
       console.log(arrdb);
 

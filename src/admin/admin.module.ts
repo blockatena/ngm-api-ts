@@ -8,6 +8,7 @@ import { ContractSchema, contractSchema } from 'src/schemas/contract.schema';
 import { NftSchema, nftSchema } from 'src/schemas/nft.schema';
 import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
 import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
+import { CronjobService } from 'src/cronjob/cronjob.service';
 
 @Module({
   imports: [
@@ -21,6 +22,6 @@ import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
     ]),
   ],
   controllers: [AdminController],
-  providers: [AdminService],
+  providers: [AdminService, CronjobService],
 })
 export class AdminModule {}
