@@ -128,12 +128,12 @@ export class NftService {
         listed_in == 'auction' ? { is_in_auction: true } : { is_in_sale: true };
       // 'OldToNew', 'NewToOld';
       //'AtoZ', 'ZtoA';
-      // const orderr = alphabetical_order == 'ZtoA' ? -1 : 1;
+      const orderr = alphabetical_order == 'ZtoA' ? -1 : 1;
       console.log(filter);
       const recent = order == 'NewToOld' ? -1 : 1;
       console.log(recent);
       return await this.NftModel.find({ contract_address, ...filter })
-        .sort({ createdAt: recent })
+        .sort({ createdAt: recent, 'meta_data.name': orderr })
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();

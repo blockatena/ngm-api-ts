@@ -420,6 +420,7 @@ export class NftController {
         meta_data_url: meta_data_url,
         is_in_auction: false,
         token_owner: body.token_owner,
+        metadata,
       };
       console.log(arrdb);
 
