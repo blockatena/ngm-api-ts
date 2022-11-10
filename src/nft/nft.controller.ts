@@ -250,14 +250,15 @@ export class NftController {
         const bids = await this.nftservice.getBids(auction._id);
         console.log(bids);
         return {
-          nft,
+          ...nft,
           auction,
           bids,
         };
       }
       if (is_nft_exists.is_in_sale) {
+        return 'its in sale will send sale info soon';
       }
-      return nft;
+      return { ...nft };
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
