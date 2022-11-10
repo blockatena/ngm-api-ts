@@ -48,3 +48,7 @@ export class GetListedCollections {
   @ApiProperty({ enum: ['AtoZ', 'ZtoA'], default: 'AtoZ' })
   alphabetical_order?: string;
 }
+export class GetBids {
+  @ApiProperty()
+  auction_id: string;
+}

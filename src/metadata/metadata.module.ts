@@ -2,6 +2,8 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NftService } from 'src/nft/nft.service';
+import { auctionSchema, AuctionSchema } from 'src/schemas/auction.schema';
+import { bidSchema, BidSchema } from 'src/schemas/bid.schema';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { metadata, metadataSchema } from 'src/schemas/metadata.schema';
 import { nftSchema, NftSchema } from 'src/schemas/nft.schema';
@@ -24,6 +26,8 @@ import { MetadataService } from './metadata.service';
         name: ContractSchema.name,
         schema: contractSchema,
       },
+      { name: AuctionSchema.name, schema: auctionSchema },
+      { name: BidSchema.name, schema: bidSchema },
     ]),
   ],
   controllers: [MetadataController],

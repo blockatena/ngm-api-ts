@@ -11,6 +11,8 @@ import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NftSchema, nftSchema } from 'src/schemas/nft.schema';
 import { metadata, metadataSchema } from 'src/schemas/metadata.schema';
+import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
+import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 
 require('dotenv').config();
 @Module({
@@ -26,6 +28,8 @@ require('dotenv').config();
         name: metadata.name,
         schema: metadataSchema,
       },
+      { name: AuctionSchema.name, schema: auctionSchema },
+      { name: BidSchema.name, schema: bidSchema },
     ]),
     JwtModule.register({
       secret: process.env.jwtSecret,
@@ -37,9 +41,6 @@ require('dotenv').config();
     //   port: process.env.REDIS_PORT,
     //   db: process.env.REDIS_DB,
     // }),
-    MongooseModule.forFeature([
-      { name: ContractSchema.name, schema: contractSchema },
-    ]),
   ],
   controllers: [NftController],
   providers: [NftService, JwtAuthService, DeploymentService],
