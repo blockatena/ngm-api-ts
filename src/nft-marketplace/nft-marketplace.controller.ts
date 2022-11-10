@@ -86,6 +86,12 @@ export class NftMarketplaceController {
   async cancelAuction(@Body() auction_id: CancelAuctionBody): Promise<any> {
     const { contract_address, token_id } = auction_id;
     try {
+      // check contract address and token id  valid or not
+      // check auction is present or not
+      // check auction is ended or expired or else you can check it is started or not
+      // check  token_owneraddress  , because he is the owner of the token
+      // if it already cancelled return "Auction is already cancelled"
+
       return await this.nftMarketplaceService.cancelAuction(
         contract_address,
         token_id,
@@ -114,8 +120,13 @@ export class NftMarketplaceController {
   @Post('place-nft-bid')
   async createBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
-    const { token_id, bid_amount, bidder_address, contract_address } =
-      create_bid;
+    const {
+      token_id,
+      bid_amount,
+      bidder_address,
+      bid_expires_in,
+      contract_address,
+    } = create_bid;
 
     try {
       const is_nft_exists = await this.nftMarketplaceService.GetNft({
@@ -145,6 +156,7 @@ export class NftMarketplaceController {
       }
 
       const is_already_bidded = await this.nftMarketplaceService.get_bid({
+        auction_id: is_auction_exists._id,
         bidder_address,
         contract_address,
         token_id,
@@ -156,7 +168,6 @@ export class NftMarketplaceController {
       }
       console.log('no problem in controller');
       return await this.nftMarketplaceService.createBid(create_bid);
-
     } catch (error) {
       console.log(error);
       return {

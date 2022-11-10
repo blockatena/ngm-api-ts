@@ -10,7 +10,7 @@ export class CreateBidBody {
   @ApiProperty()
   bid_amount: number;
   @ApiProperty()
-  bid_expiresin: string;
+  bid_expires_in: string;
 }
 export class CancelBidBody {
   @ApiProperty()

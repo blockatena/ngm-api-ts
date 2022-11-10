@@ -200,7 +200,7 @@ export class NftController {
   })
   /** [GET ALL NFTS WITH PAGINATION]*/
   @Get('Get-all-nfts/:page_number/:items_per_page')
-  async GetAllNfts(@Param() pagination: paginate): Promise<any> {
+  async getAllNfts(@Param() pagination: paginate): Promise<any> {
     const { page_number, items_per_page } = pagination;
     try {
       const data = await this.nftservice.GetAllNfts({
@@ -227,18 +227,37 @@ export class NftController {
   // get owner assets pending
   //************ */
   @Get('get-nft/:contract_address/:token_id')
-  async GetNft(@Param() body: get_Nft_body): Promise<any> {
+  async getNft(@Param() body: get_Nft_body): Promise<any> {
     // Validations
     // check in Db
     //  return await this.nftservice.
     //  const get_nft=await this.nftservice.
     const { contract_address, token_id } = body;
     try {
-      const data = await this.nftservice.GetNft({ contract_address, token_id });
-      if (!data) {
+      const is_nft_exists = await this.nftservice.GetNft({
+        contract_address,
+        token_id,
+      });
+      console.log(is_nft_exists);
+      const nft = is_nft_exists;
+      if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
       }
-      return data;
+      console.log(is_nft_exists);
+      if (is_nft_exists.nft.is_in_auction) {
+        const auction = await this.nftservice.getAuction(body);
+        console.log(auction);
+        const bids = await this.nftservice.getBids(auction._id);
+        console.log(bids);
+        return {
+          nft,
+          auction,
+          bids,
+        };
+      }
+      if (is_nft_exists.is_in_sale) {
+      }
+      return nft;
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
@@ -248,7 +267,7 @@ export class NftController {
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections')
-  async GetCollections(): Promise<any> {
+  async getCollections(): Promise<any> {
     // if no collctions ,return some message ,
     //  is this route available to all
     return await this.nftservice.getcollections();
@@ -256,7 +275,7 @@ export class NftController {
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
   @Get('get-nfts-listed/:listed_in')
-  async GetNftsListed(@Param('listed_in') listed: string): Promise<any> {
+  async getNftsListed(@Param('listed_in') listed: string): Promise<any> {
     try {
       const data = await this.nftservice.GetNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
@@ -268,7 +287,7 @@ export class NftController {
   /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
   @Post('get-nfts-listed-collection')
-  async GetNftsListedCollection(
+  async getNftsListedCollection(
     @Body() Collections_listed: GetListedCollections,
   ): Promise<any> {
     try {
@@ -423,7 +442,6 @@ export class NftController {
         is_in_auction: false,
         token_owner: body.token_owner,
         meta_data: jsonData,
-
       };
       console.log(arrdb);
 
