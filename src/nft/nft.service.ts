@@ -7,12 +7,14 @@ import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { metadataDocument, metadata } from 'src/schemas/metadata.schema';
 import {
   createNFT,
+  GetBids,
   GetListedCollections,
   getNft,
   get_Nft_body,
   paginate,
 } from './nftitems/createNft.dto';
-import { ignoreElements } from 'rxjs';
+import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
+import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 
 @Injectable()
 export class NftService {
@@ -22,8 +24,15 @@ export class NftService {
     private readonly httpService: HttpService,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
     @InjectModel(metadata.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(AuctionSchema.name)
+    private AuctionModel: Model<AuctionDocument>,
+    @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
   ) {
     NftModel;
+    BidModel;
+    AuctionModel;
+    MetadataModel;
+    ContractModel;
   }
   async getMetadata(cid: string, ipfsFlag: boolean): Promise<any> {
     return await this.httpService.axiosRef.get(
@@ -179,6 +188,33 @@ export class NftService {
       },
       { $push: { imageuri: image_uri } },
     );
+  }
+  async getAuction(body: get_Nft_body): Promise<any> {
+    const { contract_address, token_id } = body;
+    try {
+      return await this.AuctionModel.findOne({
+        contract_address,
+        token_id,
+        status: 'started',
+      });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went wrong in service',
+      };
+    }
+  }
+  async getBids(body: GetBids): Promise<any> {
+    try {
+      return await this.BidModel.find({
+        auction_id: body.auction_id,
+        status: 'started',
+      }).sort({ bid_amount: -1 });
+    } catch (error) {}
+  }
+  async getSale(): Promise<any> {
+    try {
+    } catch (error) {}
   }
 
   async pushTokenUriToDocArray(

@@ -234,11 +234,29 @@ export class NftController {
     //  const get_nft=await this.nftservice.
     const { contract_address, token_id } = body;
     try {
-      const data = await this.nftservice.GetNft({ contract_address, token_id });
-      if (!data) {
+      const is_nft_exists = await this.nftservice.GetNft({
+        contract_address,
+        token_id,
+      });
+      const nft = is_nft_exists;
+      if (!is_nft_exists) {
         return 'Nft is not present with that details';
       }
-      return data;
+      console.log(is_nft_exists);
+      if (is_nft_exists.nft.is_in_auction) {
+        const auction = await this.nftservice.getAuction(body);
+        console.log(auction);
+        const bids = await this.nftservice.getBids(auction._id);
+        console.log(bids);
+        return {
+          nft,
+          auction,
+          bids,
+        };
+      }
+      if (is_nft_exists.is_in_sale) {
+      }
+      return nft;
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
@@ -423,7 +441,6 @@ export class NftController {
         is_in_auction: false,
         token_owner: body.token_owner,
         meta_data: jsonData,
-
       };
       console.log(arrdb);
 

@@ -145,13 +145,13 @@ export class NftMarketplaceService {
   /************************************/
   /****************[BID_SERVICES]*************/
   async createBid(createBid: CreateBidBody): Promise<any> {
-    const { token_id, contract_address, bid_expiresin, bidder_address } =
+    const { token_id, contract_address, bid_expires_in, bidder_address } =
       createBid;
     // Id creation for cron job may be changed in future
     try {
       this.Cron_job.addCornJob(
         `${contract_address}${token_id}${bidder_address}`,
-        createBid.bid_expiresin,
+        createBid.bid_expires_in,
         async () => {
           await this.update_bid(
             { token_id, contract_address, status: 'started' },
