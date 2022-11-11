@@ -204,10 +204,11 @@ export class NftService {
       };
     }
   }
-  async getBids(body: GetBids): Promise<any> {
+  async getBids(auction_id: string): Promise<any> {
     try {
+      console.log('From Get All bids', auction_id);
       return await this.BidModel.find({
-        auction_id: body.auction_id,
+        auction_id,
         status: 'started',
       }).sort({ bid_amount: -1 });
     } catch (error) {}
