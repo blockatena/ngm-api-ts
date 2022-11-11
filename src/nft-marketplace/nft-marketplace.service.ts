@@ -21,6 +21,14 @@ import {
   create_Offer_Body,
   get_all_offers_Body,
 } from './dtos/create_offer.dto';
+import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
+import { ethers } from 'ethers';
+
+const mum_provider = new ethers.providers.JsonRpcProvider(
+  process.env.MATIC_MUMBAI_RPC_URL,
+);
+const wallet = new ethers.Wallet(process.env.PRIV_KEY, mum_provider);
+
 @Injectable()
 export class NftMarketplaceService {
   constructor(
@@ -340,10 +348,36 @@ export class NftMarketplaceService {
     //currently its a demo version need to add actual functionality later
     console.log('from decalre winner', auction_details);
     let data = await this.BidModel.find(auction_details)
-      .sort({ bid_amount: -1 })
+      .sort({ bid_amount: -1, created_at: -1 })
       .limit(1);
     console.log('data from winner fucntion', data);
-    return data;
+    if (data.length) {
+      const nftContractAddress = data[0]['contract_address'];
+      const nftCntr = await this.ContractModel.findOne({
+        contract_address: nftContractAddress,
+      });
+      const marketplaceAddress = process.env.MARKETPLACE_CONTRACT_ADDRESS;
+      const erc20Address = process.env.ERC20_TOKEN_ADDRESS;
+      //ethers code contractFactory
+      const marketplaceCntr = new ethers.Contract(
+        marketplaceAddress,
+        marketplaceAbi,
+        wallet,
+      );
+      const createSale = await marketplaceCntr.createSale(
+        erc20Address,
+        data[0]['contract_address'],
+        data[0]['bidder_address'],
+        parseInt(data[0]['token_id']),
+        data[0]['bidder_address'],
+        nftCntr.owner_address,
+        { value: ethers.BigNumber.from(data[0]['bid_amount'])},
+      );
+      const res = await createSale.wait();
+      console.log('res from create sale', res);
+      return data;
+    }
+    return [];
   }
 
   async GetNft(details: any): Promise<any> {
