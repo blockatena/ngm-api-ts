@@ -120,13 +120,8 @@ export class NftMarketplaceController {
   @Post('place-nft-bid')
   async createBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
-    const {
-      token_id,
-      bid_amount,
-      bidder_address,
-      bid_expires_in,
-      contract_address,
-    } = create_bid;
+    const { token_id, bid_amount, bidder_address, contract_address } =
+      create_bid;
 
     try {
       const is_nft_exists = await this.nftMarketplaceService.GetNft({
@@ -167,7 +162,14 @@ export class NftMarketplaceController {
         return 'You alread bidded for that Nft want to lower the price ?';
       }
       console.log('no problem in controller');
-      return await this.nftMarketplaceService.createBid(create_bid);
+
+      return await this.nftMarketplaceService.createBid({
+        auction_id: is_auction_exists._id,
+        bidder_address,
+        contract_address,
+        token_id,
+        bid_amount,
+      });
     } catch (error) {
       console.log(error);
       return {

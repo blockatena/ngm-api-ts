@@ -9,8 +9,8 @@ export class CreateBidBody {
   token_id: string;
   @ApiProperty()
   bid_amount: number;
-  @ApiProperty()
-  bid_expires_in: string;
+  // @ApiProperty()
+  // bid_expires_in: string;
 }
 export class CancelBidBody {
   @ApiProperty()
@@ -35,4 +35,10 @@ export class GetBids {
   contract_address: string;
   @ApiProperty()
   token_id: string;
+}
+
+export class updateAllBids {
+  contract_address: string;
+  token_id: string;
+  status: string;
 }

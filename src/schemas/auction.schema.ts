@@ -19,7 +19,7 @@ export class AuctionSchema {
   @Prop()
   status: string;
   @Prop()
-  winner: Array<any>;
+  winner: string;
   @Prop()
   transaction_status: string;
   // add cron job exclude
