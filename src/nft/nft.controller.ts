@@ -246,7 +246,7 @@ export class NftController {
       console.log(is_nft_exists);
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
-        console.log(auction);
+        console.log(auction._id);
         const bids = await this.nftservice.getBids(auction._id);
         console.log(bids);
         return {

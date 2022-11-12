@@ -14,8 +14,8 @@ export class BidSchema {
   token_id: string;
   @Prop()
   bid_amount: number;
-  @Prop()
-  bid_expires_in: string;
+  // @Prop()
+  // bid_expires_in: string;
   @Prop({ default: false })
   is_auction_ended: boolean;
   @Prop()

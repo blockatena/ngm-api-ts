@@ -39,8 +39,10 @@ export class MetadataController {
   @Get('/scriptfix')
   async scriptFix(): Promise<string> {
     try {
-      const res = await this.metadataservice.tokenUriFix();
-      return res;
+      // uncomment this line to run the script
+      // const res = await this.metadataservice.tokenUriFix();
+      // return res;
+      return 'uncomment the line first';
     } catch (error) {
       console.log(error);
     }
