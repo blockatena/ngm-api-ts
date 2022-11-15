@@ -37,8 +37,8 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import {
   GetListedCollections,
-  get_collections_body,
-  get_Nft_body,
+  GetCollectionsBody,
+  GetNftBody,
   paginate,
 } from './nftitems/createNft.dto';
 
@@ -227,7 +227,7 @@ export class NftController {
   // get owner assets pending
   //************ */
   @Get('get-nft/:contract_address/:token_id')
-  async getNft(@Param() body: get_Nft_body): Promise<any> {
+  async getNft(@Param() body: GetNftBody): Promise<any> {
     // Validations
     // check in Db
     //  return await this.nftservice.
@@ -238,6 +238,11 @@ export class NftController {
         contract_address,
         token_id,
       });
+      let variable: boolean;
+      if (variable == true) {
+        const detail = await this.nftservice.GetDetails();
+        console.log(detail);
+      }
       console.log(is_nft_exists);
       const nft = is_nft_exists;
       if (!is_nft_exists.nft) {

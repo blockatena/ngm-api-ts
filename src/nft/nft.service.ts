@@ -10,7 +10,7 @@ import {
   GetBids,
   GetListedCollections,
   getNft,
-  get_Nft_body,
+  GetNftBody,
   paginate,
 } from './nftitems/createNft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
@@ -73,7 +73,7 @@ export class NftService {
     }
   }
   // To get single Nft
-  async GetNft(data: get_Nft_body): Promise<any> {
+  async GetNft(data: GetNftBody): Promise<any> {
     try {
       const nft = await this.NftModel.findOne(data);
       const contract_details = await this.GetContract({
@@ -98,6 +98,13 @@ export class NftService {
         message: 'Something went wrong in service',
       };
     }
+  }
+
+  async GetDetails(): Promise<any> {
+    return {
+      auction: this.getAuction,
+      bids: this.getBids,
+    };
   }
 
   async GetNftsOwned(): Promise<any> {
@@ -189,7 +196,7 @@ export class NftService {
       { $push: { imageuri: image_uri } },
     );
   }
-  async getAuction(body: get_Nft_body): Promise<any> {
+  async getAuction(body: GetNftBody): Promise<any> {
     const { contract_address, token_id } = body;
     try {
       return await this.AuctionModel.findOne({
@@ -217,7 +224,6 @@ export class NftService {
     try {
     } catch (error) {}
   }
-
   async pushTokenUriToDocArray(
     contract_address: string,
     tokenUri: string,

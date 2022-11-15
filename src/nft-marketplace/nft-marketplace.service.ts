@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuctionDocument, AuctionSchema } from 'src/schemas/auction.schema';
 import { BidDocument, BidSchema } from 'src/schemas/bid.schema';
-import { CreateAuctionBody } from './dtos/create_auction.dto';
+import { CreateAuctionBody } from './dtos/auctiondto/create-auction.dto';
 import {
   CancelBidBody,
   CreateBidBody,
@@ -13,13 +13,16 @@ import {
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';
-import { Cancel_Sale_Body, Create_Sale_Body } from './dtos/create-sale.dto';
+import {
+  CancelSaleBody,
+  CreateSaleBody,
+} from './dtos/saledtos/create-sale.dto';
 import { SalesDocument, SalesSchema } from 'src/schemas/sales.schema';
 import { OfferDocument, OfferSchema } from 'src/schemas/offer.schema';
 import {
-  accept_Offer_Body,
-  create_Offer_Body,
-  get_all_offers_Body,
+  AcceptOfferBody,
+  CreateOfferBody,
+  GetAllOffersBody,
 } from './dtos/create_offer.dto';
 import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
 import { ethers } from 'ethers';
@@ -259,7 +262,7 @@ export class NftMarketplaceService {
   }
   /***************************/
   /******************[CREATE SALE]**************/
-  async createSale(sale: Create_Sale_Body): Promise<any> {
+  async createSale(sale: CreateSaleBody): Promise<any> {
     // save in DB
     const save_in_db = await (await this.SalesModel.create(sale)).save();
     //create cron job
@@ -285,7 +288,7 @@ export class NftMarketplaceService {
     );
     return { save_in_db, update_nft };
   }
-  async cancelSale(cancel: Cancel_Sale_Body): Promise<any> {
+  async cancelSale(cancel: CancelSaleBody): Promise<any> {
     //delete cron job
     try {
       this.Cron_job.deleteCron(cancel.cronjob_id);
@@ -317,10 +320,10 @@ export class NftMarketplaceService {
 
   //************************************************* */
   //********[CREATE-OFFER]*******/
-  async createOffer(offer: create_Offer_Body) {
+  async createOffer(offer: CreateOfferBody) {
     return await (await this.OfferModel.create(offer)).save();
   }
-  async acceptOffer(accept_Data: accept_Offer_Body) {
+  async acceptOffer(accept_Data: AcceptOfferBody) {
     try {
       const offer_msg = await this.updateOffer(
         { _id: accept_Data.offer_id },
@@ -340,7 +343,7 @@ export class NftMarketplaceService {
   async getOffer(offer_Data: any): Promise<any> {
     return await this.OfferModel.findOne(offer_Data);
   }
-  async getAllOffers(saleData: get_all_offers_Body) {
+  async getAllOffers(saleData: GetAllOffersBody) {
     return await this.OfferModel.find({ sale_id: saleData.sale_id });
   }
   async updateOffer(offer_data: Object, update_data: Object) {

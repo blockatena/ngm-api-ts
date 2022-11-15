@@ -1,15 +1,15 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
-  accept_Offer_Body,
-  create_Offer_Body,
-  get_all_offers_Body,
+  AcceptOfferBody,
+  CreateOfferBody,
+  GetAllOffersBody,
 } from './dtos/create_offer.dto';
 import {
   CancelAuctionBody,
   CreateAuctionBody,
-  get_All_Bids,
-} from './dtos/create_auction.dto';
+  GetAllBids,
+} from './dtos/auctiondto/create-auction.dto';
 import {
   Acceptbid,
   CancelBidBody,
@@ -17,7 +17,10 @@ import {
   GetBids,
 } from './dtos/create_bid.dto';
 import { NftMarketplaceService } from './nft-marketplace.service';
-import { Cancel_Sale_Body, Create_Sale_Body } from './dtos/create-sale.dto';
+import {
+  CancelSaleBody,
+  CreateSaleBody,
+} from './dtos/saledtos/create-sale.dto';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
@@ -295,7 +298,7 @@ export class NftMarketplaceController {
     summary: 'This Api will put your Nft in sale with Timer',
   })
   @Post('create-sale')
-  async createSale(@Body() body: Create_Sale_Body): Promise<any> {
+  async createSale(@Body() body: CreateSaleBody): Promise<any> {
     const { token_owner, contract_address, token_id, price } = body;
     try {
       //is Nft Exists
@@ -331,7 +334,7 @@ export class NftMarketplaceController {
   }
   @ApiOperation({ summary: 'This Api Cancels the Nft from sale' })
   @Post('cancel-sale')
-  async cancelSale(@Body() body: Cancel_Sale_Body) {
+  async cancelSale(@Body() body: CancelSaleBody) {
     // Add Validations
     return await this.nftMarketplaceService.cancelSale(body);
   }
@@ -340,7 +343,7 @@ export class NftMarketplaceController {
     summary: 'This Api will makes an offer to the Nft which is in sale',
   })
   @Post('create-nft-offer')
-  async createOffer(@Body() body: create_Offer_Body) {
+  async createOffer(@Body() body: CreateOfferBody) {
     try {
       const { sale_id, token_id, contract_address, offer_price } = body;
       // Validating sale is enough, because already sale is fully validated
@@ -362,7 +365,7 @@ export class NftMarketplaceController {
   }
   @ApiOperation({ summary: 'This Api accepts the offer ' })
   @Post('accept-offer')
-  async acceptOffer(@Body() body: accept_Offer_Body) {
+  async acceptOffer(@Body() body: AcceptOfferBody) {
     //we can add validations
     const { sale_id, offer_id } = body;
     const is_sale_exists = await this.nftMarketplaceService.getSale({
@@ -386,7 +389,7 @@ export class NftMarketplaceController {
     summary: 'This Api will get all the offers of the Nft which is in sale',
   })
   @Post('get-all-offers')
-  async getAllOffers(@Body() body: get_all_offers_Body) {
+  async getAllOffers(@Body() body: GetAllOffersBody) {
     // check sale exists or not
     //  sale ended
     // accepted offer or not
@@ -398,7 +401,7 @@ export class NftMarketplaceController {
   async changeBidPrice() {}
   @ApiOperation({ summary: 'This Api will return all the bids of the auction' })
   @Post('get-bid-list-by-auction')
-  async getBidListForAuction(@Body() body: get_All_Bids): Promise<any> {
+  async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
     try {
       //Auction
       return;
