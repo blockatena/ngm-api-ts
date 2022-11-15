@@ -226,50 +226,24 @@ export class NftMarketplaceController {
   @Post('accept-bid')
   async acceptBid(@Body() body: Acceptbid) {
     try {
-      console.log(body);
-      const { contract_address, token_id, token_owner, bidder_address } = body;
-      const auction_data = await this.nftMarketplaceService.getAuction({
-        contract_address,
-        token_id,
-        token_owner,
+      const { auction_id } = body;
+      const auctionDetails = await this.nftMarketplaceService.getAuction({
+        _id: auction_id,
       });
-      //  validate auction
-      if (!auction_data) {
-        return 'Invalid Auction Id, Please check auction is present or not';
+      if (!auctionDetails) {
+        return 'Invalid Auction Id';
       }
-      // validate Nft
-      const nft_data = await this.nftMarketplaceService.GetNft({
-        token_id,
-        token_owner,
+      const bidWinner = await this.nftMarketplaceService.declareWinner({
+        auction_id: auctionDetails._id.toString(),
+        token_id: auctionDetails.token_id,
+        contract_address: auctionDetails.contract_address,
+        token_owner: auctionDetails.token_owner,
       });
-      if (!nft_data) {
-        return 'You are not owner of the NFT';
-      }
-      // validate Bid
+      console.log(bidWinner);
 
-      const bid_data = await this.nftMarketplaceService.get_bid({
-        token_id,
-        contract_address,
-        bidder_address,
-      });
-      if (!bid_data) {
-        return 'There is no bid associated with that bid Id please check ';
-      }
-      //  All validations are done , now we are transferring the nft
-      // ********* please add block chain code to transfer NFT
-
-      // *********
-
-      const dbmsg = await this.nftMarketplaceService.update_nft(
-        {
-          contract_address: nft_data.contract_address,
-          token_id: nft_data.token_id,
-        },
-        { token_owner: bid_data.bidder_address },
-      );
       return {
         message: 'Bid accepted and transferred the ownership of the NFT',
-        status: dbmsg,
+        status: bidWinner,
       };
     } catch (error) {
       console.error(error);
