@@ -373,7 +373,7 @@ export class NftMarketplaceService {
         parseInt(token_id),
         token_owner,
         nftCntr.owner_address,
-        bid_amount
+        bid_amount,
       );
       const res = await createSale.wait();
       console.log('res from create sale', res);
@@ -384,6 +384,7 @@ export class NftMarketplaceService {
       const nft_data = await this.GetNft({
         token_id,
         token_owner,
+        contract_address,
       });
       if (!nft_data) {
         return 'You are not owner of the NFT';
@@ -393,26 +394,32 @@ export class NftMarketplaceService {
       // ********* please add block chain code to transfer NFT
 
       // *********
-
+      console.log('_________________________');
+      console.log('NFT DATA', nft_data);
+      console.log('_________________________');
       const dbmsg = await this.update_nft(
         {
           contract_address: nft_data.contract_address,
           token_id: nft_data.token_id,
         },
-        { token_owner: data[0].bidder_address },
+        { token_owner: data[0].bidder_address, is_in_auction: false },
       );
+
+      console.log('_________________________________');
+      console.log('New Owner info Updtae', dbmsg);
+      console.log('_________________________________');
 
       //update status to bid and auction add winner also
       // update after auction ,set auction status to false
       console.log('winner Data', dbmsg);
       // const winner_address = ;
-      await this.update_nft(
-        {
-          contract_address: contract_address,
-          token_id: token_id,
-        },
-        { is_in_auction: false },
-      );
+      // await this.update_nft(
+      //   {
+      //     contract_address: contract_address,
+      //     token_id: token_id,
+      //   },
+      //   { is_in_auction: false },
+      // );
       const winner_data = bidder_address || 'nobids';
 
       // const winner_info =
