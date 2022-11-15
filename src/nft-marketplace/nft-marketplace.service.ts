@@ -421,7 +421,8 @@ export class NftMarketplaceService {
   async get_all_Nfts_inauction() {
     return await this.NftModel.findOne({ is_in_auction: true });
   }
-  async getAuction(details: any): Promise<any> {
+  async getAuction(details: object): Promise<any> {
+    console.log('on Service', details);
     return await this.AuctionModel.findOne(details);
   }
   async get_bid(details: any): Promise<any> {
