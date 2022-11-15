@@ -22,13 +22,7 @@ export class CancelBidBody {
 }
 export class Acceptbid {
   @ApiProperty()
-  token_owner: string;
-  @ApiProperty()
-  bidder_address: string;
-  @ApiProperty()
-  contract_address: string;
-  @ApiProperty()
-  token_id: string;
+  auction_id: string;
 }
 export class GetBids {
   @ApiProperty()

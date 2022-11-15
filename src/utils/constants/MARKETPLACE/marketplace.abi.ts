@@ -8,6 +8,35 @@ export const abi = [
     inputs: [
       {
         internalType: 'address',
+        name: 'contractAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'marketPlaceContractAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'ownerAddress',
+        type: 'address',
+      },
+    ],
+    name: 'approvedAll',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'value',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
         name: 'ERC20ContractAddress',
         type: 'address',
       },
@@ -35,6 +64,11 @@ export const abi = [
         internalType: 'address',
         name: '_nftContractOwner',
         type: 'address',
+      },
+      {
+        internalType: 'uint256',
+        name: 'bidAmount',
+        type: 'uint256',
       },
     ],
     name: 'createSale',
