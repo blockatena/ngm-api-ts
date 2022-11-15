@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AuctionDocument, AuctionSchema } from 'src/schemas/auction.schema';
 import { BidDocument, BidSchema } from 'src/schemas/bid.schema';
-import { CreateAuctionBody } from './dtos/create_auction.dto';
+import { CreateAuctionBody } from './dtos/auctiondto/create-auction.dto';
 import {
   CancelBidBody,
   CreateBidBody,
@@ -13,13 +13,16 @@ import {
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';
-import { Cancel_Sale_Body, Create_Sale_Body } from './dtos/create-sale.dto';
+import {
+  CancelSaleBody,
+  CreateSaleBody,
+} from './dtos/saledtos/create-sale.dto';
 import { SalesDocument, SalesSchema } from 'src/schemas/sales.schema';
 import { OfferDocument, OfferSchema } from 'src/schemas/offer.schema';
 import {
-  accept_Offer_Body,
-  create_Offer_Body,
-  get_all_offers_Body,
+  AcceptOfferBody,
+  CreateOfferBody,
+  GetAllOffersBody,
 } from './dtos/create_offer.dto';
 import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
 import { ethers } from 'ethers';
@@ -220,7 +223,7 @@ export class NftMarketplaceService {
   }
   /***************************/
   /******************[CREATE SALE]**************/
-  async createSale(sale: Create_Sale_Body): Promise<any> {
+  async createSale(sale: CreateSaleBody): Promise<any> {
     // save in DB
     const save_in_db = await (await this.SalesModel.create(sale)).save();
     //create cron job
@@ -246,7 +249,7 @@ export class NftMarketplaceService {
     );
     return { save_in_db, update_nft };
   }
-  async cancelSale(cancel: Cancel_Sale_Body): Promise<any> {
+  async cancelSale(cancel: CancelSaleBody): Promise<any> {
     //delete cron job
     try {
       this.Cron_job.deleteCron(cancel.cronjob_id);
@@ -278,10 +281,10 @@ export class NftMarketplaceService {
 
   //************************************************* */
   //********[CREATE-OFFER]*******/
-  async createOffer(offer: create_Offer_Body) {
+  async createOffer(offer: CreateOfferBody) {
     return await (await this.OfferModel.create(offer)).save();
   }
-  async acceptOffer(accept_Data: accept_Offer_Body) {
+  async acceptOffer(accept_Data: AcceptOfferBody) {
     try {
       const offer_msg = await this.updateOffer(
         { _id: accept_Data.offer_id },
@@ -301,7 +304,7 @@ export class NftMarketplaceService {
   async getOffer(offer_Data: any): Promise<any> {
     return await this.OfferModel.findOne(offer_Data);
   }
-  async getAllOffers(saleData: get_all_offers_Body) {
+  async getAllOffers(saleData: GetAllOffersBody) {
     return await this.OfferModel.find({ sale_id: saleData.sale_id });
   }
   async updateOffer(offer_data: Object, update_data: Object) {
@@ -370,7 +373,7 @@ export class NftMarketplaceService {
         parseInt(token_id),
         token_owner,
         nftCntr.owner_address,
-        bid_amount
+        bid_amount,
       );
       const res = await createSale.wait();
       console.log('res from create sale', res);
@@ -381,6 +384,7 @@ export class NftMarketplaceService {
       const nft_data = await this.GetNft({
         token_id,
         token_owner,
+        contract_address,
       });
       if (!nft_data) {
         return 'You are not owner of the NFT';
@@ -390,26 +394,32 @@ export class NftMarketplaceService {
       // ********* please add block chain code to transfer NFT
 
       // *********
-
+      console.log('_________________________');
+      console.log('NFT DATA', nft_data);
+      console.log('_________________________');
       const dbmsg = await this.update_nft(
         {
           contract_address: nft_data.contract_address,
           token_id: nft_data.token_id,
         },
-        { token_owner: data[0].bidder_address },
+        { token_owner: data[0].bidder_address, is_in_auction: false },
       );
+
+      console.log('_________________________________');
+      console.log('New Owner info Updtae', dbmsg);
+      console.log('_________________________________');
 
       //update status to bid and auction add winner also
       // update after auction ,set auction status to false
       console.log('winner Data', dbmsg);
       // const winner_address = ;
-      await this.update_nft(
-        {
-          contract_address: contract_address,
-          token_id: token_id,
-        },
-        { is_in_auction: false },
-      );
+      // await this.update_nft(
+      //   {
+      //     contract_address: contract_address,
+      //     token_id: token_id,
+      //   },
+      //   { is_in_auction: false },
+      // );
       const winner_data = bidder_address || 'nobids';
 
       // const winner_info =
@@ -475,7 +485,8 @@ export class NftMarketplaceService {
   async get_all_Nfts_inauction() {
     return await this.NftModel.findOne({ is_in_auction: true });
   }
-  async getAuction(details: any): Promise<any> {
+  async getAuction(details: object): Promise<any> {
+    console.log('on Service', details);
     return await this.AuctionModel.findOne(details);
   }
   async get_bid(details: any): Promise<any> {

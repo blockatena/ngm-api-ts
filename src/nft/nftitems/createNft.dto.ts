@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class createNFT {
   @ApiProperty()
@@ -18,15 +18,17 @@ export class getNft {
   readonly owner_address: string;
   readonly token_id: string;
 }
-export class get_collections_body {
+export class GetCollectionsBody {
   @ApiProperty()
   readonly contract_address: string;
 }
-export class get_Nft_body {
+export class GetNftBody {
   @ApiProperty()
   readonly contract_address: string;
   @ApiProperty()
   readonly token_id: string;
+  @ApiPropertyOptional()
+  readonly bids?: boolean;
 }
 export class paginate {
   @ApiProperty()

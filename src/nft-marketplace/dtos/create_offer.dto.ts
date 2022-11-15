@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-export class create_Offer_Body {
+export class CreateOfferBody {
   @ApiProperty()
   sale_id: string;
   @ApiProperty()
@@ -11,13 +11,13 @@ export class create_Offer_Body {
   @ApiProperty()
   offer_person_address: string;
 }
-export class accept_Offer_Body {
+export class AcceptOfferBody {
   @ApiProperty()
   sale_id: string;
   @ApiProperty()
   offer_id: string;
 }
-export class get_all_offers_Body {
+export class GetAllOffersBody {
   @ApiProperty()
   sale_id: string;
 }
