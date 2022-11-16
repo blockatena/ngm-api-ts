@@ -68,11 +68,11 @@ export class NftMarketplaceService {
       const data = await this.AuctionModel.create(createAuction);
       console.log('Auction Created', data);
       const auction_id = data._id;
-      const cron_date = new Date(createAuction.end_date).toUTCString();
       //  Adding Cron Job
+      // console.log('cron date', cron_date);
       this.Cron_job.addCornJob(
         `${createAuction.contract_address}${createAuction.token_id}`,
-        cron_date,
+        createAuction.end_date,
         async () => {
           console.log('Auction_id ', auction_id);
           const winnerdata = await this.declareWinner({
