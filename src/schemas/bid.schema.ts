@@ -13,7 +13,7 @@ export class BidSchema {
   @Prop()
   token_id: string;
   @Prop()
-  bid_amount: number;
+  bid_amount: string;
   // @Prop()
   // bid_expires_in: string;
   @Prop({ default: false })

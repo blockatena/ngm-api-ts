@@ -10,7 +10,7 @@ import {
   GetBids,
   GetListedCollections,
   getNft,
-  get_Nft_body,
+  GetNftBody,
   paginate,
 } from './nftitems/createNft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
@@ -73,7 +73,7 @@ export class NftService {
     }
   }
   // To get single Nft
-  async GetNft(data: get_Nft_body): Promise<any> {
+  async GetNft(data: GetNftBody): Promise<any> {
     try {
       const nft = await this.NftModel.findOne(data);
       const contract_details = await this.GetContract({
@@ -113,9 +113,52 @@ export class NftService {
   async getcollections() {
     return await this.ContractModel.find({});
   }
-  async get_Nfts_by_Collection(Contract_Address: string): Promise<any> {
-    return await this.NftModel.find({ contract_address: Contract_Address });
+  async get_Nfts_by_Collection(contract_address: string): Promise<any> {
+    try {
+      return await this.NftModel.aggregate([
+        { $match: { contract_address } },
+        {
+          $lookup: {
+            from: 'auctionschemas',
+            let: {
+              contract_address: '$contract_address',
+              token_id: '$token_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$contract_address', '$$contract_address'],
+                      },
+                      {
+                        $eq: ['$token_id', '$$token_id'],
+                      },
+                    ],
+                  },
+                  status: 'started',
+                },
+              },
+            ],
+            as: `auction`,
+          },
+        },
+      ]);
+      // as: 'auctiondetails',
+      // return await this.NftModel.aggregate([
+      //   {
+      //     $lookup: {
+      //       from: 'auctionschema',
+      //       let: { cntr_addr: '$contract_address', tkn_id: '$token_owner' },
+      //       pipeline: [{}],
+      //       as: 'auction',
+      //     },
+      //   },
+      // ]);
+    } catch (error) {}
   }
+
   async GetNftssListed(data: GetListedCollections): Promise<any> {
     const {
       contract_address,
@@ -189,7 +232,7 @@ export class NftService {
       { $push: { imageuri: image_uri } },
     );
   }
-  async getAuction(body: get_Nft_body): Promise<any> {
+  async getAuction(body: GetNftBody): Promise<any> {
     const { contract_address, token_id } = body;
     try {
       return await this.AuctionModel.findOne({
@@ -217,7 +260,6 @@ export class NftService {
     try {
     } catch (error) {}
   }
-
   async pushTokenUriToDocArray(
     contract_address: string,
     tokenUri: string,
