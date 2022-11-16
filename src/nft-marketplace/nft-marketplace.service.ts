@@ -26,7 +26,7 @@ import {
 } from './dtos/create_offer.dto';
 import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
 import { ethers } from 'ethers';
-
+import * as moment from 'moment';
 const mum_provider = new ethers.providers.JsonRpcProvider(
   process.env.MATIC_MUMBAI_RPC_URL,
 );
@@ -68,11 +68,11 @@ export class NftMarketplaceService {
       const data = await this.AuctionModel.create(createAuction);
       console.log('Auction Created', data);
       const auction_id = data._id;
-
+      const cron_date = new Date(createAuction.end_date).toUTCString();
       //  Adding Cron Job
       this.Cron_job.addCornJob(
         `${createAuction.contract_address}${createAuction.token_id}`,
-        createAuction.end_date,
+        cron_date,
         async () => {
           console.log('Auction_id ', auction_id);
           const winnerdata = await this.declareWinner({
