@@ -95,8 +95,6 @@ export class NftMarketplaceController {
       // check auction is ended or expired or else you can check it is started or not
       // check  token_owneraddress  , because he is the owner of the token
       // if it already cancelled return "Auction is already cancelled"
-      try {
-      } catch (error) {}
       return await this.nftMarketplaceService.cancelAuction(
         contract_address,
         token_id,
