@@ -465,7 +465,7 @@ export class NftMarketplaceService {
         { status: 'AuctionExpired', is_auction_ended: true },
       );
       // After auction this cron job will be deleted // need to fix with unique id
-      this.Cron_job.deleteCron(`${contract_address}${token_id}`);
+      // this.Cron_job.deleteCron(`${contract_address}${token_id}`);
 
       await this.update_auction(
         {
