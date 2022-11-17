@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
-
+// @Cron('*/10 * * * * *')
 import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob } from 'cron';
 @Injectable()
@@ -10,7 +10,9 @@ export class CronjobService {
 
   addCornJob(name: string, date: string, callback: any) {
     console.log('date', date);
-    const job = new CronJob(new Date(date), callback);
+    const utcdate = Math.floor(new Date(date).getTime() / 1000);
+    console.log('utc date:', utcdate);
+    const job = new CronJob(utcdate.toString(), callback);
     this.schedulerRegistry.addCronJob(name, job);
     job.start();
     this.logger.warn(`job ${name} added for each minute at ${date} seconds!`);
