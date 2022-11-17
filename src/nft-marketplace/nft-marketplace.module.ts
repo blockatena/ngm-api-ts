@@ -24,5 +24,6 @@ import { offerSchema, OfferSchema } from 'src/schemas/offer.schema';
   ],
   controllers: [NftMarketplaceController],
   providers: [NftMarketplaceService, CronjobService],
+  exports: [NftMarketplaceService],
 })
 export class NftMarketplaceModule {}

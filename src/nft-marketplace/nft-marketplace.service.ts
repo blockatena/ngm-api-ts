@@ -67,22 +67,24 @@ export class NftMarketplaceService {
 
       const data = await this.AuctionModel.create(createAuction);
       console.log('Auction Created', data);
-      const auction_id = data._id;
+      // const auction_id = data._id;
       //  Adding Cron Job
+      // const cron_date = new Date(createAuction.end_date).toUTCString();
+      // console.log(cron_date);
       // console.log('cron date', cron_date);
-      this.Cron_job.addCornJob(
-        `${createAuction.contract_address}${createAuction.token_id}`,
-        createAuction.end_date,
-        async () => {
-          console.log('Auction_id ', auction_id);
-          const winnerdata = await this.declareWinner({
-            auction_id,
-            token_id: createAuction.token_id,
-            contract_address: createAuction.contract_address,
-          });
-          console.log("winner's data", winnerdata);
-        },
-      );
+      // this.Cron_job.addCornJob(
+      //   `${createAuction.contract_address}${createAuction.token_id}`,
+      //   createAuction.end_date,
+      //   async () => {
+      //     console.log('Auction_id ', auction_id);
+      //     const winnerdata = await this.declareWinner({
+      //       auction_id,
+      //       token_id: createAuction.token_id,
+      //       contract_address: createAuction.contract_address,
+      //     });
+      //     console.log("winner's data", winnerdata);
+      //   },
+      // );
 
       return data;
     } catch (error) {
@@ -100,11 +102,11 @@ export class NftMarketplaceService {
   ): Promise<any> {
     console.log('auction_id', contract_address, token_id);
     // this.schedulerRegistry.deleteCronJob(cronjob_id);
-    const cronjob_id = `${contract_address}${token_id}`;
+    // const cronjob_id = `${contract_address}${token_id}`;
 
     try {
       //  delete cron job
-      this.Cron_job.deleteCron(cronjob_id);
+      // this.Cron_job.deleteCron(cronjob_id);
       const auction_data = await this.getAuction({
         contract_address,
         token_id,
@@ -146,6 +148,10 @@ export class NftMarketplaceService {
         contact: 'emailaddress@gmail.com',
       };
     }
+  }
+  /*[Getting All Auctions]*/
+  async getAllAuctions(): Promise<any> {
+    return await this.AuctionModel.find({ status: 'started' });
   }
   /************************************/
   /****************[BID_SERVICES]*************/
@@ -252,7 +258,7 @@ export class NftMarketplaceService {
   async cancelSale(cancel: CancelSaleBody): Promise<any> {
     //delete cron job
     try {
-      this.Cron_job.deleteCron(cancel.cronjob_id);
+      // this.Cron_job.deleteCron(cancel.cronjob_id);
       //update status of the sale
       const sales_update = await this.updateSale(
         { _id: cancel.sale_id },
@@ -317,7 +323,7 @@ export class NftMarketplaceService {
     //currently its a demo version need to add actual functionality later
     console.log('from declare winner', auction_details);
     let data = await this.BidModel.find({
-      auction_id: auction_details.auction_id,
+      auction_id: auction_details._id,
     })
       .sort({ bid_amount: -1, created_at: -1 })
       .limit(1);
@@ -326,6 +332,28 @@ export class NftMarketplaceService {
     const token_id = auction_details.token_id;
     // return data;
     //  Need to test block chain Integration
+    this.update_nft(
+      {
+        contract_address: auction_details.contract_address,
+        token_id: auction_details.token_id,
+      },
+      { is_in_auction: false },
+    );
+    const success_data = await this.update_auction(
+      {
+        _id: auction_details._id,
+        contract_address,
+        token_id,
+        status: 'started',
+      },
+      { status: 'expired' },
+    );
+    //update in all bids
+    console.log('*************');
+    console.log('bidsdata', data);
+
+    console.log('*************');
+    //
     if (data.length) {
       const nftContractAddress = data[0]['contract_address'];
       const nftCntr = await this.ContractModel.findOne({
@@ -449,6 +477,17 @@ export class NftMarketplaceService {
         },
         { status: 'expired', winner: winner_data },
       );
+      // updatind all bids
+      await this.updateAllbids(
+        {
+          contract_address,
+          token_id,
+          status: 'started',
+        },
+        { status: 'expired' },
+      );
+      //
+
       return data;
     }
     return [];
