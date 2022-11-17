@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { NftModule } from './nft/nft.module';
 import { DeploymentModule } from './deployment/deployment.module';
@@ -14,6 +14,8 @@ import { CronjobService } from './cronjob/cronjob.service';
 import { AdminModule } from './admin/admin.module';
 
 import { MetadataModule } from './metadata/metadata.module';
+import { AppService } from './app.service';
+import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -28,6 +30,13 @@ import { MetadataModule } from './metadata/metadata.module';
     AdminModule,
     MetadataModule,
   ],
-  providers: [CronjobService],
+  providers: [CronjobService, AppService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private appService: AppService) {}
+
+  onModuleInit() {
+    console.log(`Initialization...`);
+    this.appService.handleCron();
+  }
+}

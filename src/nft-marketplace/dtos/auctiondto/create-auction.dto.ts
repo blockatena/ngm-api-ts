@@ -7,15 +7,15 @@ export class CreateAuctionBody {
   contract_address: string;
   @ApiProperty({ example: '3' })
   token_id: string;
-  @ApiProperty({ example: '2022-11-01T16:25:00' })
+  @ApiProperty({ example: new Date() })
   start_date: string;
-  @ApiProperty({ example: '2022-11-01T17:25:00' })
+  @ApiProperty({ example: new Date() })
   end_date: string;
-  @ApiProperty({ example: 20 })
+  @ApiProperty({ example: 2 })
   min_price: number;
 }
 export class CancelAuctionBody {
-  @ApiProperty({ example: '0x2A8b77DF421106C8fCdBE08697c949D519f4c05a' })
+  @ApiProperty({ example: '0xE0B8BF7DB5Cd76033f036658De37a06D6C014D9C' })
   contract_address: string;
   @ApiProperty({ example: '3' })
   token_id: string;
