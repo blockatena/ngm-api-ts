@@ -21,7 +21,7 @@ export class AppService implements OnModuleInit {
     // false
 
     all_auctions.forEach(async (auction) => {
-      if (new Date(auction.end_date) < new Date()) {
+      if (new Date(auction.end_date) <= new Date()) {
         console.log(
           '',
           new Date(auction.end_date).toISOString(),
