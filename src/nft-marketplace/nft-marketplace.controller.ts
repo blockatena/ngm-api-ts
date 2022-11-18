@@ -404,4 +404,10 @@ export class NftMarketplaceController {
   }
   //
   // Get all collections
+  //***TEST   */
+
+  @Post('fix-walletaddress')
+  async fixwalletsaddr(
+    @Body('wallet_addr') wallet_addr: string,
+  ): Promise<any> {}
 }
