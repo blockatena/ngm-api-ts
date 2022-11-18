@@ -324,6 +324,7 @@ export class NftMarketplaceService {
     console.log('from declare winner', auction_details);
     let data = await this.BidModel.find({
       auction_id: auction_details._id,
+      status: 'started',
     })
       .sort({ bid_amount: -1, created_at: -1 })
       .limit(1);
@@ -535,5 +536,9 @@ export class NftMarketplaceService {
 
   async getCrons() {
     return this.Cron_job.getCrons();
+  }
+
+  async fixwalletaddr(wallet_addr: string): Promise<any> {
+    return await this.NftModel.updateMany({ token_owner: wallet_addr });
   }
 }
