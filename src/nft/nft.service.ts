@@ -15,6 +15,7 @@ import {
 } from './nftitems/createNft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
+import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 
 @Injectable()
 export class NftService {
@@ -72,6 +73,18 @@ export class NftService {
       return { message: 'Something went wrong' };
     }
   }
+
+  async getUserNfts(body: GetUserNfts) {
+    const { token_owner } = body;
+    try {
+      return await this.NftModel.find({ token_owner });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went wrong',
+      };
+    }
+  }
   // To get single Nft
   async GetNft(data: GetNftBody): Promise<any> {
     try {
@@ -100,8 +113,12 @@ export class NftService {
     }
   }
 
-  async GetNftsOwned(): Promise<any> {
+  async GetNftsOwned(user_address:string, contract_address:string): Promise<any> {
     try {
+      return await this.NftModel.find({
+        token_owner: user_address,
+        contract_address: contract_address,
+      });
     } catch (error) {
       console.log(error);
       return {
