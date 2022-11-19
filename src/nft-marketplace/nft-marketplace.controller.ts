@@ -22,6 +22,7 @@ import {
   CancelSaleBody,
   CreateSaleBody,
 } from './dtos/saledtos/create-sale.dto';
+import { ethers } from 'ethers';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
@@ -137,9 +138,8 @@ export class NftMarketplaceController {
   @Post('place-nft-bid')
   async createBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
-    const { token_id, bid_amount, bidder_address, contract_address } =
-      create_bid;
-
+    let { token_id, bid_amount, bidder_address, contract_address } = create_bid;
+    bidder_address = ethers.utils.getAddress(bidder_address);
     try {
       const is_nft_exists = await this.nftMarketplaceService.GetNft({
         token_id,
@@ -232,7 +232,7 @@ export class NftMarketplaceController {
         return 'Invalid Auction Id';
       }
       const bidWinner = await this.nftMarketplaceService.declareWinner({
-        auction_id: auctionDetails._id.toString(),
+        _id: auctionDetails._id.toString(),
         token_id: auctionDetails.token_id,
         contract_address: auctionDetails.contract_address,
         token_owner: auctionDetails.token_owner,
@@ -367,8 +367,8 @@ export class NftMarketplaceController {
     //checks over
     return await this.nftMarketplaceService.acceptOffer(body);
   }
-  @Post('put-for-sale-fixed-price')
-  async putSaleFixedPrice() {}
+  // @Post('put-for-sale-fixed-price')
+  // async putSaleFixedPrice() {}
   @ApiOperation({
     summary: 'This Api will get all the offers of the Nft which is in sale',
   })
@@ -381,8 +381,8 @@ export class NftMarketplaceController {
   }
   /*********************************************************/
 
-  @Post('change-nft-bid-price')
-  async changeBidPrice() {}
+  // @Post('change-nft-bid-price')
+  // async changeBidPrice() {}
   @ApiOperation({ summary: 'This Api will return all the bids of the auction' })
   @Post('get-bid-list-by-auction')
   async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
@@ -394,8 +394,8 @@ export class NftMarketplaceController {
     }
   }
 
-  @Post('accept-offers')
-  async accept_offers() {}
+  // @Post('accept-offers')
+  // async accept_offers() {}
 
   // dev
   @Get('allcronjobs')
@@ -406,8 +406,8 @@ export class NftMarketplaceController {
   // Get all collections
   //***TEST   */
 
-  @Post('fix-walletaddress')
-  async fixwalletsaddr(
-    @Body('wallet_addr') wallet_addr: string,
-  ): Promise<any> {}
+  // @Post('fix-walletaddress')
+  // async fixwalletsaddr(
+  //   @Body('wallet_addr') wallet_addr: string,
+  // ): Promise<any> {}
 }
