@@ -45,6 +45,8 @@ import {
 } from './dto/create-nft.dto';
 import { GetCollectionsResponse } from './dto/get-collections.dto';
 import { GetAllNftsResponse } from './dto/get-allnfts.dto';
+import { GetAssetsResponse } from './dto/get-assets.dto';
+import { GetNftsListedResponse } from './dto/get-nftslisted.dto';
 
 require('dotenv').config();
 
@@ -246,8 +248,19 @@ export class NftController {
     summary:
       'This Api will gets you Specific asset given by contract_address and Token_id in Params',
   })
+  @ApiCreatedResponse({
+    status: 201,
+    description:
+      'Successfully generated assets of contract_address and Token_id',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Forbidden',
+  })
   @Get('get-nft/:contract_address/:token_id')
-  async getNft(@Param() body: GetNftBody): Promise<any> {
+  async getNft(
+    @Param() body: GetNftBody,
+  ): Promise<GetAssetsResponse | object | string> {
     // Validations
     // check in Db
     //  return await this.nftService.
@@ -316,7 +329,9 @@ export class NftController {
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
   @Get('get-nfts-listed/:listed_in')
-  async getNftsListed(@Param('listed_in') listed: string): Promise<any> {
+  async getNftsListed(
+    @Param('listed_in') listed: string,
+  ): Promise<GetNftsListedResponse[] | object> {
     try {
       const data = await this.nftService.getNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;

@@ -19,6 +19,8 @@ import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetCollectionsResponse } from './dto/get-collections.dto';
 import { GetAllNftsResponse } from './dto/get-allnfts.dto';
+import { GetAssetsResponse } from './dto/get-assets.dto';
+import { GetNftsListedResponse } from './dto/get-nftslisted.dto';
 
 @Injectable()
 export class NftService {
@@ -79,7 +81,7 @@ export class NftService {
     }
   }
   // To get single Nft
-  async getNft(data: GetNftBody): Promise<any> {
+  async getNft(data: GetNftBody): Promise<GetAssetsResponse | object> {
     try {
       const nft = await this.NftModel.findOne(data);
       const contract_details = await this.GetContract({
@@ -92,7 +94,7 @@ export class NftService {
       return { message: 'Something went Wrong' };
     }
   }
-  async getNftsListed(listed: string): Promise<any> {
+  async getNftsListed(listed: string): Promise<GetNftsListedResponse | object> {
     try {
       if (listed == 'auction')
         return await this.NftModel.find({ is_in_auction: true });
