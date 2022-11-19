@@ -40,6 +40,7 @@ import {
   GetCollectionsBody,
   GetNftBody,
   paginate,
+  nftContractUser,
 } from './nftitems/createNft.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 
@@ -219,6 +220,31 @@ export class NftController {
       return { message: 'Something went wrong' };
     }
   }
+
+  @ApiOperation({
+    summary: 'This Api will gets you all the nfts by contract address owned by the user',
+  })
+  /** [GET ALL NFTS WITH PAGINATION]*/
+  @Get('get-user-nft-cntr/:user_address/:contract_address')
+  async getUserNftsByCollection(@Param() nftContractDto: nftContractUser): Promise<any> {
+    const { user_address , contract_address} = nftContractDto;
+    try {
+      const data = await this.nftservice.GetNftsOwned(
+        user_address,
+        contract_address,
+      );
+      if (!data) {
+        return {
+          message: 'There are no nfts present',
+        };
+      }
+      return data;
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went wrong' };
+    }
+  }
+
   //
   @ApiOperation({
     summary:

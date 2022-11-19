@@ -113,8 +113,12 @@ export class NftService {
     }
   }
 
-  async GetNftsOwned(): Promise<any> {
+  async GetNftsOwned(user_address:string, contract_address:string): Promise<any> {
     try {
+      return await this.NftModel.find({
+        token_owner: user_address,
+        contract_address: contract_address,
+      });
     } catch (error) {
       console.log(error);
       return {

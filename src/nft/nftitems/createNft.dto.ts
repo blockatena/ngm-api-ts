@@ -36,6 +36,14 @@ export class paginate {
   @ApiProperty()
   readonly items_per_page: number;
 }
+
+export class nftContractUser {
+  @ApiProperty()
+  readonly contract_address: string;
+  @ApiProperty()
+  readonly user_address: string;
+}
+
 export class GetListedCollections {
   @ApiProperty()
   contract_address?: string;
