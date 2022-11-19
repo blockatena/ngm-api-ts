@@ -12,12 +12,13 @@ import {
   GetListedCollections,
   getNft,
   GetNftBody,
-  paginate,
+  Paginate,
   UserNfts,
 } from './dto/create-nft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetCollectionsResponse } from './dto/get-collections.dto';
+import { GetAllNftsResponse } from './dto/get-allnfts.dto';
 
 @Injectable()
 export class NftService {
@@ -56,7 +57,9 @@ export class NftService {
     return await (await this.NftModel.create(data)).save();
   }
   // To get all Nfts
-  async getAllNfts(page_details: paginate): Promise<any> {
+  async getAllNfts(
+    page_details: Paginate,
+  ): Promise<GetAllNftsResponse | object> {
     const { page_number, items_per_page } = page_details;
     try {
       const nfts = await this.NftModel.find({})

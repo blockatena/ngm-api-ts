@@ -30,7 +30,7 @@ export class GetNftBody {
   @ApiPropertyOptional()
   readonly bids?: boolean;
 }
-export class paginate {
+export class Paginate {
   @ApiProperty()
   readonly page_number: number;
   @ApiProperty()

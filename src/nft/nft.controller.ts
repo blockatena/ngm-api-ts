@@ -40,10 +40,11 @@ import {
   GetListedCollections,
   GetCollectionsBody,
   GetNftBody,
-  paginate,
+  Paginate,
   UserNfts,
 } from './dto/create-nft.dto';
 import { GetCollectionsResponse } from './dto/get-collections.dto';
+import { GetAllNftsResponse } from './dto/get-allnfts.dto';
 
 require('dotenv').config();
 
@@ -70,6 +71,14 @@ export class NftController {
   // File Upload
   @ApiOperation({
     summary: 'This Api will upload your asset and gets you URI of that asset',
+  })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully uploaded your asset and here is the URI of that',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'forbidden',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -183,7 +192,7 @@ export class NftController {
   //   return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
   // }
 
-  // To fetch Contract Details
+  // ************************To fetch Contract Details**************************//
   @Get('contract-details')
   @ApiResponse({ status: 201, description: 'Fetching the contract details' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -191,6 +200,7 @@ export class NftController {
     return `Contract`;
   }
 
+  //******************************To fetch Transactions **************************//
   @Get('get-transactions/:tokenid/:cntraddr')
   @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
@@ -198,12 +208,22 @@ export class NftController {
     return `ddf`;
   }
 
+  //********************* [GET ALL NFTS WITH PAGINATION]************************//
   @ApiOperation({
     summary: 'This Api will gets you all the Assets',
   })
-  /** [GET ALL NFTS WITH PAGINATION]*/
-  @Get('Get-all-nfts/:page_number/:items_per_page')
-  async getAllNfts(@Param() pagination: paginate): Promise<any> {
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully fetched all assets',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Forbidden.',
+  })
+  @Get('get-all-nfts/:page_number/:items_per_page')
+  async getAllNfts(
+    @Param() pagination: Paginate,
+  ): Promise<GetAllNftsResponse | object> {
     const { page_number, items_per_page } = pagination;
     try {
       const data = await this.nftService.getAllNfts({
@@ -221,14 +241,11 @@ export class NftController {
       return { message: 'Something went wrong' };
     }
   }
-  //
+  //*******************************[GET_ASSETS_PENDING]*************************//
   @ApiOperation({
     summary:
       'This Api will gets you Specific asset given by contract_address and Token_id in Params',
   })
-  // ***************/
-  // get owner assets pending
-  //************ */
   @Get('get-nft/:contract_address/:token_id')
   async getNft(@Param() body: GetNftBody): Promise<any> {
     // Validations
