@@ -41,6 +41,7 @@ import {
   GetNftBody,
   paginate,
 } from './nftitems/createNft.dto';
+import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 
 require('dotenv').config();
 
@@ -267,6 +268,19 @@ export class NftController {
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
+    }
+  }
+  //
+  @ApiOperation({ summary: 'This API will get user nfts' })
+  @Get('get-user-nfts/:token_owner')
+  async getUserNfts(@Param() body: GetUserNfts): Promise<any> {
+    try {
+      return await this.nftservice.getUserNfts(body);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went wrong',
+      };
     }
   }
 
