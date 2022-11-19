@@ -239,11 +239,7 @@ export class NftController {
         contract_address,
         token_id,
       });
-      let variable: boolean;
-      if (variable == true) {
-        const detail = await this.nftservice.GetDetails();
-        console.log(detail);
-      }
+
       console.log(is_nft_exists);
       const nft = is_nft_exists;
       if (!is_nft_exists.nft) {

@@ -30,6 +30,14 @@ export class GetAllBids {
   @ApiProperty()
   auction_id: string;
 }
+export class GetAuction {
+  @ApiProperty()
+  contract_address: string;
+  @ApiProperty()
+  token_id: string;
+  @ApiProperty()
+  end_date: string;
+}
 export class GetUserNfts {
   @ApiProperty()
   token_owner: string;
