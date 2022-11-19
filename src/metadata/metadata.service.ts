@@ -10,7 +10,7 @@ import {
   ContractSchema,
   contractSchema,
 } from 'src/schemas/contract.schema';
-import { metadata, metadataDocument } from 'src/schemas/metadata.schema';
+import { MetaData, metadataDocument } from 'src/schemas/metadata.schema';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
 import { NFTStorage, Blob } from 'nft.storage';
 import { NftService } from 'src/nft/nft.service';
@@ -27,7 +27,7 @@ const storage = new NFTStorage({ token });
 export class MetadataService {
   constructor(
     private readonly httpService: HttpService,
-    @InjectModel(metadata.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(MetaData.name) private MetadataModel: Model<metadataDocument>,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
     @InjectModel(ContractSchema.name)
     private ContractModel: Model<ContractDocument>,
@@ -129,7 +129,12 @@ export class MetadataService {
     tokenUri: string,
   ) {
     const textileUri = `https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space/${contract_address}/${token_id}.json`; // this needs to be changed afterwards
-    const metadataJson = await this.httpService.axiosRef.get(tokenUri.replace('https://ngm-api-tpnng.ondigitalocean.app', 'http://[::1]:8080'));
+    const metadataJson = await this.httpService.axiosRef.get(
+      tokenUri.replace(
+        'https://ngm-api-tpnng.ondigitalocean.app',
+        'http://[::1]:8080',
+      ),
+    );
     //update the metadata in mongo nftschema
     const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
     const nftStorageUri = `https://nftstorage.link/ipfs`;

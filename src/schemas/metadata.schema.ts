@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { Document, PromiseProvider, Types } from 'mongoose';
-export type metadataDocument = metadata & Document;
+export type metadataDocument = MetaData & Document;
 
 @Schema({ timestamps: true })
-export class metadata {
+export class MetaData {
   @Prop()
   contract_address: string;
 
@@ -20,4 +20,4 @@ export class metadata {
   chain: string;
 }
 
-export const metadataSchema = SchemaFactory.createForClass(metadata);
+export const metadataSchema = SchemaFactory.createForClass(MetaData);

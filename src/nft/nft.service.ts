@@ -4,14 +4,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { NftDocument, NftSchema } from 'src/schemas/nft.schema';
-import { metadataDocument, metadata } from 'src/schemas/metadata.schema';
+import { metadataDocument, MetaData } from 'src/schemas/metadata.schema';
 import {
   createNFT,
   GetBids,
+  GetCollectionsBody,
   GetListedCollections,
   getNft,
   GetNftBody,
   paginate,
+  UserNfts,
 } from './dto/create-nft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
@@ -24,7 +26,7 @@ export class NftService {
     private ContractModel: Model<ContractDocument>,
     private readonly httpService: HttpService,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
-    @InjectModel(metadata.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(MetaData.name) private MetadataModel: Model<metadataDocument>,
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
@@ -54,7 +56,7 @@ export class NftService {
     return await (await this.NftModel.create(data)).save();
   }
   // To get all Nfts
-  async GetAllNfts(page_details: paginate): Promise<any> {
+  async getAllNfts(page_details: paginate): Promise<any> {
     const { page_number, items_per_page } = page_details;
     try {
       const nfts = await this.NftModel.find({})
@@ -74,7 +76,7 @@ export class NftService {
     }
   }
   // To get single Nft
-  async GetNft(data: GetNftBody): Promise<any> {
+  async getNft(data: GetNftBody): Promise<any> {
     try {
       const nft = await this.NftModel.findOne(data);
       const contract_details = await this.GetContract({
@@ -87,7 +89,7 @@ export class NftService {
       return { message: 'Something went Wrong' };
     }
   }
-  async GetNftsListed(listed: string): Promise<any> {
+  async getNftsListed(listed: string): Promise<any> {
     try {
       if (listed == 'auction')
         return await this.NftModel.find({ is_in_auction: true });
@@ -111,10 +113,10 @@ export class NftService {
       };
     }
   }
-  async getcollections(): Promise<GetCollectionsResponse[]> {
+  async getCollections(): Promise<GetCollectionsResponse[]> {
     return await this.ContractModel.find({});
   }
-  async get_Nfts_by_Collection(contract_address: string): Promise<any> {
+  async getNftsByCollection(contract_address: string): Promise<any> {
     try {
       return await this.NftModel.aggregate([
         { $match: { contract_address } },
@@ -222,16 +224,34 @@ export class NftService {
     }
   }
   async GetContract(contract_address: any): Promise<any> {
-    console.log(contract_address, 'From Service');
-    return await this.ContractModel.findOne(contract_address);
+    try {
+      console.log(contract_address, 'From Service');
+      return await this.ContractModel.findOne(contract_address);
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went wrong, Our team is looking into it' };
+    }
   }
   async PushImagesToCollection(contract_address: string, image_uri: string) {
-    return await this.ContractModel.findOneAndUpdate(
-      {
-        contract_address,
-      },
-      { $push: { imageuri: image_uri } },
-    );
+    try {
+      return await this.ContractModel.findOneAndUpdate(
+        {
+          contract_address,
+        },
+        { $push: { imageuri: image_uri } },
+      );
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went wrong in service ',
+      };
+    }
+  }
+  async getUserNfts(body: UserNfts): Promise<any> {
+    const { token_owner } = body;
+    return await this.NftModel.find({
+      token_owner,
+    });
   }
   async getAuction(body: GetNftBody): Promise<any> {
     const { contract_address, token_id } = body;
@@ -268,34 +288,39 @@ export class NftService {
     contract_type: string,
     chain = 'Polygon', //will use it later
   ) {
-    const doc = await this.MetadataModel.findOne({
-      contract_address,
-      contract_type,
-      chain,
-    });
-
-    if (doc) {
-      const doc = await this.MetadataModel.findOneAndUpdate(
-        {
-          contract_address,
-          contract_type,
-          chain,
-        },
-        {
-          $addToSet: {
-            tokenUri: { tokenId, uri: tokenUri },
-          },
-        },
-      );
-      return doc;
-    } else {
-      const metadata = await this.MetadataModel.create({
+    try {
+      const doc = await this.MetadataModel.findOne({
         contract_address,
         contract_type,
-        tokenUri: [{ tokenId, uri: tokenUri }],
         chain,
       });
-      return metadata;
+
+      if (doc) {
+        const doc = await this.MetadataModel.findOneAndUpdate(
+          {
+            contract_address,
+            contract_type,
+            chain,
+          },
+          {
+            $addToSet: {
+              tokenUri: { tokenId, uri: tokenUri },
+            },
+          },
+        );
+        return doc;
+      } else {
+        const metadata = await this.MetadataModel.create({
+          contract_address,
+          contract_type,
+          tokenUri: [{ tokenId, uri: tokenUri }],
+          chain,
+        });
+        return metadata;
+      }
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went wrong ' };
     }
   }
 }

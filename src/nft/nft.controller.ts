@@ -9,6 +9,7 @@ import {
   Post,
   SetMetadata,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getcontract, transactions } from './dto/token-info.dto';
@@ -40,6 +41,7 @@ import {
   GetCollectionsBody,
   GetNftBody,
   paginate,
+  UserNfts,
 } from './dto/create-nft.dto';
 import { GetCollectionsResponse } from './dto/get-collections.dto';
 
@@ -61,7 +63,7 @@ const storage = new NFTStorage({ token });
 // @UseGuards(RolesGuard)
 export class NftController {
   constructor(
-    private nftservice: NftService,
+    private nftService: NftService,
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
   ) {}
@@ -160,7 +162,7 @@ export class NftController {
     description: 'There are no NFTS associated with that Game',
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async totalcount(@Param('game-name') gameName: string): Promise<Number> {
+  async totalCount(@Param('game-name') gameName: string): Promise<Number> {
     return 55;
   }
 
@@ -185,14 +187,14 @@ export class NftController {
   @Get('contract-details')
   @ApiResponse({ status: 201, description: 'Fetching the contract details' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async ContractDetails(): Promise<string> {
+  async contractDetails(): Promise<string> {
     return `Contract`;
   }
 
   @Get('get-transactions/:tokenid/:cntraddr')
   @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async Getransactions(@Param() transactions: transactions): Promise<string> {
+  async getransactions(@Param() transactions: transactions): Promise<string> {
     return `ddf`;
   }
 
@@ -204,7 +206,7 @@ export class NftController {
   async getAllNfts(@Param() pagination: paginate): Promise<any> {
     const { page_number, items_per_page } = pagination;
     try {
-      const data = await this.nftservice.GetAllNfts({
+      const data = await this.nftService.getAllNfts({
         page_number,
         items_per_page,
       });
@@ -231,11 +233,11 @@ export class NftController {
   async getNft(@Param() body: GetNftBody): Promise<any> {
     // Validations
     // check in Db
-    //  return await this.nftservice.
-    //  const get_nft=await this.nftservice.
+    //  return await this.nftService.
+    //  const get_nft=await this.nftService.
     const { contract_address, token_id } = body;
     try {
-      const is_nft_exists = await this.nftservice.GetNft({
+      const is_nft_exists = await this.nftService.getNft({
         contract_address,
         token_id,
       });
@@ -247,9 +249,9 @@ export class NftController {
       }
       console.log(is_nft_exists);
       if (is_nft_exists.nft.is_in_auction) {
-        const auction = await this.nftservice.getAuction(body);
+        const auction = await this.nftService.getAuction(body);
         console.log(auction._id);
-        const bids = await this.nftservice.getBids(auction._id);
+        const bids = await this.nftService.getBids(auction._id);
         console.log(bids);
         return {
           ...nft,
@@ -266,21 +268,40 @@ export class NftController {
       return { message: 'Something went wrong' };
     }
   }
+  //-------------------------******[GET_USER_NFTS]************************/
+  @ApiOperation({
+    summary: 'This Api will return all the NFTS for owned NFTs address',
+  })
+  @Get('get-user-nfts/:token_owner')
+  async getUserNft(@Body() body: UserNfts): Promise<any> {
+    //body is the parameter of type userNFts type
+    try {
+      return await this.nftService.getUserNfts(body);
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong in controller', error };
+    }
+  }
 
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections')
-  async getCollections(): Promise<GetCollectionsResponse[]> {
+  async getCollections(): Promise<GetCollectionsResponse[] | object> {
     // if no collctions ,return some message ,
     //  is this route available to all
-    return await this.nftservice.getcollections();
+    try {
+      return await this.nftService.getCollections();
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong in controller', error };
+    }
   }
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
   @Get('get-nfts-listed/:listed_in')
   async getNftsListed(@Param('listed_in') listed: string): Promise<any> {
     try {
-      const data = await this.nftservice.GetNftsListed(listed);
+      const data = await this.nftService.getNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
     } catch (error) {
       console.log(error);
@@ -295,7 +316,7 @@ export class NftController {
   ): Promise<any> {
     try {
       console.log(Collections_listed);
-      const get_nfts = await this.nftservice.GetNftssListed({
+      const get_nfts = await this.nftService.GetNftssListed({
         ...Collections_listed,
       });
       //
@@ -309,17 +330,17 @@ export class NftController {
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
   @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
   @Get('collection/:contract_address')
-  async GetCollectionsByContractAddress(
+  async getCollectionsByContractAddress(
     @Param() contract: getcontract,
   ): Promise<any> {
     console.log(contract.contract_address);
     try {
       // Fetching Contract details
-      const collection = await this.nftservice.GetContract({
+      const collection = await this.nftService.GetContract({
         contract_address: contract.contract_address,
       });
       // fetching all Nfts
-      const nfts = await this.nftservice.get_Nfts_by_Collection(
+      const nfts = await this.nftService.getNftsByCollection(
         contract.contract_address,
       );
       // fetching data for analysis
@@ -327,7 +348,7 @@ export class NftController {
       const floor_price = 0;
       const best_offer = 0;
       const owners = (
-        await this.nftservice.getUniqueOwners(contract.contract_address)
+        await this.nftService.getUniqueOwners(contract.contract_address)
       ).length;
       return {
         collection,
@@ -412,7 +433,7 @@ export class NftController {
       /******for collection metadata******/
       console.log('ipfsMetadataUri', ipfsMetadataUri);
 
-      const metadata = await this.nftservice.pushTokenUriToDocArray(
+      const metadata = await this.nftService.pushTokenUriToDocArray(
         body.contract_address,
         ipfsMetadataUri,
         tokenId,
@@ -421,14 +442,14 @@ export class NftController {
       /**********saving in Db************/
 
       /******for collection Images******/
-      const collection = await this.nftservice.get_Nfts_by_Collection(
+      const collection = await this.nftService.getNftsByCollection(
         body.contract_address,
       );
       console.log(collection);
       console.log('here', collection.length);
       if (collection.length < 3) {
         console.log(collection.length);
-        this.nftservice.PushImagesToCollection(
+        this.nftService.PushImagesToCollection(
           body.contract_address,
           body.image_uri,
         );
@@ -448,7 +469,7 @@ export class NftController {
       };
       console.log(arrdb);
 
-      const data = await this.nftservice.createNFT(arrdb);
+      const data = await this.nftService.createNFT(arrdb);
       // ****************
       return data;
     } catch (error) {

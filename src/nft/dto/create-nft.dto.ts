@@ -54,3 +54,9 @@ export class GetBids {
   @ApiProperty()
   auction_id: string;
 }
+export class UserNfts {
+  @ApiProperty()
+  //In order to make the class properties visible to the SwaggerModule,
+  //we have to either annotate them with the @ApiProperty()
+  token_owner: string;
+}

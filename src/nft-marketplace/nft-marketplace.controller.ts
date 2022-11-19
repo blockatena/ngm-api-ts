@@ -47,7 +47,7 @@ export class NftMarketplaceController {
     // with contract_address and token_id we can find an unique nft
     const checkCredentials = { contract_address, token_id };
     try {
-      const is_nft_exists = await this.nftMarketplaceService.GetNft(
+      const is_nft_exists = await this.nftMarketplaceService.getNft(
         checkCredentials,
       );
       console.log(is_nft_exists);
@@ -141,7 +141,7 @@ export class NftMarketplaceController {
       create_bid;
 
     try {
-      const is_nft_exists = await this.nftMarketplaceService.GetNft({
+      const is_nft_exists = await this.nftMarketplaceService.getNft({
         token_id,
         contract_address,
       });
@@ -162,8 +162,17 @@ export class NftMarketplaceController {
       if (!is_auction_exists) {
         return 'Invalid Auction Id';
       }
+<<<<<<< Updated upstream
       //if the person is already bidded or not
       const is_already_bidded = await this.nftMarketplaceService.get_bid({
+=======
+      //  bid amount should be greater than min amount
+      if (bid_amount < is_auction_exists.min_price) {
+        return `Minium weth required for this Auction is ${is_auction_exists.min_price}`;
+      }
+
+      const is_already_bidded = await this.nftMarketplaceService.getBid({
+>>>>>>> Stashed changes
         auction_id: is_auction_exists._id,
         bidder_address,
         contract_address,
@@ -231,14 +240,44 @@ export class NftMarketplaceController {
       if (!auctionDetails) {
         return 'Invalid Auction Id';
       }
+<<<<<<< Updated upstream
       const bidWinner = await this.nftMarketplaceService.declareWinner({
         auction_id: auctionDetails._id.toString(),
         token_id: auctionDetails.token_id,
         contract_address: auctionDetails.contract_address,
         token_owner: auctionDetails.token_owner,
+=======
+      // validate Nft
+      const nft_data = await this.nftMarketplaceService.getNft({
+        token_id,
+        token_owner,
+>>>>>>> Stashed changes
       });
       console.log(bidWinner);
 
+<<<<<<< Updated upstream
+=======
+      const bid_data = await this.nftMarketplaceService.getBid({
+        token_id,
+        contract_address,
+        bidder_address,
+      });
+      if (!bid_data) {
+        return 'There is no bid associated with that bid Id please check ';
+      }
+      //  All validations are done , now we are transferring the nft
+      // ********* please add block chain code to transfer NFT
+
+      // *********
+
+      const dbmsg = await this.nftMarketplaceService.updateNft(
+        {
+          contract_address: nft_data.contract_address,
+          token_id: nft_data.token_id,
+        },
+        { token_owner: bid_data.bidder_address },
+      );
+>>>>>>> Stashed changes
       return {
         message: 'Bid accepted and transferred the ownership of the NFT',
         status: bidWinner,
@@ -260,7 +299,7 @@ export class NftMarketplaceController {
     // check bids question ?
     try {
       const { contract_address, token_id } = body;
-      const check_nft = await this.nftMarketplaceService.GetNft({
+      const check_nft = await this.nftMarketplaceService.getNft({
         contract_address,
         token_id,
       });
@@ -286,7 +325,7 @@ export class NftMarketplaceController {
     const { token_owner, contract_address, token_id, price } = body;
     try {
       //is Nft Exists
-      const CHECK_NFT_EXISTS = await this.nftMarketplaceService.GetNft({
+      const CHECK_NFT_EXISTS = await this.nftMarketplaceService.getNft({
         contract_address,
         token_id,
       });
