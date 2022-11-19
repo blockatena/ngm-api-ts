@@ -11,7 +11,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getcontract, transactions } from './nftitems/tokeninfo.dto';
+import { getcontract, transactions } from './dto/token-info.dto';
 import { ethers } from 'ethers';
 import {
   ApiBody,
@@ -31,7 +31,7 @@ import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
-import { mintToken } from './nftitems/mintToken.dto';
+import { mintToken } from './dto/mint-token.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -40,7 +40,8 @@ import {
   GetCollectionsBody,
   GetNftBody,
   paginate,
-} from './nftitems/createNft.dto';
+} from './dto/create-nft.dto';
+import { GetCollectionsResponse } from './dto/get-collections.dto';
 
 require('dotenv').config();
 
@@ -102,7 +103,7 @@ export class NftController {
       }),
     )
     file: Express.Multer.File,
-  ) {
+  ): Promise<string | boolean> {
     try {
       console.log(file);
       const blob = new Blob([file.buffer]);
@@ -269,7 +270,7 @@ export class NftController {
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections')
-  async getCollections(): Promise<any> {
+  async getCollections(): Promise<GetCollectionsResponse[]> {
     // if no collctions ,return some message ,
     //  is this route available to all
     return await this.nftservice.getcollections();

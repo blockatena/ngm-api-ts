@@ -12,9 +12,10 @@ import {
   getNft,
   GetNftBody,
   paginate,
-} from './nftitems/createNft.dto';
+} from './dto/create-nft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
+import { GetCollectionsResponse } from './dto/get-collections.dto';
 
 @Injectable()
 export class NftService {
@@ -110,7 +111,7 @@ export class NftService {
       };
     }
   }
-  async getcollections() {
+  async getcollections(): Promise<GetCollectionsResponse[]> {
     return await this.ContractModel.find({});
   }
   async get_Nfts_by_Collection(contract_address: string): Promise<any> {
