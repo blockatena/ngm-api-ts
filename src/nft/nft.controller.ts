@@ -138,19 +138,19 @@ export class NftController {
   // })
   //
   // Logic
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async getallNfts(@Param('jwt') jwt: string): Promise<any> {
-    // const data = await this.RedisService.getEx('allNfts');
-    // if (data) {
-    //   return data;
-    // }
-    const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
-    // await this.RedisService.set('allNfts', JSON.stringify(fetchData));
-    return fetchData;
-  }
+  // @ApiResponse({ status: 403, description: 'Forbidden.' })
+  // async getallNfts(@Param('jwt') jwt: string): Promise<any> {
+  //   // const data = await this.RedisService.getEx('allNfts');
+  //   // if (data) {
+  //   //   return data;
+  //   // }
+  //   const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
+  //   // await this.RedisService.set('allNfts', JSON.stringify(fetchData));
+  //   return fetchData;
+  // }
 
   // to fetch total number of NFTs related to the game
-  @Get('total-count/:gamename')
+  @Get('total-count/:contract_address')
   @ApiCreatedResponse({
     status: 201,
     description: 'Total has been Fetched successfully.',
@@ -161,8 +161,10 @@ export class NftController {
     description: 'There are no NFTS associated with that Game',
   })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async totalcount(@Param('game-name') gameName: string): Promise<Number> {
-    return 55;
+  async totalcount(
+    @Param('contract_address') contract_address: string,
+  ): Promise<Number> {
+    return this.nftservice.getCountNfts(contract_address);
   }
 
   // //   Get route
@@ -183,19 +185,19 @@ export class NftController {
   // }
 
   // To fetch Contract Details
-  @Get('contract-details')
-  @ApiResponse({ status: 201, description: 'Fetching the contract details' })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async ContractDetails(): Promise<string> {
-    return `Contract`;
-  }
+  // @Get('contract-details')
+  // @ApiResponse({ status: 201, description: 'Fetching the contract details' })
+  // @ApiResponse({ status: 403, description: 'Forbidden.' })
+  // async ContractDetails(): Promise<string> {
+  //   return `Contract`;
+  // }
 
-  @Get('get-transactions/:tokenid/:cntraddr')
-  @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async Getransactions(@Param() transactions: transactions): Promise<string> {
-    return `ddf`;
-  }
+  // @Get('get-transactions/:tokenid/:cntraddr')
+  // @ApiResponse({ status: 201, description: 'Fetching the Transactions' })
+  // @ApiResponse({ status: 403, description: 'Forbidden.' })
+  // async Getransactions(@Param() transactions: transactions): Promise<string> {
+  //   return `ddf`;
+  // }
 
   @ApiOperation({
     summary: 'This Api will gets you all the Assets',
@@ -222,12 +224,15 @@ export class NftController {
   }
 
   @ApiOperation({
-    summary: 'This Api will gets you all the nfts by contract address owned by the user',
+    summary:
+      'This Api will gets you all the nfts by contract address owned by the user',
   })
   /** [GET ALL NFTS WITH PAGINATION]*/
   @Get('get-user-nft-cntr/:user_address/:contract_address')
-  async getUserNftsByCollection(@Param() nftContractDto: nftContractUser): Promise<any> {
-    const { user_address , contract_address} = nftContractDto;
+  async getUserNftsByCollection(
+    @Param() nftContractDto: nftContractUser,
+  ): Promise<any> {
+    const { user_address, contract_address } = nftContractDto;
     try {
       const data = await this.nftservice.GetNftsOwned(
         user_address,
@@ -428,7 +433,10 @@ export class NftController {
       // mint token using ethersjs
       const nftCntr = new ethers.Contract(body.contract_address, abi, wallet); // abi and provider to be declared
       // console.log('nftContract: ', nftCntr);
-      const mintToken = await nftCntr.mint(body.token_owner, 1);
+      const mintToken = await nftCntr.mint(
+        ethers.utils.getAddress(body.token_owner),
+        1,
+      );
       const res = await mintToken.wait(1);
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
@@ -495,8 +503,8 @@ export class NftController {
       return false;
     }
   }
-  @Post('mint-batch-nft/:ERC_TOKEN')
-  async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
-  @Post('blacklist-nft/:tokenid/:cntraddr')
-  async blacklistNFT(@Param() blacklist: transactions) {}
+  // @Post('mint-batch-nft/:ERC_TOKEN')
+  // async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
+  // @Post('blacklist-nft/:tokenid/:cntraddr')
+  // async blacklistNFT(@Param() blacklist: transactions) {}
 }

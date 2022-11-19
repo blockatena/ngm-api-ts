@@ -109,53 +109,53 @@ export class DeploymentController {
     return await this.deploymentService.InsertContract(arr);
   }
   //
-  @Get()
-  async gellAll() {
-    return await this.deploymentService.getallContractData();
-  }
-  @Get('GetAll-contracts/:owneraddr')
-  async getContractsOfUser(@Param('owneraddr') owneraddr: string) {
-    return this.deploymentService.getContractByOwnerAddr(owneraddr);
-  }
+  // @Get()
+  // async gellAll() {
+  //   return await this.deploymentService.getallContractData();
+  // }
+  // @Get('GetAll-contracts/:owneraddr')
+  // async getContractsOfUser(@Param('owneraddr') owneraddr: string) {
+  //   return this.deploymentService.getContractByOwnerAddr(owneraddr);
+  // }
 
-  @Get('callFunction/:owneraddr')
-  async callFunction(@Param('owneraddr') owneraddr: string) {
-    // ethersjs call method safe mint ngm721
-    const abiPath = path.join(
-      process.cwd(),
-      `src/utils/constants/NGM721PSI/NGM721PSI.abi`,
-    );
-    console.log(process.cwd());
-    const abi = fs.readFileSync(abiPath, 'utf-8');
-    const nftCntr = new ethers.Contract(
-      '0xe528a4898c00F9B48e302B7b3Ba535319fD51bBd',
-      abi,
-      wallet,
-    ); // abi and provider to be declared
-    console.log('nftContract: ', nftCntr, owneraddr);
-    const minted = await nftCntr.safeMint(
-      '0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390',
-      1,
-      '0x0',
-    );
-    // const minted = await nftCntr.safeMint(owneraddr, 1, '0x0');
-    // const uri = await nftCntr.name();
-    const uri = await nftCntr.baseURI(0);
-    console.log('uri', uri);
-  }
+  // @Get('callFunction/:owneraddr')
+  // async callFunction(@Param('owneraddr') owneraddr: string) {
+  //   // ethersjs call method safe mint ngm721
+  //   const abiPath = path.join(
+  //     process.cwd(),
+  //     `src/utils/constants/NGM721PSI/NGM721PSI.abi`,
+  //   );
+  //   console.log(process.cwd());
+  //   const abi = fs.readFileSync(abiPath, 'utf-8');
+  //   const nftCntr = new ethers.Contract(
+  //     '0xe528a4898c00F9B48e302B7b3Ba535319fD51bBd',
+  //     abi,
+  //     wallet,
+  //   ); // abi and provider to be declared
+  //   console.log('nftContract: ', nftCntr, owneraddr);
+  //   const minted = await nftCntr.safeMint(
+  //     '0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390',
+  //     1,
+  //     '0x0',
+  //   );
+  //   // const minted = await nftCntr.safeMint(owneraddr, 1, '0x0');
+  //   // const uri = await nftCntr.name();
+  //   const uri = await nftCntr.baseURI(0);
+  //   console.log('uri', uri);
+  // }
 
   @Get('contract-Details/:cntraddr')
   async getContractdetails(@Param('cntraddr') cntraddr: string) {
     console.log(cntraddr);
     return this.deploymentService.getContractDetailsByContractAddress(cntraddr);
   }
-  //
-  @Post('pause-contract/:cntraddress')
-  pauseContract(@Param('cntraddress') cntraddress: string) {}
+  // //
+  // @Post('pause-contract/:cntraddress')
+  // pauseContract(@Param('cntraddress') cntraddress: string) {}
 
-  @Post('/change-base-uri1155/cntraddr')
-  changeBaseURI_1155(@Param('cntraddress') cntraddress: string) {}
+  // @Post('/change-base-uri1155/cntraddr')
+  // changeBaseURI_1155(@Param('cntraddress') cntraddress: string) {}
 
-  @Get('/update-contract/:cntraddr')
-  updateContract(@Param('cntraddress') cntraddress: string) {}
+  // @Get('/update-contract/:cntraddr')
+  // updateContract(@Param('cntraddress') cntraddress: string) {}
 }
