@@ -113,6 +113,15 @@ export class NftService {
     }
   }
 
+  async getCountNfts(contract_address: string): Promise<any> {
+    try {
+      return await this.NftModel.countDocuments({contract_address});
+    } catch (error) {
+      console.log(error);
+      return { message: 'Something went Wrong' };
+    }
+  }
+
   async GetNftsOwned(user_address:string, contract_address:string): Promise<any> {
     try {
       return await this.NftModel.find({
