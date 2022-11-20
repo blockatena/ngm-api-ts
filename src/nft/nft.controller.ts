@@ -235,7 +235,7 @@ export class NftController {
     const { user_address, contract_address } = nftContractDto;
     try {
       const data = await this.nftservice.GetNftsOwned(
-        user_address,
+        ethers.utils.getAddress(user_address),
         contract_address,
       );
       if (!data) {
