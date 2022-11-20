@@ -490,7 +490,7 @@ export class NftController {
         contract_details,
         meta_data_url: meta_data_url,
         is_in_auction: false,
-        token_owner: body.token_owner,
+        token_owner: ethers.utils.getAddress(body.token_owner),
         meta_data: jsonData,
       };
       console.log(arrdb);
