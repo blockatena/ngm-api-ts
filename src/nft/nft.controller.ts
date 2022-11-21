@@ -302,6 +302,14 @@ export class NftController {
   @ApiOperation({
     summary: 'This Api will return all the NFTS for owned NFTs address',
   })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully fetched all the NFTS for owned NFT address',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Get('get-user-nfts/:token_owner')
   async getUserNft(@Body() body: UserNfts): Promise<any> {
     //body is the parameter of type userNFts type
@@ -315,6 +323,14 @@ export class NftController {
 
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully fetched all the Collections',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Get('get-collections')
   async getCollections(): Promise<GetCollectionsResponse[] | object> {
     // if no collctions ,return some message ,
@@ -328,10 +344,18 @@ export class NftController {
   }
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully fetched all the Nfts that are in Auction',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Get('get-nfts-listed/:listed_in')
   async getNftsListed(
     @Param('listed_in') listed: string,
-  ): Promise<GetNftsListedResponse[] | object> {
+  ): Promise<GetNftsListedResponse[] | object | string> {
     try {
       const data = await this.nftService.getNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
@@ -342,6 +366,14 @@ export class NftController {
   }
   /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully fetched all the Nfts that are in auction',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Post('get-nfts-listed-collection')
   async getNftsListedCollection(
     @Body() Collections_listed: GetListedCollections,
@@ -361,6 +393,14 @@ export class NftController {
   }
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
   @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully fetched all the NFts of the collection',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Something went wrong',
+  })
   @Get('collection/:contract_address')
   async getCollectionsByContractAddress(
     @Param() contract: getcontract,
@@ -416,6 +456,14 @@ export class NftController {
   //
   @ApiOperation({
     summary: 'This Api will Mint Nft and its details stores it info in DB ',
+  })
+  @ApiCreatedResponse({
+    status: 201,
+    description: 'Successfully Minted Nft and its details ',
+  })
+  @ApiCreatedResponse({
+    status: 400,
+    description: 'Something went wrong',
   })
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
