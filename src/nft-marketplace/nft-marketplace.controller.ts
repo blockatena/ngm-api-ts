@@ -23,10 +23,14 @@ import {
   CreateSaleBody,
 } from './dtos/saledtos/create-sale.dto';
 import { ethers } from 'ethers';
+import { NftService } from 'src/nft/nft.service';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
-  constructor(private readonly nftMarketplaceService: NftMarketplaceService) {}
+  constructor(
+    private readonly nftMarketplaceService: NftMarketplaceService,
+    private readonly nftservice: NftService,
+  ) {}
   /*********************[CREATE-AUCTION]*****************/
   /*[Documentation]*/
   @ApiOperation({
@@ -40,7 +44,7 @@ export class NftMarketplaceController {
     status: 400,
     description: 'Something went wrong',
   })
-  /*[ROUTER-FUNCTION]*/
+  /****************************[ROUTER-FUNCTION]************************/
   @Post('create-nft-auction')
   async createAuction(@Body() create_auction: CreateAuctionBody): Promise<any> {
     const { token_owner, token_id, end_date, contract_address } =
@@ -48,7 +52,7 @@ export class NftMarketplaceController {
     // with contract_address and token_id we can find an unique nft
     const checkCredentials = { contract_address, token_id };
     try {
-      const is_nft_exists = await this.nftMarketplaceService.GetNft(
+      const is_nft_exists = await this.nftservice.getSingleNft(
         checkCredentials,
       );
       console.log(is_nft_exists);
@@ -141,7 +145,7 @@ export class NftMarketplaceController {
     let { token_id, bid_amount, bidder_address, contract_address } = create_bid;
     bidder_address = ethers.utils.getAddress(bidder_address);
     try {
-      const is_nft_exists = await this.nftMarketplaceService.GetNft({
+      const is_nft_exists = await this.nftservice.getSingleNft({
         token_id,
         contract_address,
       });
@@ -163,7 +167,7 @@ export class NftMarketplaceController {
         return 'Invalid Auction Id';
       }
       //if the person is already bidded or not
-      const is_already_bidded = await this.nftMarketplaceService.get_bid({
+      const is_already_bidded = await this.nftMarketplaceService.getBid({
         auction_id: is_auction_exists._id,
         bidder_address,
         contract_address,
@@ -260,7 +264,7 @@ export class NftMarketplaceController {
     // check bids question ?
     try {
       const { contract_address, token_id } = body;
-      const check_nft = await this.nftMarketplaceService.GetNft({
+      const check_nft = await this.nftservice.getSingleNft({
         contract_address,
         token_id,
       });
@@ -286,7 +290,7 @@ export class NftMarketplaceController {
     const { token_owner, contract_address, token_id, price } = body;
     try {
       //is Nft Exists
-      const CHECK_NFT_EXISTS = await this.nftMarketplaceService.GetNft({
+      const CHECK_NFT_EXISTS = await this.nftservice.getSingleNft({
         contract_address,
         token_id,
       });
@@ -393,21 +397,4 @@ export class NftMarketplaceController {
       console.log(error);
     }
   }
-
-  // @Post('accept-offers')
-  // async accept_offers() {}
-
-  // dev
-  @Get('allcronjobs')
-  async getAllCronjobs() {
-    return this.nftMarketplaceService.getCrons();
-  }
-  //
-  // Get all collections
-  //***TEST   */
-
-  // @Post('fix-walletaddress')
-  // async fixwalletsaddr(
-  //   @Body('wallet_addr') wallet_addr: string,
-  // ): Promise<any> {}
 }

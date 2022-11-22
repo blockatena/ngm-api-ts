@@ -5,7 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
 import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 import { ContractSchema, contractSchema } from 'src/schemas/contract.schema';
-import { NftSchema, nftSchema } from 'src/schemas/nft.schema';
+import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
 import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
 import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';

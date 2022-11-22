@@ -16,11 +16,12 @@ import { AdminModule } from './admin/admin.module';
 import { MetadataModule } from './metadata/metadata.module';
 import { AppService } from './app.service';
 import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
+import configuration from './config/configuration';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.ATLAS),
+    ConfigModule.forRoot({ isGlobal: true ,load:[configuration]}),
+    MongooseModule.forRoot(configuration().ATLAS),
     NftModule,
     // AuthModule,
     DeploymentModule,
