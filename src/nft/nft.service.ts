@@ -4,7 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { NftDocument, NftSchema } from 'src/nft/schema/nft.schema';
-import { metadataDocument, metadata } from 'src/schemas/metadata.schema';
+
 import {
   GetListedCollections,
   GetNftBody,
@@ -15,6 +15,7 @@ import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
+import { metadata, metadataDocument } from './schema/metadata.schema';
 @Injectable()
 export class NftService {
   constructor(
