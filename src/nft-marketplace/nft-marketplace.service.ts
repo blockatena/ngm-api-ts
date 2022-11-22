@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AuctionDocument, AuctionSchema } from 'src/schemas/auction.schema';
-import { BidDocument, BidSchema } from 'src/schemas/bid.schema';
 import { CreateAuctionBody } from './dtos/auctiondto/create-auction.dto';
 import {
   CancelBidBody,
@@ -15,8 +13,6 @@ import {
   CancelSaleBody,
   CreateSaleBody,
 } from './dtos/saledtos/create-sale.dto';
-import { SalesDocument, SalesSchema } from 'src/schemas/sales.schema';
-import { OfferDocument, OfferSchema } from 'src/schemas/offer.schema';
 import {
   AcceptOfferBody,
   CreateOfferBody,
@@ -26,6 +22,10 @@ import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketpla
 import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ConfigService } from '@nestjs/config';
+import { AuctionSchema, AuctionDocument } from './schema/auction.schema';
+import { BidSchema, BidDocument } from './schema/bid.schema';
+import { OfferSchema, OfferDocument } from './schema/offer.schema';
+import { SalesSchema, SalesDocument } from './schema/sales.schema';
 
 @Injectable()
 export class NftMarketplaceService {
@@ -129,6 +129,7 @@ export class NftMarketplaceService {
       };
     }
   }
+
   /*[Getting All Auctions]*/
   async getAllAuctions(): Promise<any> {
     return await this.AuctionModel.find({ status: 'started' });

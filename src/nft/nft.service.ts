@@ -263,6 +263,7 @@ export class NftService {
       };
     }
   }
+  //
   async getBids(auction_id: string): Promise<any> {
     try {
       console.log('From Get All bids', auction_id);
