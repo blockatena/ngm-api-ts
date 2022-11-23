@@ -13,11 +13,8 @@ import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
 import { NftMarketplaceModule } from 'src/nft-marketplace/nft-marketplace.module';
 import { DeploymentModule } from 'src/deployment/deployment.module';
 import { metadata, metadataSchema } from 'src/metadata/schema/metadata.schema';
-import {
-  AuctionSchema,
-  auctionSchema,
-} from 'src/nft-marketplace/schema/auction.schema';
-import { BidSchema, bidSchema } from 'src/nft-marketplace/schema/bid.schema';
+import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
+import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 
 require('dotenv').config();
 @Module({

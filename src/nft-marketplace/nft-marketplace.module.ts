@@ -4,10 +4,10 @@ import { NftMarketplaceController } from './nft-marketplace.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { NftModule } from 'src/nft/nft.module';
-import { AuctionSchema, auctionSchema } from './schema/auction.schema';
-import { BidSchema, bidSchema } from './schema/bid.schema';
-import { OfferSchema, offerSchema } from './schema/offer.schema';
-import { SalesSchema, salesSchema } from './schema/sales.schema';
+import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
+import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
+import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
+import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
 
 @Module({
   imports: [

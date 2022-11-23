@@ -8,14 +8,8 @@ import { ContractSchema, contractSchema } from 'src/schemas/contract.schema';
 import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
 
 import { CronjobService } from 'src/cronjob/cronjob.service';
-import {
-  OfferSchema,
-  offerSchema,
-} from 'src/nft-marketplace/schema/offer.schema';
-import {
-  SalesSchema,
-  salesSchema,
-} from 'src/nft-marketplace/schema/sales.schema';
+import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
+import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
 
 @Module({
   imports: [

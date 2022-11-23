@@ -8,14 +8,8 @@ import { ContractSchema, ContractDocument } from 'src/schemas/contract.schema';
 import { NftSchema, NftDocument } from 'src/nft/schema/nft.schema';
 
 import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
-import {
-  OfferSchema,
-  OfferDocument,
-} from 'src/nft-marketplace/schema/offer.schema';
-import {
-  SalesSchema,
-  SalesDocument,
-} from 'src/nft-marketplace/schema/sales.schema';
+import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
+import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
 
 @Injectable()
 export class AdminService {

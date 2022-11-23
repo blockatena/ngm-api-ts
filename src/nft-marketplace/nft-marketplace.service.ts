@@ -22,11 +22,10 @@ import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketpla
 import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ConfigService } from '@nestjs/config';
-import { AuctionSchema, AuctionDocument } from './schema/auction.schema';
-import { BidSchema, BidDocument } from './schema/bid.schema';
-import { OfferSchema, OfferDocument } from './schema/offer.schema';
-import { SalesSchema, SalesDocument } from './schema/sales.schema';
-
+import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
+import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
+import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
+import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
 @Injectable()
 export class NftMarketplaceService {
   constructor(
