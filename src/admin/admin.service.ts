@@ -5,10 +5,11 @@ import { CronjobService } from 'src/cronjob/cronjob.service';
 import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
 import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { ContractSchema, ContractDocument } from 'src/schemas/contract.schema';
-import { NftSchema, NftDocument } from 'src/schemas/nft.schema';
+import { NftSchema, NftDocument } from 'src/nft/schema/nft.schema';
+
+import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
 import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
 import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
-import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
 
 @Injectable()
 export class AdminService {

@@ -14,18 +14,36 @@ import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import { ConfigService } from '@nestjs/config';
 require('dotenv').config();
-const provider = new ethers.providers.JsonRpcProvider(
-  process.env.MATIC_MUMBAI_RPC_URL,
-);
-const wallet = new ethers.Wallet(process.env.PRIV_KEY, provider);
+// const provider = new ethers.providers.JsonRpcProvider(
+//   process.env.MATIC_MUMBAI_RPC_URL,
+// );
+// const wallet = new ethers.Wallet(process.env.PRIV_KEY, provider);
 // let contractWithSigner = contract.connect(wallet);
 
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
-  constructor(private readonly deploymentService: DeploymentService) {}
-@ApiOperation({summary:"This Api will create a collection"})
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly deploymentService: DeploymentService,
+  ) { }
+  //Global
+  private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
+    'MATIC_MUMBAI_RPC_URL',
+  );
+  private PRIV_KEY = this.configService.get<string>('PRIV_KEY');
+  private provider = new ethers.providers.JsonRpcProvider(
+    this.MATIC_MUMBAI_RPC_URL,
+  );
+  private wallet = new ethers.Wallet(this.PRIV_KEY, this.provider);
+
+
+
+
+
+  @ApiOperation({ summary: 'This Api will create a collection' })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
     console.log(deploymentBody);
@@ -59,7 +77,7 @@ export class DeploymentController {
     const bin = fs.readFileSync(binPath, 'utf-8');
     //
     console.log('fil read completed');
-    const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
+    const contractFactory = new ethers.ContractFactory(abi, bin, this.wallet);
     console.log('connect to blockchain');
     // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
     // ERC721TINY- (CollectionName,Symbol) - NGMTINY721

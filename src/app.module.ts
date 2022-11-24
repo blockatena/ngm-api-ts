@@ -16,11 +16,13 @@ import { AdminModule } from './admin/admin.module';
 import { MetadataModule } from './metadata/metadata.module';
 import { AppService } from './app.service';
 import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
+import { ActivityModule } from './activity/activity.module';
+import configuration from './config/configuration';
 @Module({
   imports: [
     ScheduleModule.forRoot(),
-    ConfigModule.forRoot({ isGlobal: true }),
-    MongooseModule.forRoot(process.env.ATLAS),
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    MongooseModule.forRoot(configuration().ATLAS),
     NftModule,
     // AuthModule,
     DeploymentModule,
@@ -29,11 +31,12 @@ import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service
     NftMarketplaceModule,
     // AdminModule,
     MetadataModule,
+    ActivityModule,
   ],
   providers: [CronjobService, AppService],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private appService: AppService) {}
+  constructor(private appService: AppService) { }
 
   onModuleInit() {
     console.log(`Initialization...`);

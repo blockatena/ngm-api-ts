@@ -31,7 +31,7 @@ export class GetBids {
   token_id: string;
 }
 
-export class updateAllBids {
+export class updateAllBidsBody {
   contract_address: string;
   token_id: string;
   status: string;

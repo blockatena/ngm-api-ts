@@ -2,21 +2,25 @@ import { HttpModule } from '@nestjs/axios';
 import { NftController } from './nft.controller';
 import { NftService } from './nft.service';
 import * as redisStore from 'cache-manager-redis-store';
-import { CacheModule, Module } from '@nestjs/common';
+import { CacheModule, forwardRef, Module } from '@nestjs/common';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { NftSchema, nftSchema } from 'src/schemas/nft.schema';
-import { metadata, metadataSchema } from 'src/schemas/metadata.schema';
+import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
+import { NftMarketplaceModule } from 'src/nft-marketplace/nft-marketplace.module';
+import { DeploymentModule } from 'src/deployment/deployment.module';
+import { metadata, metadataSchema } from 'src/metadata/schema/metadata.schema';
 import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
 import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 
 require('dotenv').config();
 @Module({
   imports: [
+    forwardRef(() => NftMarketplaceModule),
+    DeploymentModule,
     HttpModule,
     MongooseModule.forFeature([
       { name: NftSchema.name, schema: nftSchema },
@@ -43,8 +47,8 @@ require('dotenv').config();
     // }),
   ],
   controllers: [NftController],
-  providers: [NftService, JwtAuthService, DeploymentService],
+  providers: [NftService],
   //  add to  RedisCliService
-  exports: [NftModule],
+  exports: [NftService],
 })
 export class NftModule {}
