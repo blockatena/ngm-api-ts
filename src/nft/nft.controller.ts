@@ -369,7 +369,7 @@ export class NftController {
       const get_nfts = await this.nftservice.getNftssListed({
         ...Collections_listed,
       });
-      //
+
 
       return get_nfts;
     } catch (error) {

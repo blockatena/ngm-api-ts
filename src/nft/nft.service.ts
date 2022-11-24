@@ -146,11 +146,22 @@ export class NftService {
   async getCollections(body: GetCollectionBody) {
     const { page_number, items_per_page } = body;
     try {
-      return await this.ContractModel.find({}).limit(items_per_page * 1)
+      const collections = await this.ContractModel.find({}).limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
+      const total_collections = await this.ContractModel.countDocuments();
+      return {
+        total_collections,
+        total_pages: Math.ceil(total_collections / items_per_page),
+        currentPage: page_number,
+        collections
+      }
     } catch (error) {
-
+      console.log(error);
+      return {
+        message: 'something went wrong',
+        error,
+      }
     }
 
   }
@@ -234,11 +245,19 @@ export class NftService {
       }
       console.log(sort_order);
       console.log('condition', condition);
-      return await this.NftModel.find(condition)
+      const nfts = await this.NftModel.find(condition)
         .sort({ ...sort_order })
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
+
+      const total_nfts = await this.NftModel.find(condition).countDocuments();
+      return {
+        total_nfts,
+        total_pages: Math.ceil(total_nfts / items_per_page),
+        currentPage: page_number,
+        nfts,
+      }
     } catch (error) {
       console.log(error);
       return { message: 'something went wrong', error };
