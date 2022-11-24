@@ -37,36 +37,52 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import {
   GetListedCollections,
-  GetCollectionsBody,
   GetNftBody,
-  paginate,
-  nftContractUser,
-} from './nftitems/createNft.dto';
+  Paginate,
+  NftContractUser,
+} from './nftitems/create-nft.dto';
+import { GetCollectionBody } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
+import { ConfigService } from '@nestjs/config';
 
-require('dotenv').config();
+// require('dotenv').config();
 
 //Global
-const RPC_URL = process.env.RPC_URL;
-const mum_provider = new ethers.providers.JsonRpcProvider(
-  process.env.MATIC_MUMBAI_RPC_URL,
-);
-const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
-const ipfsDecorator = 'ipfs://';
-const token = process.env.NFT_STORAGE_KEY;
-const wallet = new ethers.Wallet(process.env.PRIV_KEY, mum_provider);
-const storage = new NFTStorage({ token });
+// const RPC_URL = process.env.RPC_URL;
+
+// const provider = new ethers.providers.JsonRpcProvider(RPC_URL);
+// const ipfsDecorator = 'ipfs://';
+// const token = process.env.NFT_STORAGE_KEY;
+// const wallet = new ethers.Wallet(process.env.PRIV_KEY, this.mum_provider);
+// const storage = new NFTStorage({ token });
 
 @ApiTags('NGM APIs')
 @Controller('nft')
 // @UseGuards(RolesGuard)
 export class NftController {
   constructor(
+    private configService: ConfigService,
     private nftservice: NftService,
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
-  ) {}
+  ) { }
+  private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
+    'MATIC_MUMBAI_RPC_URL',
+  );
+  private RPC_URL = this.configService.get<string>('RPC_URL');
+  private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
+  private PRIV_KEY = this.configService.get<string>('PRIV_KEY');
+  //Global
+  private mum_provider = new ethers.providers.JsonRpcProvider(
+    this.MATIC_MUMBAI_RPC_URL,
+  );
+  private provider = new ethers.providers.JsonRpcProvider(this.RPC_URL);
+  private ipfsDecorator = 'ipfs://';
+  private token = this.NFT_STORAGE_KEY;
+  private wallet = new ethers.Wallet(this.PRIV_KEY, this.mum_provider);
+  private storage = new NFTStorage({ token: this.token });
   // File Upload
+
   @ApiOperation({
     summary: 'This Api will upload your asset and gets you URI of that asset',
   })
@@ -111,7 +127,7 @@ export class NftController {
       const toUploadFile = new File([blob], `/${file.originalname}`, {
         type: file.mimetype,
       });
-      const cid = await storage.storeDirectory([toUploadFile]);
+      const cid = await this.storage.storeDirectory([toUploadFile]);
       const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
       console.log({ tokenUri });
       // **********Storing in Db
@@ -204,10 +220,10 @@ export class NftController {
   })
   /** [GET ALL NFTS WITH PAGINATION]*/
   @Get('Get-all-nfts/:page_number/:items_per_page')
-  async getAllNfts(@Param() pagination: paginate): Promise<any> {
+  async getAllNfts(@Param() pagination: Paginate): Promise<any> {
     const { page_number, items_per_page } = pagination;
     try {
-      const data = await this.nftservice.GetAllNfts({
+      const data = await this.nftservice.getAllNfts({
         page_number,
         items_per_page,
       });
@@ -230,11 +246,11 @@ export class NftController {
   /** [GET ALL NFTS WITH PAGINATION]*/
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
-    @Param() nftContractDto: nftContractUser,
+    @Param() nftContractDto: NftContractUser,
   ): Promise<any> {
     const { user_address, contract_address } = nftContractDto;
     try {
-      const data = await this.nftservice.GetNftsOwned(
+      const data = await this.nftservice.getNftsOwned(
         ethers.utils.getAddress(user_address),
         contract_address,
       );
@@ -266,7 +282,7 @@ export class NftController {
     //  const get_nft=await this.nftservice.
     const { contract_address, token_id } = body;
     try {
-      const is_nft_exists = await this.nftservice.GetNft({
+      const is_nft_exists = await this.nftservice.getNft({
         contract_address,
         token_id,
       });
@@ -289,6 +305,8 @@ export class NftController {
         };
       }
       if (is_nft_exists.is_in_sale) {
+        // const sale=await 
+        // const offers=await
         return 'its in sale will send sale info soon';
       }
       return { ...nft };
@@ -299,7 +317,7 @@ export class NftController {
   }
   //
   @ApiOperation({ summary: 'This API will get user nfts' })
-  @Get('get-user-nfts/:token_owner')
+  @Get('get-user-nfts/:token_owner/:page_number/:items_per_page')
   async getUserNfts(@Param() body: GetUserNfts): Promise<any> {
     try {
       return await this.nftservice.getUserNfts(body);
@@ -313,18 +331,27 @@ export class NftController {
 
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
-  @Get('get-collections')
-  async getCollections(): Promise<any> {
+  @Get('get-collections/:page_number/:items_per_page')
+  async getCollections(@Param() body: GetCollectionBody): Promise<any> {
     // if no collctions ,return some message ,
     //  is this route available to all
-    return await this.nftservice.getcollections();
+    try {
+      return await this.nftservice.getCollections(body);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went Wrong",
+        error
+      }
+    }
+
   }
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
   @Get('get-nfts-listed/:listed_in')
   async getNftsListed(@Param('listed_in') listed: string): Promise<any> {
     try {
-      const data = await this.nftservice.GetNftsListed(listed);
+      const data = await this.nftservice.getNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
     } catch (error) {
       console.log(error);
@@ -339,7 +366,7 @@ export class NftController {
   ): Promise<any> {
     try {
       console.log(Collections_listed);
-      const get_nfts = await this.nftservice.GetNftssListed({
+      const get_nfts = await this.nftservice.getNftssListed({
         ...Collections_listed,
       });
       //
@@ -359,11 +386,11 @@ export class NftController {
     console.log(contract.contract_address);
     try {
       // Fetching Contract details
-      const collection = await this.nftservice.GetContract({
+      const collection = await this.nftservice.getContract({
         contract_address: contract.contract_address,
       });
       // fetching all Nfts
-      const nfts = await this.nftservice.get_Nfts_by_Collection(
+      const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
       // fetching data for analysis
@@ -431,7 +458,11 @@ export class NftController {
       const abi = fs.readFileSync(abiPath, 'utf-8');
 
       // mint token using ethersjs
-      const nftCntr = new ethers.Contract(body.contract_address, abi, wallet); // abi and provider to be declared
+      const nftCntr = new ethers.Contract(
+        body.contract_address,
+        abi,
+        this.wallet,
+      ); // abi and provider to be declared
       // console.log('nftContract: ', nftCntr);
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(body.token_owner),
@@ -448,7 +479,7 @@ export class NftController {
         attributes: body.attributes,
       };
       const jsonBlob = new Blob([JSON.stringify(jsonData)]);
-      const cid = await storage.storeBlob(jsonBlob);
+      const cid = await this.storage.storeBlob(jsonBlob);
       const nftStorageUri = `https://nftstorage.link/ipfs`;
       const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
       console.log(baseApiUri, 'baseApiUri');
@@ -468,14 +499,14 @@ export class NftController {
       /**********saving in Db************/
 
       /******for collection Images******/
-      const collection = await this.nftservice.get_Nfts_by_Collection(
+      const collection = await this.nftservice.getNftsByCollection(
         body.contract_address,
       );
       console.log(collection);
       console.log('here', collection.length);
       if (collection.length < 3) {
         console.log(collection.length);
-        this.nftservice.PushImagesToCollection(
+        this.nftservice.pushImagesToCollection(
           body.contract_address,
           body.image_uri,
         );
@@ -495,7 +526,7 @@ export class NftController {
       };
       console.log(arrdb);
 
-      const data = await this.nftservice.createNFT(arrdb);
+      const data = await this.nftservice.createNft(arrdb);
       // ****************
       return data;
     } catch (error) {

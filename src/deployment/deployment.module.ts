@@ -12,5 +12,6 @@ import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
   ],
   controllers: [DeploymentController],
   providers: [DeploymentService],
+  exports: [DeploymentService],
 })
 export class DeploymentModule {}

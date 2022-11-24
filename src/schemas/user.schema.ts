@@ -5,14 +5,16 @@ export type UserDocument = UserSchema & Document;
 
 @Schema({ timestamps: true })
 export class UserSchema {
-  @Prop()
+  @Prop({ unique: true })
   username: string;
-
+  @Prop({ unique: true })
+  wallet_address: string;
+  @Prop({ unique: true })
+  email: string;
   @Prop()
   roles: string;
-
-  @Prop()
-  jwt: string;
+  @Prop({ unique: true })
+  api_key: string;
 }
 
 export const userSchema = SchemaFactory.createForClass(UserSchema);

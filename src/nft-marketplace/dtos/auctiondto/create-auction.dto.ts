@@ -41,4 +41,8 @@ export class GetAuction {
 export class GetUserNfts {
   @ApiProperty()
   token_owner: string;
+  @ApiProperty()
+  page_number: number;
+  @ApiProperty()
+  items_per_page: number;
 }
