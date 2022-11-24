@@ -48,6 +48,8 @@ export class GetListedCollections {
   @ApiProperty()
   contract_address?: string;
   @ApiProperty()
+  token_owner?: string;
+  @ApiProperty()
   listed_in?: string;
   @ApiProperty({ default: 1 })
   page_number?: number;

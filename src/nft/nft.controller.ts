@@ -37,11 +37,11 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import {
   GetListedCollections,
-  GetCollectionsBody,
   GetNftBody,
   Paginate,
   NftContractUser,
 } from './nftitems/create-nft.dto';
+import { GetCollectionBody } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 
@@ -65,7 +65,7 @@ export class NftController {
     private nftservice: NftService,
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
-  ) {}
+  ) { }
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MATIC_MUMBAI_RPC_URL',
   );
@@ -305,6 +305,8 @@ export class NftController {
         };
       }
       if (is_nft_exists.is_in_sale) {
+        // const sale=await 
+        // const offers=await
         return 'its in sale will send sale info soon';
       }
       return { ...nft };
@@ -315,7 +317,7 @@ export class NftController {
   }
   //
   @ApiOperation({ summary: 'This API will get user nfts' })
-  @Get('get-user-nfts/:token_owner')
+  @Get('get-user-nfts/:token_owner/:page_number/:items_per_page')
   async getUserNfts(@Param() body: GetUserNfts): Promise<any> {
     try {
       return await this.nftservice.getUserNfts(body);
@@ -329,11 +331,20 @@ export class NftController {
 
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
-  @Get('get-collections')
-  async getCollections(): Promise<any> {
+  @Get('get-collections/:page_number/:items_per_page')
+  async getCollections(@Param() body: GetCollectionBody): Promise<any> {
     // if no collctions ,return some message ,
     //  is this route available to all
-    return await this.nftservice.getCollections();
+    try {
+      return await this.nftservice.getCollections(body);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went Wrong",
+        error
+      }
+    }
+
   }
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })

@@ -28,7 +28,7 @@ export class DeploymentController {
   constructor(
     private readonly configService: ConfigService,
     private readonly deploymentService: DeploymentService,
-  ) {}
+  ) { }
   //Global
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MATIC_MUMBAI_RPC_URL',
@@ -38,6 +38,11 @@ export class DeploymentController {
     this.MATIC_MUMBAI_RPC_URL,
   );
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.provider);
+
+
+
+
+
   @ApiOperation({ summary: 'This Api will create a collection' })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {

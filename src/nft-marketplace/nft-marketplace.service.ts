@@ -15,8 +15,9 @@ import {
 } from './dtos/saledtos/create-sale.dto';
 import {
   AcceptOfferBody,
-  CreateOfferBody,
+
   GetAllOffersBody,
+  MakeOfferBody,
 } from './dtos/create_offer.dto';
 import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
 import { ethers } from 'ethers';
@@ -170,7 +171,7 @@ export class NftMarketplaceService {
     try {
       const { contract_address, token_id } = bid;
       const bid_data = await this.BidModel.find({ contract_address, token_id });
-    } catch (error) {}
+    } catch (error) { }
   }
   /*********************[UPDATE_A_SINGLE_BID]**************************/
   // This route is used to cancel the bid
@@ -206,17 +207,23 @@ export class NftMarketplaceService {
     return { save_in_db, update_nft };
   }
   async cancelSale(cancel: CancelSaleBody): Promise<any> {
-    //delete cron job
+    const { contract_address, token_id } = cancel;
     try {
       //update status of the sale
       const sales_update = await this.updateSale(
-        { _id: cancel.sale_id },
+        {
+          contract_address,
+          token_id, status: 'started'
+        },
         { status: 'cancelled' },
       );
+      // offers schema needs to be updated
+      // ********
+      // 
       const nft_update = await this.nftService.updateNft(
         {
-          contract_address: cancel.contract_address,
-          token_id: cancel.token_id,
+          contract_address,
+          token_id
         },
         { is_in_sale: false },
       );
@@ -228,16 +235,16 @@ export class NftMarketplaceService {
   }
   //CRUD for sale schema
   async getSale(saleData: any) {
-    return await this.SalesModel.findOne({ _id: saleData });
+    return await this.SalesModel.findOne(saleData);
   }
   async updateSale(data: any, update_data: any) {
     await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
   }
 
   //************************************************* */
-  //********[CREATE-OFFER]*******/
-  async createOffer(offer: CreateOfferBody) {
-    return await (await this.OfferModel.create(offer)).save();
+  //********[MAKE-OFFER]*******/
+  async makeOffer(offer: MakeOfferBody) {
+    return await this.OfferModel.create(offer);
   }
   async acceptOffer(accept_Data: AcceptOfferBody) {
     try {

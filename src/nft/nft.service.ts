@@ -16,6 +16,7 @@ import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
+import { GetCollectionBody } from './nftitems/collections.dto';
 @Injectable()
 export class NftService {
   constructor(
@@ -73,9 +74,13 @@ export class NftService {
   }
 
   async getUserNfts(body: GetUserNfts) {
-    const { token_owner } = body;
+    const { token_owner, items_per_page,
+      page_number } = body;
     try {
-      const nfts = await this.NftModel.find({ token_owner });
+      const nfts = await this.NftModel.find({ token_owner })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
       return nfts.length > 0 ? nfts : 'You dont have any Assets';
     } catch (error) {
       console.log(error);
@@ -138,8 +143,16 @@ export class NftService {
       };
     }
   }
-  async getCollections() {
-    return await this.ContractModel.find({});
+  async getCollections(body: GetCollectionBody) {
+    const { page_number, items_per_page } = body;
+    try {
+      return await this.ContractModel.find({}).limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
+    } catch (error) {
+
+    }
+
   }
   async getNftsByCollection(contract_address: string): Promise<any> {
     try {
@@ -173,12 +186,13 @@ export class NftService {
           },
         },
       ]);
-    } catch (error) {}
+    } catch (error) { }
   }
 
   async getNftssListed(data: GetListedCollections): Promise<any> {
     const {
       contract_address,
+      token_owner,
       listed_in,
       page_number,
       items_per_page,
@@ -187,7 +201,7 @@ export class NftService {
     } = data;
     try {
       console.log(
-        contract_address,
+        contract_address, token_owner,
         listed_in,
         page_number,
         items_per_page,
@@ -207,6 +221,9 @@ export class NftService {
       }
       if (contract_address) {
         condition[`contract_address`] = contract_address;
+      }
+      if (token_owner) {
+        condition[`token_owner`] = token_owner;
       }
       const sort_order = {};
       if (order) {
@@ -272,11 +289,11 @@ export class NftService {
         auction_id,
         status: 'started',
       }).sort({ bid_amount: -1 });
-    } catch (error) {}
+    } catch (error) { }
   }
   async getSale(): Promise<any> {
     try {
-    } catch (error) {}
+    } catch (error) { }
   }
   async pushTokenUriToDocArray(
     contract_address: string,
@@ -321,7 +338,7 @@ export class NftService {
       return await this.NftModel.findOneAndUpdate(data, {
         $set: update_data,
       });
-    } catch (error) {}
+    } catch (error) { }
   }
   /*****************[TO_GET_A_SINGLE_NFT]*******************************/
   async getSingleNft(data: object): Promise<any> {

@@ -16,10 +16,6 @@ export class CreateSaleBody {
 }
 export class CancelSaleBody {
   @ApiProperty()
-  sale_id: string;
-  @ApiProperty()
-  cronjob_id: string;
-  @ApiProperty()
   contract_address: string;
   @ApiProperty()
   token_id: string;
