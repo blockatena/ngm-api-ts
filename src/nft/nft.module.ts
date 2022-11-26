@@ -15,11 +15,13 @@ import { DeploymentModule } from 'src/deployment/deployment.module';
 import { metadata, metadataSchema } from 'src/metadata/schema/metadata.schema';
 import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
 import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
+import { ActivityModule } from 'src/activity/activity.module';
 
 require('dotenv').config();
 @Module({
   imports: [
     forwardRef(() => NftMarketplaceModule),
+    ActivityModule,
     DeploymentModule,
     HttpModule,
     MongooseModule.forFeature([
@@ -51,4 +53,4 @@ require('dotenv').config();
   //  add to  RedisCliService
   exports: [NftService],
 })
-export class NftModule {}
+export class NftModule { }
