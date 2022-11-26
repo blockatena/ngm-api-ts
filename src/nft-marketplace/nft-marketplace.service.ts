@@ -140,7 +140,6 @@ export class NftMarketplaceService {
     try {
       console.log(createBid);
       const data = await this.BidModel.create(createBid);
-
       return data;
     } catch (error) {
       console.log(error);
@@ -196,15 +195,21 @@ export class NftMarketplaceService {
   /************************************************/
   /******************[CREATE SALE]**************/
   async createSale(sale: CreateSaleBody): Promise<any> {
-    // save in DB
-    const save_in_db = await this.SalesModel.create(sale);
+    const { contract_address, token_id, token_owner } = sale;
+    try {
+      // save in DB
+      const save_in_db = await this.SalesModel.create(sale);
+      //update in nft is in auction is true
+      const update_nft = await this.nftService.updateNft(
+        { contract_address, token_id },
+        { is_in_sale: true },
+      );
+      return save_in_db;
+    } catch (error) {
+      console.log(error);
+      return { message: 'something wrong in DB' };
+    }
 
-    //update in nft is in auction is true
-    const update_nft = await this.nftService.updateNft(
-      { contract_address: sale.contract_address, token_id: sale.token_id },
-      { is_in_sale: true },
-    );
-    return { save_in_db, update_nft };
   }
   async cancelSale(cancel: CancelSaleBody): Promise<any> {
     const { contract_address, token_id } = cancel;
@@ -227,101 +232,49 @@ export class NftMarketplaceService {
         },
         { is_in_sale: false },
       );
-      return { sales_update, nft_update };
+      return sales_update;
     } catch (error) {
       console.log(error);
       return { message: 'something wrong in DB or with Cron Jobs' };
     }
   }
   //CRUD for sale schema
-  async getSale(saleData: any) {
-    return await this.SalesModel.findOne(saleData);
+  async getSale(saleData: any): Promise<any> {
+    try {
+      return await this.SalesModel.findOne(saleData);
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong' };
+    }
+
   }
-  async updateSale(data: any, update_data: any) {
-    await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
+  async updateSale(data: any, update_data: any): Promise<any> {
+    try {
+      await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
+    } catch (error) {
+      console.log(error);
+      return {
+
+      }
+    }
+
   }
 
   //************************************************* */
   //********[MAKE-OFFER]*******/
-  async makeOffer(offer: MakeOfferBody) {
-    return await this.OfferModel.create(offer);
-  }
-  async acceptOffer(accept_Data: AcceptOfferBody) {
+  async makeOffer(offer: MakeOfferBody): Promise<any> {
     try {
-      const offer_msg = await this.updateOffer(
-        { _id: accept_Data.offer_id },
-        { offer_status: 'accepted' },
-      );
-      // change owner
-      // const Nft_msg = await this.update_nft({},{})
-      return;
+      return await this.OfferModel.create(offer);
     } catch (error) {
       console.log(error);
       return {
-        message: 'Something went Wrong in DB',
-        status: 'Our Team is looking into it ',
-      };
+        message: 'Somethign went wrong'
+      }
     }
   }
-  async getOffer(offer_Data: any): Promise<any> {
-    return await this.OfferModel.findOne(offer_Data);
-  }
-  async getAllOffers(saleData: GetAllOffersBody) {
-    return await this.OfferModel.find({ sale_id: saleData.sale_id });
-  }
-  async updateOffer(offer_data: Object, update_data: Object) {
-    return await this.OfferModel.findOneAndUpdate(offer_data, {
-      $set: update_data,
-    });
-  }
-  // *************************/
-  async declareWinner(auction_details: any) {
-    //currently its a demo version need to add actual functionality later
-    console.log('from declare winner', auction_details);
-    let data = await this.BidModel.find({
-      auction_id: auction_details._id,
-      status: 'started',
-    })
-      .sort({ bid_amount: -1, created_at: -1 })
-      .limit(1);
-    console.log('data from winner function', data);
-    const contract_address = auction_details.contract_address;
-    const token_id = auction_details.token_id;
-    // return data;
-    //  Need to test block chain Integration
-    this.nftService.updateNft(
-      {
-        contract_address: auction_details.contract_address,
-        token_id: auction_details.token_id,
-      },
-      { is_in_auction: false },
-    );
-    const success_data = await this.updateAuction(
-      {
-        _id: auction_details._id,
-        contract_address,
-        token_id,
-        status: 'started',
-      },
-      { status: 'expired' },
-    );
-    //update in all bids
-    console.log('*************');
-    console.log('bidsdata', data);
-
-    console.log('*************');
-    //
-    if (data.length) {
-      const nftContractAddress = data[0]['contract_address'];
-      const nftCntr = await this.ContractModel.findOne({
-        contract_address: nftContractAddress,
-      });
-      const tokenDetails = await this.nftService.getNft({
-        contract_address: auction_details.contract_address,
-        token_id: auction_details.token_id,
-      });
-      const token_owner = tokenDetails.token_owner;
-
+  async acceptOffer(accept_Data: AcceptOfferBody): Promise<any> {
+    const { contract_address, token_id, token_owner, offer_person_address } = accept_Data;
+    try {
       const marketplaceAddress = process.env.MARKETPLACE_CONTRACT_ADDRESS;
       const erc20Address = process.env.ERC20_TOKEN_ADDRESS;
       //ethers code contractFactory
@@ -330,35 +283,19 @@ export class NftMarketplaceService {
         marketplaceAbi,
         this.wallet,
       );
-      const bidder_address = data[0]['bidder_address'];
-      const bid_amount = ethers.utils.parseUnits(
-        data[0]['bid_amount'],
-        'ether',
-      );
-      console.log(
-        '\nbidder address',
-        bidder_address,
-        '\nbid amount',
-        bid_amount,
-        '\ntoken owner',
-        token_owner,
-        '\ntoken id',
-        token_id,
-        '\ncontract address',
+      //
+      const nftCntr = await this.ContractModel.findOne({
         contract_address,
-        '\nerc20 address',
-        erc20Address,
-        '\nnft owner address',
-        nftCntr.owner_address,
-      );
+      });
+      const offer_details = await this.OfferModel.findOne({ contract_address, token_id, offer_person_address, offer_status: 'started' });
       const createSale = await marketplaceCntr.createSale(
         erc20Address,
         contract_address,
-        bidder_address,
+        offer_person_address,
         parseInt(token_id),
         token_owner,
         nftCntr.owner_address,
-        bid_amount,
+        offer_details.offer_price,
       );
       const res = await createSale.wait();
       console.log('res from create sale', res);
@@ -374,98 +311,304 @@ export class NftMarketplaceService {
         return 'You are not owner of the NFT';
       }
 
-      //  All validations are done , now we are transferring the nft
-      // ********* please add block chain code to transfer NFT
+      //
 
-      // *********
-      console.log('_________________________');
-      console.log('NFT DATA', nft_data);
-      console.log('_________________________');
-      const dbmsg = await this.nftService.updateNft(
-        {
-          contract_address: nft_data.contract_address,
-          token_id: nft_data.token_id,
-        },
-        { token_owner: data[0].bidder_address, is_in_auction: false },
+
+      const offer_msg = await this.updateOffer(
+        {},
+        { offer_status: 'accepted' },
       );
+      /*
+      block chain code
+      */
+      return;
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went Wrong in DB',
+        status: 'Our Team is looking into it ',
+      };
+    }
+  }
+  async getOffer(offer_Data: any): Promise<any> {
+    try {
+      return await this.OfferModel.findOne(offer_Data);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'Something went Wrong in DB',
+        status: 'Our Team is looking into it ',
+      };
+    }
 
-      console.log('_________________________________');
-      console.log('New Owner info Updtae', dbmsg);
-      console.log('_________________________________');
-
-      //update status to bid and auction add winner also
-      // update after auction ,set auction status to false
-      console.log('winner Data', dbmsg);
-      // const winner_address = ;
-      // await this.update_nft(
-      //   {
-      //     contract_address: contract_address,
-      //     token_id: token_id,
-      //   },
-      //   { is_in_auction: false },
-      // );
-      const winner_data = bidder_address || 'nobids';
-
-      // const winner_info =
-      //   winnerdata.length === 0
-      //     ? 'No bids for this auction'
-      //     : ;
-      // console.log(winner_info);
-      // update bids of the auction
-      await this.updateAllBids(
+  }
+  async getAllOffers(saleData: GetAllOffersBody) {
+    try {
+      return await this.OfferModel.find({ sale_id: saleData.sale_id }).sort({ offer_price: -1, createdAt: -1 });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
+  }
+  async updateOffer(offer_data: Object, update_data: Object) {
+    try {
+      return await this.OfferModel.findOneAndUpdate(offer_data, {
+        $set: update_data,
+      });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
+  }
+  // *************************/
+  async declareWinner(auction_details: any): Promise<any> {
+    //currently its a demo version need to add actual functionality later
+    try {
+      console.log('from declare winner', auction_details);
+      let data = await this.BidModel.find({
+        auction_id: auction_details._id,
+        status: 'started',
+      })
+        .sort({ bid_amount: -1, created_at: -1 })
+        .limit(1);
+      console.log('data from winner function', data);
+      const contract_address = auction_details.contract_address;
+      const token_id = auction_details.token_id;
+      // return data;
+      //  Need to test block chain Integration
+      this.nftService.updateNft(
         {
-          contract_address,
-          token_id,
-          status: 'started',
+          contract_address: auction_details.contract_address,
+          token_id: auction_details.token_id,
         },
-        { status: 'AuctionExpired', is_auction_ended: true },
+        { is_in_auction: false },
       );
-      // After auction this cron job will be deleted // need to fix with unique id
-      // this.Cron_job.deleteCron(`${contract_address}${token_id}`);
-
-      await this.updateAuction(
+      const success_data = await this.updateAuction(
         {
-          contract_address: contract_address,
-          token_id: token_id,
-
-          status: 'started',
-          // can add more validations if you want
-        },
-        { status: 'expired', winner: winner_data },
-      );
-      // updatind all bids
-      await this.updateAllBids(
-        {
+          _id: auction_details._id,
           contract_address,
           token_id,
           status: 'started',
         },
         { status: 'expired' },
       );
-      //
+      //update in all bids
+      console.log('*************');
+      console.log('bidsdata', data);
 
-      return data;
+      console.log('*************');
+      //
+      if (data.length) {
+        const nftContractAddress = data[0]['contract_address'];
+        const nftCntr = await this.ContractModel.findOne({
+          contract_address: nftContractAddress,
+        });
+        const tokenDetails = await this.nftService.getNft({
+          contract_address: auction_details.contract_address,
+          token_id: auction_details.token_id,
+        });
+        const token_owner = tokenDetails.token_owner;
+
+        const marketplaceAddress = process.env.MARKETPLACE_CONTRACT_ADDRESS;
+        const erc20Address = process.env.ERC20_TOKEN_ADDRESS;
+        //ethers code contractFactory
+        const marketplaceCntr = new ethers.Contract(
+          marketplaceAddress,
+          marketplaceAbi,
+          this.wallet,
+        );
+        const bidder_address = data[0]['bidder_address'];
+        const bid_amount = ethers.utils.parseUnits(
+          data[0]['bid_amount'],
+          'ether',
+        );
+        console.log(
+          '\nbidder address',
+          bidder_address,
+          '\nbid amount',
+          bid_amount,
+          '\ntoken owner',
+          token_owner,
+          '\ntoken id',
+          token_id,
+          '\ncontract address',
+          contract_address,
+          '\nerc20 address',
+          erc20Address,
+          '\nnft owner address',
+          nftCntr.owner_address,
+        );
+        const createSale = await marketplaceCntr.createSale(
+          erc20Address,
+          contract_address,
+          bidder_address,
+          parseInt(token_id),
+          token_owner,
+          nftCntr.owner_address,
+          bid_amount,
+        );
+        const res = await createSale.wait();
+        console.log('res from create sale', res);
+        if (!res) {
+          return false;
+        }
+        // validate Nft
+        const nft_data = await this.nftService.getNft({
+          token_id,
+          contract_address,
+        });
+        if (!nft_data) {
+          return 'You are not owner of the NFT';
+        }
+
+        //  All validations are done , now we are transferring the nft
+        // ********* please add block chain code to transfer NFT
+
+        // *********
+        console.log('_________________________');
+        console.log('NFT DATA', nft_data);
+        console.log('_________________________');
+        const dbmsg = await this.nftService.updateNft(
+          {
+            contract_address: nft_data.contract_address,
+            token_id: nft_data.token_id,
+          },
+          { token_owner: data[0].bidder_address, is_in_auction: false },
+        );
+
+        console.log('_________________________________');
+        console.log('New Owner info Updtae', dbmsg);
+        console.log('_________________________________');
+
+        //update status to bid and auction add winner also
+        // update after auction ,set auction status to false
+        console.log('winner Data', dbmsg);
+        // const winner_address = ;
+        // await this.update_nft(
+        //   {
+        //     contract_address: contract_address,
+        //     token_id: token_id,
+        //   },
+        //   { is_in_auction: false },
+        // );
+        const winner_data = bidder_address || 'nobids';
+
+        // const winner_info =
+        //   winnerdata.length === 0
+        //     ? 'No bids for this auction'
+        //     : ;
+        // console.log(winner_info);
+        // update bids of the auction
+        await this.updateAllBids(
+          {
+            contract_address,
+            token_id,
+            status: 'started',
+          },
+          { status: 'AuctionExpired', is_auction_ended: true },
+        );
+        // After auction this cron job will be deleted // need to fix with unique id
+        // this.Cron_job.deleteCron(`${contract_address}${token_id}`);
+
+        await this.updateAuction(
+          {
+            contract_address: contract_address,
+            token_id: token_id,
+
+            status: 'started',
+            // can add more validations if you want
+          },
+          { status: 'expired', winner: winner_data },
+        );
+        // updatind all bids
+        await this.updateAllBids(
+          {
+            contract_address,
+            token_id,
+            status: 'started',
+          },
+          { status: 'expired' },
+        );
+        //
+
+        return data;
+      }
+      return [];
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
     }
-    return [];
   }
 
   //
   async updateAuction(data: any, update_data: any) {
-    console.log('From Update Auction', data);
-    const dat = await this.AuctionModel.findOneAndUpdate(data, {
-      $set: update_data,
-    });
-    return dat;
+    try {
+      console.log('From Update Auction', data);
+      const dat = await this.AuctionModel.findOneAndUpdate(data, {
+        $set: update_data,
+      });
+      return dat;
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
   }
 
   async getAllNftsInAuction(): Promise<any> {
-    return await this.nftService.getNft({ is_in_auction: true });
+    try {
+      return await this.nftService.getNft({ is_in_auction: true });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
+  }
+  async getAllNftsInSale(): Promise<any> {
+    try {
+      return await this.nftService.getNft({ is_in_sale: true });
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
   }
   async getAuction(details: object): Promise<any> {
-    console.log('on Service', details);
-    return await this.AuctionModel.findOne(details);
+    try {
+      console.log('on Service', details);
+      return await this.AuctionModel.findOne(details);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
   }
   async getBid(details: any): Promise<any> {
-    return await this.BidModel.findOne(details);
+    try {
+      return await this.BidModel.findOne(details);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
   }
 }
