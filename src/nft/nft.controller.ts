@@ -44,6 +44,8 @@ import {
 import { GetCollectionBody } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
+import { ActivityService } from 'src/activity/activity.service';
+import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
 
 // require('dotenv').config();
 
@@ -63,8 +65,10 @@ export class NftController {
   constructor(
     private configService: ConfigService,
     private nftservice: NftService,
+    private readonly nftMarketPlaceService: NftMarketplaceService,
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
+    private activityService: ActivityService
   ) { }
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MATIC_MUMBAI_RPC_URL',
@@ -286,13 +290,10 @@ export class NftController {
         contract_address,
         token_id,
       });
-
-      console.log(is_nft_exists);
       const nft = is_nft_exists;
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
       }
-      console.log(is_nft_exists);
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
         console.log(auction._id);
@@ -304,10 +305,12 @@ export class NftController {
           bids,
         };
       }
-      if (is_nft_exists.is_in_sale) {
-        // const sale=await 
-        // const offers=await
-        return 'its in sale will send sale info soon';
+      console.log(is_nft_exists.is_in_sale, "true")
+      if (is_nft_exists.nft.is_in_sale) {
+        console.log(" is in sale")
+        const sale = await this.nftMarketPlaceService.getSale({ contract_address, token_id, status: 'started' })
+        const offers = await this.nftMarketPlaceService.getAllOffers({ sale_id: sale._id });
+        return { ...nft, sale, offers };
       }
       return { ...nft };
     } catch (error) {
@@ -369,8 +372,6 @@ export class NftController {
       const get_nfts = await this.nftservice.getNftssListed({
         ...Collections_listed,
       });
-
-
       return get_nfts;
     } catch (error) {
       console.log(error);
@@ -525,9 +526,23 @@ export class NftController {
         meta_data: jsonData,
       };
       console.log(arrdb);
+      //add to Activity 
 
+      await this.activityService.createActivity({
+        'event': 'Minted',
+        'item': {
+          name: jsonData.name,
+          contract_address: arrdb.contract_address,
+          token_id: arrdb.token_id,
+          image: jsonData.image
+        },
+        'price': 0,
+        'quantity': 1,
+        'from': 'null',
+        'to': ethers.utils.getAddress(body.token_owner),
+        'read': false
+      })
       const data = await this.nftservice.createNft(arrdb);
-      // ****************
       return data;
     } catch (error) {
       console.log(error);

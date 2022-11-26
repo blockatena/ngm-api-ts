@@ -8,10 +8,12 @@ import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
 import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
 import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
+import { ActivityModule } from 'src/activity/activity.module';
 
 @Module({
   imports: [
     forwardRef(() => NftModule),
+    ActivityModule,
     MongooseModule.forFeature([
       { name: AuctionSchema.name, schema: auctionSchema },
       { name: BidSchema.name, schema: bidSchema },
@@ -24,4 +26,4 @@ import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
   providers: [NftMarketplaceService],
   exports: [NftMarketplaceService],
 })
-export class NftMarketplaceModule {}
+export class NftMarketplaceModule { }

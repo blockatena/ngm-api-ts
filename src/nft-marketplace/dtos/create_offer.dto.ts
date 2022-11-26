@@ -11,9 +11,13 @@ export class MakeOfferBody {
 }
 export class AcceptOfferBody {
   @ApiProperty()
-  sale_id: string;
+  contract_address: string;
   @ApiProperty()
-  offer_id: string;
+  token_id: string;
+  @ApiProperty()
+  offer_person_address: string;
+  @ApiProperty()
+  token_owner: string;
 }
 export class GetAllOffersBody {
   @ApiProperty()
