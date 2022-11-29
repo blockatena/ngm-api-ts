@@ -7,7 +7,7 @@ const cron_time = process.env.CRON_TIME || '*/30 * * * * *';
 @Injectable()
 export class AppService implements OnModuleInit {
   private readonly logger = new Logger(AppService.name);
-  constructor(private nftmrktservice: NftMarketplaceService) {}
+  constructor(private nftmrktservice: NftMarketplaceService) { }
   @Cron(cron_time)
   async handleCron() {
     //need to check end date for auction if the end date is less we nned to call the winner

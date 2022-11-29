@@ -7,7 +7,7 @@ import { ActivityDocument, ActivitySchema } from './schema/activity.schema';
 @Injectable()
 export class ActivityService {
     constructor(@InjectModel(ActivitySchema.name)
-    private activityModel: Model<ActivityDocument>,) {
+    private activityModel: Model<ActivityDocument>) {
         activityModel;
     }
     async createActivity(data: any): Promise<any> {
@@ -21,9 +21,10 @@ export class ActivityService {
             }
         }
     }
-    async getUserActivity(data: any): Promise<any> {
+    async getUserActivity(data: string): Promise<any> {
         try {
-            return await this.activityModel.find(data);
+            console.log(data);
+            return await this.activityModel.find({ $or: [{ from: data }, { to: data }] });
         } catch (error) {
             console.log(error);
             return {

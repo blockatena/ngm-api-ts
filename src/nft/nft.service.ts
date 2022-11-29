@@ -357,7 +357,14 @@ export class NftService {
       return await this.NftModel.findOneAndUpdate(data, {
         $set: update_data,
       });
-    } catch (error) { }
+    } catch (error) {
+      console.log(error)
+
+      return {
+        message: "something went Wrong",
+        error
+      }
+    }
   }
   /*****************[TO_GET_A_SINGLE_NFT]*******************************/
   async getSingleNft(data: object): Promise<any> {
