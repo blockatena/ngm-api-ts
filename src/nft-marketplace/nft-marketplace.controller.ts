@@ -235,7 +235,13 @@ export class NftMarketplaceController {
 
     try {
       return await this.nftMarketplaceService.cancelBid(body);
-    } catch (error) { }
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went wrong',
+        error
+      }
+    }
   }
 
   /*********************[ACCEPT-BID]***********************/
