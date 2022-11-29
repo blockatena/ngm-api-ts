@@ -469,7 +469,12 @@ export class NftController {
         ethers.utils.getAddress(body.token_owner),
         1,
       );
+      console.log("minttoken", mintToken);
       const res = await mintToken.wait(1);
+
+
+      console.log('response', res);
+
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
       const jsonData = {
@@ -520,7 +525,7 @@ export class NftController {
         contract_type: body.contract_type || 'NGM721PSI',
         token_id: tokenId,
         contract_details,
-        meta_data_url: meta_data_url,
+        meta_data_url,
         is_in_auction: false,
         token_owner: ethers.utils.getAddress(body.token_owner),
         meta_data: jsonData,
@@ -538,11 +543,13 @@ export class NftController {
         },
         'price': 0,
         'quantity': 1,
-        'from': 'null',
+        'transaction_hash': mintToken.hash,
+        'from': '0x0000000000000000000000000000000000000000',
         'to': ethers.utils.getAddress(body.token_owner),
         'read': false
       })
       const data = await this.nftservice.createNft(arrdb);
+      console.log(data);
       return data;
     } catch (error) {
       console.log(error);

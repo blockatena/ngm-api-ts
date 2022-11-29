@@ -11,9 +11,10 @@ export class NftSchema {
   contract_type: string;
   @Prop()
   token_id: string;
-  @Prop({ unique: true })
+  @Prop({ default: '0' })
+  price: string;
+  @Prop()
   meta_data_url: string;
-
   @Prop({ default: false })
   is_in_auction: boolean;
 
@@ -38,4 +39,4 @@ export class NftSchema {
 }
 
 export const nftSchema = SchemaFactory.createForClass(NftSchema);
-nftSchema.pre('save', async () => {});
+nftSchema.pre('save', async () => { });
