@@ -457,7 +457,7 @@ export class NftMarketplaceService {
   }
   async getAllOffers(saleData: GetAllOffersBody) {
     try {
-      return await this.OfferModel.find({ sale_id: saleData.sale_id }).sort({ offer_price: -1, createdAt: -1 });
+      return await this.OfferModel.find({ sale_id: saleData.sale_id, offer_status:"started" }).sort({ offer_price: -1, createdAt: -1 });
     } catch (error) {
       console.log(error);
       return {

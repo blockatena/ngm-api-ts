@@ -309,7 +309,7 @@ export class NftController {
       if (is_nft_exists.nft.is_in_sale) {
         console.log(" is in sale")
         const sale = await this.nftMarketPlaceService.getSale({ contract_address, token_id, status: 'started' })
-        const offers = await this.nftMarketPlaceService.getAllOffers({ sale_id: sale._id });
+        const offers = await this.nftMarketPlaceService.getAllOffers({ sale_id: sale._id});
         return { ...nft, sale, offers };
       }
       return { ...nft };
