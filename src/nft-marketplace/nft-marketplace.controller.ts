@@ -250,8 +250,48 @@ export class NftMarketplaceController {
     //  is nft exists
     //  is bid exists
     //  you are the rightful owner to cancel the bid or anything we need some api keys
-
+    const { contract_address, token_id, bidder_address } = body;
     try {
+      // is nft exists
+      const is_nft_exists = await this.nftservice.getSingleNft({
+        token_id,
+        contract_address,
+      });
+
+      //is auction exists
+      const is_auction_exists = await this.nftMarketplaceService.getAuction({
+        contract_address,
+        token_id,
+        status: 'started',
+      });
+      console.log(is_auction_exists);
+      if (!is_auction_exists) {
+        return 'Invalid Auction Id';
+      }
+      const is_bid_exits = await this.nftMarketplaceService.getBid({
+        auction_id: is_auction_exists._id,
+        bidder_address,
+        contract_address,
+        token_id,
+        status: 'started',
+      });
+      // is bid exists
+      const activity = {
+        event: 'Cancel Bid',
+        item: {
+          name: is_nft_exists.nft.meta_data.name,
+          contract_address,
+          token_id,
+          image: is_nft_exists.nft.meta_data.image
+        },
+        'price': is_bid_exits.bid_amount,
+        'quantity': 1,
+        'from': ethers.utils.getAddress(bidder_address),
+        'to': ethers.utils.getAddress(is_nft_exists.token_owner),
+        'read': false
+      }
+      const activity_response = await this.activityService.createActivity(activity);
+      console.log(activity_response);
       return await this.nftMarketplaceService.cancelBid(body);
     } catch (error) {
       console.log(error);
@@ -386,8 +426,15 @@ export class NftMarketplaceController {
   @Post('make-offer-to-nft')
   async makeOffer(@Body() body: MakeOfferBody) {
     try {
-      const { token_id, contract_address, offer_person_address } = body;
+      const { token_id, contract_address, offer_person_address, offer_price } = body;
       // Validating sale is enough, because already sale is fully validated
+      const check_nft_exists = await this.nftservice.getSingleNft({
+        contract_address,
+        token_id,
+      });
+      if (!check_nft_exists) {
+        return 'nft doesnt exists';
+      }
       const is_sale_exists = await this.nftMarketplaceService.getSale({ token_id, contract_address, status: 'started' });
       if (!is_sale_exists) {
         return 'sale doest exists';
@@ -400,8 +447,27 @@ export class NftMarketplaceController {
       console.log(is_user_already_offer)
 
       if (is_user_already_offer) {
-        return this.nftMarketplaceService.updateOffer({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' }, body);
+        return await this.nftMarketplaceService.updateOffer({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' }, body);
       }
+      //activity
+      const activity = {
+        event: 'Make Offer',
+        item: {
+          name: check_nft_exists.meta_data.name,
+          contract_address,
+          token_id,
+          image: check_nft_exists.meta_data.image
+        },
+        'price': offer_price,
+        'quantity': 1,
+        'from': ethers.utils.getAddress(offer_person_address),
+        'to': ethers.utils.getAddress(check_nft_exists.token_owner),
+        'read': false
+      }
+      const activity_response = await this.activityService.createActivity(activity);
+      console.log(activity_response);
+
+
       return this.nftMarketplaceService.makeOffer(body);
     } catch (error) {
       console.log(error);
@@ -432,6 +498,7 @@ export class NftMarketplaceController {
     return await this.nftMarketplaceService.acceptOffer(body);
   }
 
+  @ApiOperation({ summary: 'This Api Cancels the offer' })
   @Post('cancel-offer')
   async cancelOffer(@Body() body: CancelOffer): Promise<any> {
     const { contract_address,
@@ -439,13 +506,7 @@ export class NftMarketplaceController {
       offer_person_address } = body;
     try {
 
-      
-      //   is offer exists or not 
-      //  is offer already cancelled
-      
-
       return await this.nftMarketplaceService.cancelOffer(body);
-
     } catch (error) {
       console.log(error);
       return {
@@ -454,12 +515,6 @@ export class NftMarketplaceController {
       }
     }
   }
-
-
-
-
-
-
   // @Post('put-for-sale-fixed-price')
   // async putSaleFixedPrice() {}
   @ApiOperation({

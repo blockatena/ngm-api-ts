@@ -338,9 +338,9 @@ export class NftMarketplaceService {
 
   }
 
-  //************************************************* */
   //********[MAKE-OFFER]*******/
   async makeOffer(offer: MakeOfferBody): Promise<any> {
+    const { contract_address, token_id, offer_person_address } = offer;
     try {
       return await this.OfferModel.create(offer);
     } catch (error) {
@@ -380,13 +380,12 @@ export class NftMarketplaceService {
         nftCntr.owner_address,
         offer_details.offer_price,
       );
+      const transaction_hash = createSale.hash;
       // waiting to complete the process in block chain
       const res = await createSale.wait();
-      console.log('res from create sale', res);
       if (!res) {
         return false;
       }
-
       //Make changes in our Db
       await this.nftService.updateNft({ contract_address, token_id }, { token_owner: offer_person_address, price: offer_details.offer_price })
 
@@ -400,7 +399,7 @@ export class NftMarketplaceService {
         return 'You are not owner of the NFT';
       }
       //updating remaining offers
-      await this.updateAllOffers({ sale_id: getSale._id }, { status: 'ended' });
+      await this.updateAllOffers({ sale_id: getSale._id, status: 'started' }, { status: 'ended' });
       //updating offer
       const offer_msg = await this.updateOffer(
         { sale_id: getSale._id, offer_person_address, },
@@ -417,12 +416,11 @@ export class NftMarketplaceService {
         },
         'price': offer_details.offer_price,
         'quantity': 1,
-        'transaction_hash': createSale.hash,
+        'transaction_hash': transaction_hash,
         'from': ethers.utils.getAddress(token_owner),
-        'to': offer_person_address,
+        'to': ethers.utils.getAddress(offer_person_address),
         'read': false
       }
-
       return await this.activityService.createActivity(activity);
     } catch (error) {
       console.log(error);
@@ -457,7 +455,7 @@ export class NftMarketplaceService {
   }
   async getAllOffers(saleData: GetAllOffersBody) {
     try {
-      return await this.OfferModel.find({ sale_id: saleData.sale_id, offer_status:"started" }).sort({ offer_price: -1, createdAt: -1 });
+      return await this.OfferModel.find({ sale_id: saleData.sale_id, offer_status: "started" }).sort({ offer_price: -1, createdAt: -1 });
     } catch (error) {
       console.log(error);
       return {
@@ -485,14 +483,30 @@ export class NftMarketplaceService {
       token_id,
       offer_person_address } = body;
     try {
-
+      const is_nft_exists = await this.nftService.getSingleNft({ contract_address, token_id });
       const is_sale_exists = await this.getSale({ token_id, contract_address, status: 'started' });
       body['sale_id'] = is_sale_exists._id;
       body['offer_status'] = 'started'
-      
-      return this.updateOffer(body , { offer_status: 'cancelled' });
-
-
+      const is_offer_exists = await this.getOffer({ sale_id: is_sale_exists._id, offer_person_address });
+      if (!is_offer_exists) {
+        return 'offer doesnt exists';
+      }
+      const activity = {
+        event: 'Cancel Offer',
+        item: {
+          name: is_nft_exists.meta_data.name,
+          contract_address,
+          token_id,
+          image: is_nft_exists.meta_data.image
+        },
+        'price': is_offer_exists.offer_price,
+        'quantity': 1,
+        'from': ethers.utils.getAddress(is_offer_exists.offer_person_address),
+        'to': ethers.utils.getAddress(is_nft_exists.token_owner),
+        'read': false
+      }
+      await this.activityService.createActivity(activity);
+      return await this.updateOffer(body, { offer_status: 'cancelled' });
     } catch (error) {
       console.log(error);
       return {
@@ -501,10 +515,6 @@ export class NftMarketplaceService {
       }
     }
   }
-
-
-
-
   /************[DECLARE_WINNER]*************/
   async declareWinner(auction_details: any): Promise<any> {
     //currently its a demo version need to add actual functionality later
@@ -647,7 +657,7 @@ export class NftMarketplaceService {
           },
           'price': bid_amount,
           'quantity': 1,
-          transaction_hash,
+          'ransaction_hash': transaction_hash,
           'from': ethers.utils.getAddress(token_owner),
           'to': bidder_address,
           'read': false

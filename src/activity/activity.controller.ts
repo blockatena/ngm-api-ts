@@ -25,8 +25,8 @@ export class ActivityController {
   @Get('get-item-activity/:contract_address/:token_id')
   async getItemActivity(@Param() get_item_activity: GetItemActivity): Promise<any> {
     try {
-      
-      return await this.activityService.getItemActivity({...get_item_activity});
+
+      return await this.activityService.getItemActivity(get_item_activity);
     } catch (error) {
       console.log(error);
       return {
