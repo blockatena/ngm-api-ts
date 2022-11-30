@@ -16,6 +16,8 @@ import {
 import {
   AcceptOfferBody,
 
+  CancelOffer,
+
   GetAllOffersBody,
   MakeOfferBody,
 } from './dtos/create_offer.dto';
@@ -147,7 +149,7 @@ export class NftMarketplaceService {
       return {
         message:
           'something went wrong ,our team is working on it.For any Queries you  can contact us to our official mail',
-        contact: 'emailaddress@gmail.com',
+        contact: 'hello@blockatena.com',
       };
     }
   }
@@ -264,13 +266,34 @@ export class NftMarketplaceService {
       // offers schema needs to be updated
       // ********
       // 
-      const nft_update = await this.nftService.updateNft(
+      const sale = await this.SalesModel.findOne({ contract_address, token_id, status: 'started' });
+
+      const update_nft = await this.nftService.updateNft(
         {
           contract_address,
           token_id
         },
         { is_in_sale: false },
       );
+      //Update All offers
+      await this.updateAllOffers({ sale_id: sale._id }, { status: 'cancelled' });
+      // 
+      // Activity
+      const activity = {
+        'event': 'Cancel Sale',
+        'item': {
+          name: update_nft.meta_data.name,
+          contract_address,
+          token_id,
+          image: update_nft.meta_data.image
+        },
+        'price': sale.price,
+        'quantity': 1,
+        'from': sale.token_owner,
+        'to': '----',
+        'read': false
+      };
+      await this.activityService.createActivity(activity);
       return await this.updateSale(
         {
           contract_address,
@@ -294,7 +317,7 @@ export class NftMarketplaceService {
 
   }
 
-  async getOfferData(offerData:any): Promise<any> {
+  async getOfferData(offerData: any): Promise<any> {
     try {
       return await this.OfferModel.findOne(offerData);
     } catch (error) {
@@ -302,14 +325,14 @@ export class NftMarketplaceService {
       return { message: 'something went wrong' };
     }
   }
-  
   async updateSale(data: any, update_data: any): Promise<any> {
     try {
       await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
     } catch (error) {
       console.log(error);
       return {
-
+        message: 'something went wrong',
+        error
       }
     }
 
@@ -456,6 +479,29 @@ export class NftMarketplaceService {
       }
     }
   }
+  /************************[CANCEL_OFFER]********************************/
+  async cancelOffer(body: CancelOffer): Promise<any> {
+    const { contract_address,
+      token_id,
+      offer_person_address } = body;
+    try {
+
+
+      return this.updateOffer({ body }, { status: 'cancelled' });
+
+
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
+  }
+
+
+
+
   /************[DECLARE_WINNER]*************/
   async declareWinner(auction_details: any): Promise<any> {
     //currently its a demo version need to add actual functionality later
@@ -525,7 +571,9 @@ export class NftMarketplaceService {
           bid_amount,
         );
 
-        console.log("sale", createSale)
+        // console.log("sale", createSale)
+        const transaction_hash = createSale.hash;
+        console.log("transaction_hash", transaction_hash);
         const res = await createSale.wait();
         console.log('res from create sale', res);
         if (!res) {
@@ -596,7 +644,7 @@ export class NftMarketplaceService {
           },
           'price': bid_amount,
           'quantity': 1,
-          'transaction_hash': createSale.hash,
+          transaction_hash,
           'from': ethers.utils.getAddress(token_owner),
           'to': bidder_address,
           'read': false

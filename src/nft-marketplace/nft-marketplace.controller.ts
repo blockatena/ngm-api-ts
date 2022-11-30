@@ -2,6 +2,7 @@ import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import {
   AcceptOfferBody,
+  CancelOffer,
   GetAllOffersBody,
   MakeOfferBody,
 } from './dtos/create_offer.dto';
@@ -200,6 +201,23 @@ export class NftMarketplaceController {
       }
       console.log('no problem in controller');
 
+      const activity = {
+        event: 'Bid',
+        item: {
+          name: is_nft_exists.meta_data.name,
+          contract_address,
+          token_id,
+          image: is_nft_exists.meta_data.image
+        },
+        'price': bid_amount,
+        'quantity': 1,
+        'from': ethers.utils.getAddress(bidder_address),
+        'to': ethers.utils.getAddress(is_nft_exists.token_owner),
+        'read': false
+      }
+
+
+      await this.activityService.createActivity(activity);
       return await this.nftMarketplaceService.createBid({
         auction_id: is_auction_exists._id,
         bidder_address,
@@ -378,11 +396,11 @@ export class NftMarketplaceController {
         return `sale  ${is_sale_exists.status}`;
       }
       body[`sale_id`] = is_sale_exists._id;
-      const is_user_already_offer:any = await this.nftMarketplaceService.getOfferData({offer_person_address,sale_id: is_sale_exists._id, offer_status: 'started' });
+      const is_user_already_offer: any = await this.nftMarketplaceService.getOfferData({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' });
       console.log(is_user_already_offer)
-      
-      if(is_user_already_offer) {
-        return this.nftMarketplaceService.updateOffer({offer_person_address,sale_id: is_sale_exists._id, offer_status:'started'},body);
+
+      if (is_user_already_offer) {
+        return this.nftMarketplaceService.updateOffer({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' }, body);
       }
       return this.nftMarketplaceService.makeOffer(body);
     } catch (error) {
@@ -413,6 +431,33 @@ export class NftMarketplaceController {
     //checks over
     return await this.nftMarketplaceService.acceptOffer(body);
   }
+
+  @Get('cancel-offer/:contract_address/:token_id/:offer_person_address')
+  async cancelOffer(@Param() body: CancelOffer): Promise<any> {
+    const { contract_address,
+      token_id,
+      offer_person_address } = body;
+    try {
+
+      //   is offer exists or not 
+      //  is offer already cancelled
+
+      return await this.nftMarketplaceService.cancelOffer(body);
+
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went wrong",
+        error
+      }
+    }
+  }
+
+
+
+
+
+
   // @Post('put-for-sale-fixed-price')
   // async putSaleFixedPrice() {}
   @ApiOperation({
