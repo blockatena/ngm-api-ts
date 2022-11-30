@@ -34,4 +34,17 @@ export class ActivityService {
         }
     }
 
+    async getItemActivity(data: any): Promise<any> {
+        try {
+            console.log(data);
+            return await this.activityModel.find({"item.contract_address":data.contract_address,"item.token_id":data.token_id});
+        } catch (error) {
+            console.log(error);
+            return {
+                message: "something went Wrong",
+                error
+            }
+        }
+    }
+
 }

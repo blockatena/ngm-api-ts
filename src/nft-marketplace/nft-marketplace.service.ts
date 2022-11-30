@@ -488,7 +488,8 @@ export class NftMarketplaceService {
 
       const is_sale_exists = await this.getSale({ token_id, contract_address, status: 'started' });
       body['sale_id'] = is_sale_exists._id;
-
+      body['offer_status'] = 'started'
+      
       return this.updateOffer(body , { offer_status: 'cancelled' });
 
 
