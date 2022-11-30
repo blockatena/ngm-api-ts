@@ -293,6 +293,16 @@ export class NftMarketplaceService {
     }
 
   }
+
+  async getOfferData(offerData:any): Promise<any> {
+    try {
+      return await this.OfferModel.findOne(offerData);
+    } catch (error) {
+      console.log(error);
+      return { message: 'something went wrong' };
+    }
+  }
+  
   async updateSale(data: any, update_data: any): Promise<any> {
     try {
       await this.SalesModel.findOneAndUpdate(data, { $set: update_data });
@@ -345,7 +355,7 @@ export class NftMarketplaceService {
         parseInt(token_id),
         token_owner,
         nftCntr.owner_address,
-        offer_details.price,
+        offer_details.offer_price,
       );
       // waiting to complete the process in block chain
       const res = await createSale.wait();
@@ -355,7 +365,7 @@ export class NftMarketplaceService {
       }
 
       //Make changes in our Db
-      await this.nftService.updateNft({ contract_address, token_id }, { token_owner: offer_person_address, price: offer_details.price })
+      await this.nftService.updateNft({ contract_address, token_id }, { token_owner: offer_person_address, price: offer_details.offer_price })
 
       // validate Nft
       const nft_data = await this.nftService.getNft({
@@ -382,7 +392,7 @@ export class NftMarketplaceService {
           token_id,
           image: nft_data.nft.meta_data.image
         },
-        'price': offer_details.price,
+        'price': offer_details.offer_price,
         'quantity': 1,
         'transaction_hash': createSale.hash,
         'from': ethers.utils.getAddress(token_owner),

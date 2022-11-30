@@ -368,7 +368,7 @@ export class NftMarketplaceController {
   @Post('make-offer-to-nft')
   async makeOffer(@Body() body: MakeOfferBody) {
     try {
-      const { token_id, contract_address } = body;
+      const { token_id, contract_address, offer_person_address } = body;
       // Validating sale is enough, because already sale is fully validated
       const is_sale_exists = await this.nftMarketplaceService.getSale({ token_id, contract_address, status: 'started' });
       if (!is_sale_exists) {
@@ -378,6 +378,12 @@ export class NftMarketplaceController {
         return `sale  ${is_sale_exists.status}`;
       }
       body[`sale_id`] = is_sale_exists._id;
+      const is_user_already_offer:any = await this.nftMarketplaceService.getOfferData({offer_person_address,sale_id: is_sale_exists._id, offer_status: 'started' });
+      console.log(is_user_already_offer)
+      
+      if(is_user_already_offer) {
+        return this.nftMarketplaceService.updateOffer({offer_person_address,sale_id: is_sale_exists._id, offer_status:'started'},body);
+      }
       return this.nftMarketplaceService.makeOffer(body);
     } catch (error) {
       console.log(error);
