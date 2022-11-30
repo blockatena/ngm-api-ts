@@ -432,15 +432,17 @@ export class NftMarketplaceController {
     return await this.nftMarketplaceService.acceptOffer(body);
   }
 
-  @Get('cancel-offer/:contract_address/:token_id/:offer_person_address')
-  async cancelOffer(@Param() body: CancelOffer): Promise<any> {
+  @Post('cancel-offer')
+  async cancelOffer(@Body() body: CancelOffer): Promise<any> {
     const { contract_address,
       token_id,
       offer_person_address } = body;
     try {
 
+      
       //   is offer exists or not 
       //  is offer already cancelled
+      
 
       return await this.nftMarketplaceService.cancelOffer(body);
 
