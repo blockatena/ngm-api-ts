@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { GetItemActivity } from './dtos/itemdto/item-activity.dto';
 
 import { ActivityDocument, ActivitySchema } from './schema/activity.schema';
 
@@ -34,4 +35,17 @@ export class ActivityService {
         }
     }
 
+    async getItemActivity(data: GetItemActivity): Promise<any> {
+        const { contract_address, token_id } = data;
+        try {
+            console.log(data);
+            return await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": token_id }).sort({ createdAt: -1 });
+        } catch (error) {
+            console.log(error);
+            return {
+                message: "something went Wrong",
+                error
+            }
+        }
+    }
 }
