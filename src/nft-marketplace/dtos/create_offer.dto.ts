@@ -32,4 +32,6 @@ export class CancelOffer {
   token_id: string;
   @ApiProperty()
   offer_person_address: string;
+  @ApiProperty()
+  caller: string;
 }

@@ -212,7 +212,7 @@ export class NftMarketplaceController {
         'price': bid_amount,
         'quantity': 1,
         'from': ethers.utils.getAddress(bidder_address),
-        'to': ethers.utils.getAddress(is_nft_exists.token_owner),
+        'to': '----',
         'read': false
       }
 
@@ -287,7 +287,7 @@ export class NftMarketplaceController {
         'price': is_bid_exits.bid_amount,
         'quantity': 1,
         'from': ethers.utils.getAddress(bidder_address),
-        'to': ethers.utils.getAddress(is_nft_exists.token_owner),
+        'to': '----',
         'read': false
       }
       const activity_response = await this.activityService.createActivity(activity);
@@ -461,7 +461,7 @@ export class NftMarketplaceController {
         'price': offer_price,
         'quantity': 1,
         'from': ethers.utils.getAddress(offer_person_address),
-        'to': ethers.utils.getAddress(check_nft_exists.token_owner),
+        'to': '----',
         'read': false
       }
       const activity_response = await this.activityService.createActivity(activity);
@@ -490,9 +490,8 @@ export class NftMarketplaceController {
   async cancelOffer(@Body() body: CancelOffer): Promise<any> {
     const { contract_address,
       token_id,
-      offer_person_address } = body;
+      offer_person_address, caller } = body;
     try {
-
       return await this.nftMarketplaceService.cancelOffer(body);
     } catch (error) {
       console.log(error);
