@@ -267,7 +267,10 @@ export class NftMarketplaceService {
       // ********
       // 
       const sale = await this.SalesModel.findOne({ contract_address, token_id, status: 'started' });
-
+      console.log("sale", sale);
+      if (!sale) {
+        return 'sale doesnt exists';
+      }
       const update_nft = await this.nftService.updateNft(
         {
           contract_address,
@@ -275,10 +278,12 @@ export class NftMarketplaceService {
         },
         { is_in_sale: false },
       );
+      // console.log(update_nft);
       //Update All offers
-      await this.updateAllOffers({ sale_id: sale._id }, { status: 'cancelled' });
+      const update_all_offers = await this.updateAllOffers({ sale_id: sale._id }, { status: 'cancelled' });
       // 
       // Activity
+      console.log(update_nft);
       const activity = {
         'event': 'Cancel Sale',
         'item': {
@@ -293,14 +298,18 @@ export class NftMarketplaceService {
         'to': '----',
         'read': false
       };
-      await this.activityService.createActivity(activity);
-      return await this.updateSale(
+      // console.log(update_nft);
+      const activity_response = await this.activityService.createActivity(activity);
+      // console.log(update_nft);
+      await this.updateSale(
         {
           contract_address,
           token_id, status: 'started'
         },
         { status: 'cancelled' },
       );
+      // console.log(activity_response);
+      return activity_response;
     } catch (error) {
       console.log(error);
       return { message: 'something wrong in DB or with Cron Jobs' };
@@ -335,7 +344,6 @@ export class NftMarketplaceService {
         error
       }
     }
-
   }
 
   //********[MAKE-OFFER]*******/
@@ -354,6 +362,19 @@ export class NftMarketplaceService {
   async acceptOffer(accept_Data: AcceptOfferBody): Promise<any> {
     const { contract_address, token_id, token_owner, offer_person_address } = accept_Data;
     try {
+      const getSale = await this.SalesModel.findOne({ contract_address, token_id, status: 'started' });
+      if (!getSale) {
+        return 'NFT is not in sale';
+      }
+      console.log('getsale', getSale);
+      if (!(getSale.token_owner == token_owner)) { return 'You are not the owner of this nft' };
+      // Get Offer details
+      const offer_details = await this.OfferModel.findOne({ sale_id: getSale._id, offer_person_address, contract_address, token_id, });
+      console.log('getsale', offer_details);
+      if (!offer_details) {
+        return 'offer doesnt exists';
+      }
+      console.log("Both offer and sale exists");
       const marketplaceAddress = process.env.MARKETPLACE_CONTRACT_ADDRESS;
       const erc20Address = process.env.ERC20_TOKEN_ADDRESS;
       //ethers code contractFactory
@@ -366,10 +387,8 @@ export class NftMarketplaceService {
       const nftCntr = await this.ContractModel.findOne({
         contract_address,
       });
+      console.log("contract address", nftCntr)
       // Get sale details
-      const getSale = await this.SalesModel.findOne({ contract_address, token_id, status: 'started' });
-      // Get Offer details
-      const offer_details = await this.OfferModel.findOne({ contract_address, token_id, offer_person_address, sale_id: getSale._id });
       // calling to block-chain
       const createSale = await marketplaceCntr.createSale(
         erc20Address,
@@ -387,17 +406,18 @@ export class NftMarketplaceService {
         return false;
       }
       //Make changes in our Db
-      await this.nftService.updateNft({ contract_address, token_id }, { token_owner: offer_person_address, price: offer_details.offer_price })
-
+      await this.nftService.updateNft({ contract_address, token_id }, { token_owner: offer_person_address, price: offer_details.offer_price, is_in_sale: false })
       // validate Nft
       const nft_data = await this.nftService.getNft({
         token_id,
         contract_address,
-        token_owner: offer_person_address
+        token_owner: ethers.utils.getAddress(offer_person_address)
       });
       if (!nft_data) {
         return 'You are not owner of the NFT';
       }
+      //
+      await this.updateSale({ contract_address, token_id, status: 'started' }, { status: 'ended' });
       //updating remaining offers
       await this.updateAllOffers({ sale_id: getSale._id, status: 'started' }, { status: 'ended' });
       //updating offer

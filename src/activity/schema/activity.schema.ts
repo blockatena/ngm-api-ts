@@ -4,7 +4,7 @@ export type ActivityDocument = ActivitySchema & Document;
 
 @Schema({ timestamps: true })
 export class ActivitySchema {
-    @Prop({ enum: ['Minted', 'Cancel List', 'Place bid', 'Cancel bid', 'Transfer', 'Offer', 'Sale', 'Cancel Offer', 'List', 'Offer Cancel'] })
+    @Prop({ enum: ['Minted', 'Cancel List', 'Place bid', 'Cancel bid', 'Transfer', 'Make Offer', 'Cancel Sale', 'Sale', 'Cancel Offer', 'List', ' Cancel Offer'] })
     event: string;
     @Prop({ type: Object })
     item: Object;

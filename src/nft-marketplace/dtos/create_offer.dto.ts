@@ -19,6 +19,7 @@ export class AcceptOfferBody {
   @ApiProperty()
   token_owner: string;
 }
+
 export class GetAllOffersBody {
   @ApiProperty()
   sale_id: string;

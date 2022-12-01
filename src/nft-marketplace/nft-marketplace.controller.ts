@@ -481,20 +481,7 @@ export class NftMarketplaceController {
   @Post('accept-offer')
   async acceptOffer(@Body() body: AcceptOfferBody) {
     //we can add validations
-    const { contract_address, token_id, offer_person_address } = body;
-    const is_sale_exists = await this.nftMarketplaceService.getSale({
-      contract_address, token_id, status: 'started'
-    });
-    if (!is_sale_exists) {
-      return 'NFT is not in sale';
-    }
-    const is_offer_exists = await this.nftMarketplaceService.getOffer({
-      contract_address, token_id, offer_person_address, status: "started"
-    });
-    if (is_offer_exists) {
-      return 'Please check offer existis or not ,or please check your offer ID';
-    }
-    //checks over
+    const { contract_address, token_id, offer_person_address, token_owner } = body;
     return await this.nftMarketplaceService.acceptOffer(body);
   }
 
