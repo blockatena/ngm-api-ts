@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto, GetUser } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { InjectModel } from '@nestjs/mongoose';
@@ -15,17 +15,17 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    createUserDto.jwt = await this.JWTservice.Sign(createUserDto);
+    // createUserDto.jwt = await this.JWTservice.Sign(createUserDto);
     console.log(createUserDto);
-    return await (await this.UserModel.create(createUserDto)).save();
+    return await this.UserModel.create(createUserDto);
   }
 
   findAll() {
     return `This action returns all users`;
   }
 
-  async findOne(id: String) {
-    return await this.UserModel.findOne({ _id: id });
+  async findOne(user: GetUser) {
+    return await this.UserModel.findOne(user);
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {

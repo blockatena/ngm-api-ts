@@ -425,8 +425,28 @@ export class NftMarketplaceService {
         { sale_id: getSale._id, offer_person_address, },
         { offer_status: 'accepted' },
       );
+      // 
+      const activity1 = {
+        event: 'Offer Accepted',
+        item: {
+          name: nft_data.nft.meta_data.name,
+          contract_address,
+          token_id,
+          image: nft_data.nft.meta_data.image
+        },
+        'price': offer_details.offer_price,
+        'quantity': 1,
+        'transaction_hash': transaction_hash,
+        'from': ethers.utils.getAddress(token_owner),
+        'to': ethers.utils.getAddress(offer_person_address),
+        'read': false
+      }
+      await this.activityService.createActivity(activity1);
+
+
+      // 
       // Adding Activity 
-      const activity = {
+      const activity2 = {
         event: 'Transfer',
         item: {
           name: nft_data.nft.meta_data.name,
@@ -441,7 +461,7 @@ export class NftMarketplaceService {
         'to': ethers.utils.getAddress(offer_person_address),
         'read': false
       }
-      return await this.activityService.createActivity(activity);
+      return await this.activityService.createActivity(activity2);
     } catch (error) {
       console.log(error);
       return {
@@ -668,8 +688,29 @@ export class NftMarketplaceService {
           },
           { status: 'expired', winner: winner_data },
         );
+        //  
+        const activity1 = {
+          event: 'Won Bid',
+          item: {
+            name: nft_data.nft.meta_data.name,
+            contract_address,
+            token_id,
+            image: nft_data.nft.meta_data.image
+          },
+          'price': bid_amount,
+          'quantity': 1,
+          'transaction_hash': transaction_hash,
+          'from': ethers.utils.getAddress(token_owner),
+          'to': bidder_address,
+          'read': false
+        }
+        //*****************/ 
+        // need to add insert many add it later
+        // *************/
+        await this.activityService.createActivity(activity1);
+        // 
         // Adding activity
-        const activity = {
+        const activity2 = {
           event: 'Transfer',
           item: {
             name: nft_data.nft.meta_data.name,
@@ -679,12 +720,12 @@ export class NftMarketplaceService {
           },
           'price': bid_amount,
           'quantity': 1,
-          'ransaction_hash': transaction_hash,
+          'transaction_hash': transaction_hash,
           'from': ethers.utils.getAddress(token_owner),
           'to': bidder_address,
           'read': false
         }
-        await this.activityService.createActivity(activity);
+        await this.activityService.createActivity(activity2);
         return data;
       }
       return [];

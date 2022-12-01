@@ -8,3 +8,10 @@ export class CreateUserDto {
   @ApiProperty()
   jwt: string;
 }
+
+export class GetUser {
+  @ApiProperty()
+  email: string;
+  @ApiProperty()
+  wallet_address: string;
+}
