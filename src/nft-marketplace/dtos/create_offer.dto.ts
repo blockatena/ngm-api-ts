@@ -19,7 +19,19 @@ export class AcceptOfferBody {
   @ApiProperty()
   token_owner: string;
 }
+
 export class GetAllOffersBody {
   @ApiProperty()
   sale_id: string;
+}
+
+export class CancelOffer {
+  @ApiProperty()
+  contract_address: string;
+  @ApiProperty()
+  token_id: string;
+  @ApiProperty()
+  offer_person_address: string;
+  @ApiProperty()
+  caller: string;
 }

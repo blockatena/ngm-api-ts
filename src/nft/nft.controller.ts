@@ -294,6 +294,7 @@ export class NftController {
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
       }
+      const nft_activity = await this.activityService.getItemActivity({ contract_address, token_id });
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
         console.log(auction._id);
@@ -301,6 +302,7 @@ export class NftController {
         console.log(bids);
         return {
           ...nft,
+          nft_activity,
           auction,
           bids,
         };
@@ -310,9 +312,9 @@ export class NftController {
         console.log(" is in sale")
         const sale = await this.nftMarketPlaceService.getSale({ contract_address, token_id, status: 'started' })
         const offers = await this.nftMarketPlaceService.getAllOffers({ sale_id: sale._id });
-        return { ...nft, sale, offers };
+        return { ...nft, nft_activity, sale, offers };
       }
-      return { ...nft };
+      return { ...nft, nft_activity };
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };

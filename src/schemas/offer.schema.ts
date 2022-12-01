@@ -11,7 +11,7 @@ export class OfferSchema {
   @Prop()
   token_id: string;
   @Prop()
-  price: string;
+  offer_price: string;
   @Prop()
   offer_person_address: string;
   @Prop()
