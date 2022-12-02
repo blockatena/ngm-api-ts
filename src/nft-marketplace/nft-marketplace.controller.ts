@@ -196,13 +196,11 @@ export class NftMarketplaceController {
         status: 'started',
       });
       console.log(is_already_bidded);
-      if (is_already_bidded) {
-        return 'You alread bidded for that Nft want to lower the price ?';
-      }
+      create_bid['auction_id'] = is_auction_exists?._id
       console.log('no problem in controller');
 
       const activity = {
-        event: 'Bid',
+        event: is_already_bidded ?'Update Bid':'Place Bid',
         item: {
           name: is_nft_exists.meta_data.name,
           contract_address,
@@ -215,16 +213,20 @@ export class NftMarketplaceController {
         'to': '----',
         'read': false
       }
-
-
-      await this.activityService.createActivity(activity);
-      return await this.nftMarketplaceService.createBid({
+      const activityResponce = await this.activityService.createActivity(activity);
+      console.log("Activity : ",activityResponce)
+      if (is_already_bidded) {
+        return await this.nftMarketplaceService.updateBid(
+          { bidder_address, auction_id:is_auction_exists?._id, status:'started'},create_bid);
+      } else {
+        return await this.nftMarketplaceService.createBid({
         auction_id: is_auction_exists._id,
         bidder_address,
         contract_address,
         token_id,
         bid_amount,
       });
+    }
     } catch (error) {
       console.log(error);
       return {
@@ -257,14 +259,14 @@ export class NftMarketplaceController {
         token_id,
         contract_address,
       });
-
+      console.log("nft exist : ", is_nft_exists)
       //is auction exists
       const is_auction_exists = await this.nftMarketplaceService.getAuction({
         contract_address,
         token_id,
         status: 'started',
       });
-      console.log(is_auction_exists);
+      console.log('existed   :  ', is_auction_exists);
       if (!is_auction_exists) {
         return 'Invalid Auction Id';
       }
@@ -275,14 +277,19 @@ export class NftMarketplaceController {
         token_id,
         status: 'started',
       });
+
+      console.log('bid existed   :  ', is_bid_exits);
       // is bid exists
+      if(!is_bid_exits) {
+        return "No bid found"
+      }
       const activity = {
         event: 'Cancel Bid',
         item: {
-          name: is_nft_exists.nft.meta_data.name,
+          name: is_nft_exists.meta_data.name,
           contract_address,
           token_id,
-          image: is_nft_exists.nft.meta_data.image
+          image: is_nft_exists.meta_data.image
         },
         'price': is_bid_exits.bid_amount,
         'quantity': 1,
@@ -291,7 +298,7 @@ export class NftMarketplaceController {
         'read': false
       }
       const activity_response = await this.activityService.createActivity(activity);
-      console.log(activity_response);
+      console.log("activity  : ",activity_response);
       return await this.nftMarketplaceService.cancelBid(body);
     } catch (error) {
       console.log(error);
@@ -439,19 +446,17 @@ export class NftMarketplaceController {
       if (!is_sale_exists) {
         return 'sale doest exists';
       }
-      if (is_sale_exists.status != 'started') {
+      if (is_sale_exists.status !== 'started') {
         return `sale  ${is_sale_exists.status}`;
       }
       body[`sale_id`] = is_sale_exists._id;
       const is_user_already_offer: any = await this.nftMarketplaceService.getOfferData({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' });
       console.log(is_user_already_offer)
 
-      if (is_user_already_offer) {
-        return await this.nftMarketplaceService.updateOffer({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' }, body);
-      }
+      
       //activity
       const activity = {
-        event: 'Make Offer',
+        event: is_user_already_offer?'Update Offer':'Make Offer',
         item: {
           name: check_nft_exists.meta_data.name,
           contract_address,
@@ -467,8 +472,11 @@ export class NftMarketplaceController {
       const activity_response = await this.activityService.createActivity(activity);
       console.log(activity_response);
 
-
-      return this.nftMarketplaceService.makeOffer(body);
+      if (is_user_already_offer) {
+        return await this.nftMarketplaceService.updateOffer({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' }, body);
+      } else {
+        return this.nftMarketplaceService.makeOffer(body);
+      }
     } catch (error) {
       console.log(error);
       return {
