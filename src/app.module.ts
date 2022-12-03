@@ -27,7 +27,7 @@ import configuration from './config/configuration';
     // AuthModule,
     DeploymentModule,
     TextileModule,
-    // UsersModule,
+    UsersModule,
     NftMarketplaceModule,
     // AdminModule,
     MetadataModule,

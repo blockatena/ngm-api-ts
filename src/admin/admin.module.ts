@@ -25,4 +25,4 @@ import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
   controllers: [AdminController],
   providers: [AdminService, CronjobService],
 })
-export class AdminModule {}
+export class AdminModule { }

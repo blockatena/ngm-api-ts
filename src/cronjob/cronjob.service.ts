@@ -6,7 +6,7 @@ import { CronJob } from 'cron';
 @Injectable()
 export class CronjobService {
   private readonly logger = new Logger(CronjobService.name);
-  constructor(private schedulerRegistry: SchedulerRegistry) {}
+  constructor(private schedulerRegistry: SchedulerRegistry) { }
 
   addCornJob(name: string, date: string, callback: any) {
     console.log('date', date);
