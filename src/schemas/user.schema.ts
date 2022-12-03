@@ -11,10 +11,6 @@ export class UserSchema {
   wallet_address: string;
   @Prop({ unique: true })
   email: string;
-  @Prop()
-  roles: string;
-  @Prop({ unique: true })
-  api_key: string;
 }
 
 export const userSchema = SchemaFactory.createForClass(UserSchema);

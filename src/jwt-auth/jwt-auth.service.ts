@@ -4,7 +4,7 @@ require('dotenv').config();
 
 @Injectable()
 export class JwtAuthService {
-  constructor(private JWTService: JwtService) {}
+  constructor(private JWTService: JwtService) { }
   async Sign(payload: any): Promise<any> {
     return await this.JWTService.signAsync(payload);
   }

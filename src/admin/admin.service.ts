@@ -39,7 +39,7 @@ export class AdminService {
     // if (collection == 'SalesModel') this.SalesModel.deleteMany({});
     // if (collection == 'OfferModel') this.OfferModel.deleteMany({});
   }
-  async UpdateCollection(body: any): Promise<any> {}
+  async UpdateCollection(body: any): Promise<any> { }
   async UpdateNft(body: any, updatee: any): Promise<any> {
     return await this.NftModel.updateMany(body, { $set: updatee });
   }
@@ -54,12 +54,12 @@ export class AdminService {
       console.log(err);
     });
   }
-  async GetNft(body: any): Promise<any> {}
+  async GetNft(body: any): Promise<any> { }
   async GetCollection(body: any): Promise<any> {
     // return await this.ContractModel.;
   }
-  async GetSale(body: any): Promise<any> {}
-  async GetAuction(body: any): Promise<any> {}
+  async GetSale(body: any): Promise<any> { }
+  async GetAuction(body: any): Promise<any> { }
   async deleteCron(cronjob_id: DeleteCronBody): Promise<any> {
     return this.Cron_job.deleteCron(cronjob_id.cron_job_id);
   }
