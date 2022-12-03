@@ -14,7 +14,7 @@ export class UsersService {
     UserModel;
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<any> {
     // createUserDto.jwt = await this.JWTservice.Sign(createUserDto);
     console.log(createUserDto);
     return await this.UserModel.create(createUserDto);
@@ -24,8 +24,18 @@ export class UsersService {
     return `This action returns all users`;
   }
 
-  async findOne(user: GetUser) {
-    return await this.UserModel.findOne(user);
+  async getUser(wallet_address: string): Promise<any> {
+    try {
+      return await this.UserModel.findOne({ wallet_address });
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'something went wrong',
+        error
+      }
+    }
+
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
