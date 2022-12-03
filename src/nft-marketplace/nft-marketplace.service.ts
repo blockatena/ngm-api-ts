@@ -224,7 +224,7 @@ export class NftMarketplaceService {
 
   /****************[END_OF_BID_SERVICE]***********/
   /************************************************/
-  /******************[CREATE SALE]**************/
+  /******************[CREATE_SALE]**************/
   async createSale(sale: CreateSaleBody): Promise<any> {
     const { contract_address, token_id, token_owner, price } = sale;
     try {
@@ -258,6 +258,7 @@ export class NftMarketplaceService {
     }
 
   }
+  /********************[CANCEL_SALE]***********************/
   async cancelSale(cancel: CancelSaleBody): Promise<any> {
     const { contract_address, token_id } = cancel;
     try {
@@ -325,7 +326,7 @@ export class NftMarketplaceService {
     }
 
   }
-
+  /************************[GET_OFFER]**************************/
   async getOfferData(offerData: any): Promise<any> {
     try {
       return await this.OfferModel.findOne(offerData);
@@ -346,7 +347,7 @@ export class NftMarketplaceService {
     }
   }
 
-  //********[MAKE-OFFER]*******/
+  /********[MAKE-OFFER]*******/
   async makeOffer(offer: MakeOfferBody): Promise<any> {
     const { contract_address, token_id, offer_person_address } = offer;
     try {
@@ -366,15 +367,15 @@ export class NftMarketplaceService {
       if (!getSale) {
         return 'NFT is not in sale';
       }
-      console.log('getsale', getSale);
+      // console.log('getsale', getSale);
       if (!(getSale.token_owner == token_owner)) { return 'You are not the owner of this nft' };
-      // Get Offer details
+      //Get Offer details
       const offer_details = await this.OfferModel.findOne({ sale_id: getSale._id, offer_person_address, contract_address, token_id, });
       console.log('getsale', offer_details);
       if (!offer_details) {
         return 'offer doesnt exists';
       }
-      console.log("Both offer and sale exists");
+      //console.log("Both offer and sale exists");
       const marketplaceAddress = process.env.MARKETPLACE_CONTRACT_ADDRESS;
       const erc20Address = process.env.ERC20_TOKEN_ADDRESS;
       //ethers code contractFactory
@@ -387,9 +388,15 @@ export class NftMarketplaceService {
       const nftCntr = await this.ContractModel.findOne({
         contract_address,
       });
-      console.log("contract address", nftCntr)
+      // console.log("contract address", nftCntr)
       // Get sale details
       // calling to block-chain
+
+      const price = ethers.utils.parseUnits(
+        offer_details.offer_price,
+        'ether',
+      );
+
       const createSale = await marketplaceCntr.createSale(
         erc20Address,
         contract_address,
@@ -397,7 +404,7 @@ export class NftMarketplaceService {
         parseInt(token_id),
         token_owner,
         nftCntr.owner_address,
-        offer_details.offer_price,
+        price,
       );
       const transaction_hash = createSale.hash;
       // waiting to complete the process in block chain
@@ -405,6 +412,8 @@ export class NftMarketplaceService {
       if (!res) {
         return false;
       }
+      console.log('createSale', createSale);
+      console.log("www", res);
       //Make changes in our Db
       await this.nftService.updateNft({ contract_address, token_id }, { token_owner: offer_person_address, price: offer_details.offer_price, is_in_sale: false })
       // validate Nft
@@ -442,8 +451,6 @@ export class NftMarketplaceService {
         'read': false
       }
       await this.activityService.createActivity(activity1);
-
-
       // 
       // Adding Activity 
       const activity2 = {
@@ -561,17 +568,17 @@ export class NftMarketplaceService {
   async declareWinner(auction_details: any): Promise<any> {
     //currently its a demo version need to add actual functionality later
     try {
-      // console.log('from declare winner', auction_details);
-      let data = await this.BidModel.find({
+      //We are declaring the winner here
+      const data = await this.BidModel.find({
         auction_id: auction_details._id,
         status: 'started',
       }).sort({ bid_amount: -1, created_at: -1 }).limit(1);
-      // console.log('data from winner function', data);
+      console.log('data from winner function', data);
       const contract_address = auction_details.contract_address;
       const token_id = auction_details.token_id;
       //update in all bids
       // console.log('*************');
-      // console.log('All_bidsdata', data);
+      console.log('All_bidsdata', data);
       // console.log('*************');
       //
       if (data.length) {
@@ -580,12 +587,12 @@ export class NftMarketplaceService {
           contract_address: nftContractAddress,
         });
         // console.log("got contract", nftCntr)
-        const tokenDetails = await this.nftService.getNft({
+        const tokenDetails = await this.nftService.getSingleNft({
           contract_address: auction_details.contract_address,
           token_id: auction_details.token_id,
         });
         // console.log("got tokendetials", tokenDetails)
-        const token_owner = tokenDetails.nft.token_owner;
+        const token_owner = tokenDetails.token_owner;
 
         const marketplaceAddress = process.env.MARKETPLACE_CONTRACT_ADDRESS;
         const erc20Address = process.env.ERC20_TOKEN_ADDRESS;
@@ -600,23 +607,24 @@ export class NftMarketplaceService {
           data[0]['bid_amount'],
           'ether',
         );
-        // console.log(
-        //   '\nbidder address',
-        //   bidder_address,
-        //   '\nbid amount',
-        //   bid_amount,
-        //   '\ntoken owner',
-        //   token_owner,
-        //   '\ntoken id',
-        //   token_id,
-        //   '\ncontract address',
-        //   contract_address,
-        //   '\nerc20 address',
-        //   erc20Address,
-        //   '\nnft owner address',
-        //   nftCntr.owner_address,
-        // );
-        const createSale = await marketplaceCntr.createSale(
+        // const bid_amount = data[0]['bid_amount'];
+        console.log(
+          '\nbidder address',
+          bidder_address,
+          '\nbid amount',
+          bid_amount,
+          '\ntoken owner',
+          token_owner,
+          '\ntoken id',
+          token_id,
+          '\ncontract address',
+          contract_address,
+          '\nerc20 address',
+          erc20Address,
+          '\nnft owner address',
+          nftCntr.owner_address,
+        );
+        const create_Sale = await marketplaceCntr.createSale(
           erc20Address,
           contract_address,
           bidder_address,
@@ -625,50 +633,34 @@ export class NftMarketplaceService {
           nftCntr.owner_address,
           bid_amount,
         );
-
-        // console.log("sale", createSale)
-        const transaction_hash = createSale.hash;
+        console.log("sale", create_Sale)
+        const transaction_hash = create_Sale.hash;
         console.log("transaction_hash", transaction_hash);
-        const res = await createSale.wait();
+        const res = await create_Sale.wait();
         console.log('res from create sale', res);
         if (!res) {
           return false;
         }
-        // validate Nft
-        const nft_data = await this.nftService.getNft({
-          token_id,
-          contract_address,
-        });
-        if (!nft_data) {
-          return 'You are not owner of the NFT';
-        }
-
-        //  All validations are done , now we are transferring the nft
-        // ********* please add block chain code to transfer NFT
-
-        // *********
-        // console.log('_________________________');
-        // console.log('NFT DATA', nft_data);
-        // console.log('_________________________');
-        const dbmsg = await this.nftService.updateNft(
+        // updating the nft details
+        await this.nftService.updateNft(
           {
-            contract_address: nft_data.nft.contract_address,
-            token_id: nft_data.nft.token_id,
+            contract_address: tokenDetails.contract_address,
+            token_id: tokenDetails.token_id,
           },
           { token_owner: data[0].bidder_address, is_in_auction: false, price: bid_amount },
         );
 
-        // console.log('_________________________________');
-        // console.log('New Owner info Update', dbmsg);
-        // console.log('_________________________________');
-
-        //update status to bid and auction add winner also
-        // update after auction ,set auction status to false
-        // console.log('winner Data', dbmsg);
-
+        // checking the owner whether the NFT is transferred suceessfully or not    
+        const nft_data = await this.nftService.getSingleNft({
+          token_id,
+          contract_address,
+          token_owner: bidder_address
+        });
+        if (!nft_data) {
+          return 'You are not owner of the NFT';
+        }
         const winner_data = bidder_address || 'nobids';
-
-
+        //  Updating all the Bids
         await this.updateAllBids(
           {
             contract_address,
@@ -677,7 +669,7 @@ export class NftMarketplaceService {
           },
           { status: 'AuctionExpired', is_auction_ended: true },
         );
-
+        // Updating the Auction
         await this.updateAuction(
           {
             contract_address: contract_address,
@@ -688,9 +680,9 @@ export class NftMarketplaceService {
           },
           { status: 'expired', winner: winner_data },
         );
-        //  
+        // creating activity 
         const activity1 = {
-          event: 'Won Bid',
+          event: "Won",
           item: {
             name: nft_data.nft.meta_data.name,
             contract_address,
@@ -704,11 +696,8 @@ export class NftMarketplaceService {
           'to': bidder_address,
           'read': false
         }
-        //*****************/ 
-        // need to add insert many add it later
-        // *************/
-        await this.activityService.createActivity(activity1);
-        // 
+        console.log(activity1);
+
         // Adding activity
         const activity2 = {
           event: 'Transfer',
@@ -725,8 +714,11 @@ export class NftMarketplaceService {
           'to': bidder_address,
           'read': false
         }
-        await this.activityService.createActivity(activity2);
+        console.log(activity2);
+        const activities = await this.activityService.createActivity({ activity1, activity2 });
+        console.log(activities)
         return data;
+        // return "f";
       }
       return [];
     } catch (error) {

@@ -9,7 +9,7 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authservice: AuthService) {}
+  constructor(private authservice: AuthService) { }
 
   //  Post route
   @Post('signup')
