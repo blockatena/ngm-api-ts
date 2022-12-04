@@ -591,6 +591,7 @@ export class NftMarketplaceService {
         const nftCntr = await this.ContractModel.findOne({
           contract_address: nftContractAddress,
         });
+        // remove this 
         const tokenDetails = await this.nftService.getSingleNft({
           contract_address: auction_details.contract_address,
           token_id: auction_details.token_id,
@@ -731,7 +732,7 @@ export class NftMarketplaceService {
           contract_address: tokenDetails.contract_address,
           token_id: tokenDetails.token_id,
         },
-        { token_owner: data[0].bidder_address, is_in_auction: false, price: 'no bids' },
+        { is_in_auction: false },
       );
       await this.updateAuction(
         {
