@@ -396,6 +396,7 @@ export class NftController {
       const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
+
       // fetching data for analysis
       const total_volume = nfts.length;
       const floor_price = 0;

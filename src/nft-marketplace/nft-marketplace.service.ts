@@ -684,10 +684,10 @@ export class NftMarketplaceService {
         const activity1 = {
           event: "Won",
           item: {
-            name: nft_data.nft.meta_data.name,
+            name: nft_data.meta_data.name,
             contract_address,
             token_id,
-            image: nft_data.nft.meta_data.image
+            image: nft_data.meta_data.image
           },
           'price': bid_amount,
           'quantity': 1,
@@ -702,10 +702,10 @@ export class NftMarketplaceService {
         const activity2 = {
           event: 'Transfer',
           item: {
-            name: nft_data.nft.meta_data.name,
+            name: nft_data.meta_data.name,
             contract_address,
             token_id,
-            image: nft_data.nft.meta_data.image
+            image: nft_data.meta_data.image
           },
           'price': bid_amount,
           'quantity': 1,
