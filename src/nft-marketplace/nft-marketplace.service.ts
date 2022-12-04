@@ -648,6 +648,14 @@ export class NftMarketplaceService {
         if (!res) {
           return false;
         }
+        await this.updateAllBids(
+          {
+            contract_address,
+            token_id,
+            status: 'started',
+          },
+          { status: 'AuctionExpired', is_auction_ended: true },
+        );
         const nft_data = await this.nftService.getSingleNft({
           token_id,
           contract_address,
@@ -708,14 +716,7 @@ export class NftMarketplaceService {
       // checking the owner whether the NFT is transferred suceessfully or not    
       const winner_data = bidder_address || 'nobids';
       //  Updating all the Bids
-      await this.updateAllBids(
-        {
-          contract_address,
-          token_id,
-          status: 'started',
-        },
-        { status: 'AuctionExpired', is_auction_ended: true },
-      );
+
       // Updating the Auction
       await this.updateAuction(
         {
