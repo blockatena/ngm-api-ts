@@ -129,7 +129,7 @@ export class NftMarketplaceService {
       );
       // creating activity object
       const activity = {
-        'event': 'Cancel Auction',
+        'event': 'Cancel List',
         'item': {
           name: update_nft.meta_data.name,
           contract_address,
@@ -591,12 +591,7 @@ export class NftMarketplaceService {
         const nftCntr = await this.ContractModel.findOne({
           contract_address: nftContractAddress,
         });
-        // remove this 
-        const tokenDetails = await this.nftService.getSingleNft({
-          contract_address: auction_details.contract_address,
-          token_id: auction_details.token_id,
-        });
-        // console.log("got contract", nftCntr
+        console.log("got contract", nftCntr);
         // console.log("got tokendetials", tokenDetails)
         const token_owner = tokenDetails.token_owner;
 
@@ -627,7 +622,7 @@ export class NftMarketplaceService {
           contract_address,
           '\nerc20 address',
           erc20Address,
-          '\nnft owner address',
+          '\ncontract owner address',
           nftCntr.owner_address,
         );
         const create_Sale = await marketplaceCntr.createSale(
@@ -647,6 +642,23 @@ export class NftMarketplaceService {
         if (!res) {
           return false;
         }
+
+        const update_nft = await this.nftService.updateNft(
+          {
+            contract_address: tokenDetails.contract_address,
+            token_id: tokenDetails.token_id,
+          },
+          { token_owner: bidder_address, is_in_auction: false, price: bid_amount },
+        );
+
+        const nft_data = await this.nftService.getSingleNft({
+          contract_address,
+          token_id,
+          token_owner: bidder_address
+        });
+        if (!nft_data) {
+          return 'You are not owner of the NFT';
+        }
         await this.updateAllBids(
           {
             contract_address,
@@ -655,14 +667,8 @@ export class NftMarketplaceService {
           },
           { status: 'AuctionExpired', is_auction_ended: true },
         );
-        const nft_data = await this.nftService.getSingleNft({
-          token_id,
-          contract_address,
-          token_owner: bidder_address
-        });
-        if (!nft_data) {
-          return 'You are not owner of the NFT';
-        }
+
+
         // creating activity 
         const activity1 = {
           event: "Won",
@@ -701,29 +707,22 @@ export class NftMarketplaceService {
         const activities = await this.activityService.createActivity({ activity1, activity2 });
         console.log(activities)
         //check nft is transferred or not
-        await this.nftService.updateNft(
-          {
-            contract_address: tokenDetails.contract_address,
-            token_id: tokenDetails.token_id,
-          },
-          { token_owner: data[0].bidder_address, is_in_auction: false, price: bid_amount || 'no bids' },
-        );
 
+        console.log(update_nft);
         // checking the owner whether the NFT is transferred suceessfully or not    
         const winner_data = bidder_address || 'nobids';
         //  Updating all the Bids
 
         // Updating the Auction
-        await this.updateAuction(
+        const auction = await this.updateAuction(
           {
             contract_address: contract_address,
             token_id: token_id,
-
             status: 'started',
-
           },
           { status: 'expired', winner: winner_data },
         );
+        console.log(auction);
         return data;
       }
       // updating the nft details
