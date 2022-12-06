@@ -200,7 +200,7 @@ export class NftMarketplaceController {
       console.log('no problem in controller');
 
       const activity = {
-        event: is_already_bidded ?'Update Bid':'Place Bid',
+        event: is_already_bidded ? 'Update Bid' : 'Place Bid',
         item: {
           name: is_nft_exists.meta_data.name,
           contract_address,
@@ -214,19 +214,19 @@ export class NftMarketplaceController {
         'read': false
       }
       const activityResponce = await this.activityService.createActivity(activity);
-      console.log("Activity : ",activityResponce)
+      console.log("Activity : ", activityResponce)
       if (is_already_bidded) {
         return await this.nftMarketplaceService.updateBid(
-          { bidder_address, auction_id:is_auction_exists?._id, status:'started'},create_bid);
+          { bidder_address, auction_id: is_auction_exists?._id, status: 'started' }, create_bid);
       } else {
         return await this.nftMarketplaceService.createBid({
-        auction_id: is_auction_exists._id,
-        bidder_address,
-        contract_address,
-        token_id,
-        bid_amount,
-      });
-    }
+          auction_id: is_auction_exists._id,
+          bidder_address,
+          contract_address,
+          token_id,
+          bid_amount,
+        });
+      }
     } catch (error) {
       console.log(error);
       return {
@@ -280,7 +280,7 @@ export class NftMarketplaceController {
 
       console.log('bid existed   :  ', is_bid_exits);
       // is bid exists
-      if(!is_bid_exits) {
+      if (!is_bid_exits) {
         return "No bid found"
       }
       const activity = {
@@ -298,7 +298,7 @@ export class NftMarketplaceController {
         'read': false
       }
       const activity_response = await this.activityService.createActivity(activity);
-      console.log("activity  : ",activity_response);
+      console.log("activity  : ", activity_response);
       return await this.nftMarketplaceService.cancelBid(body);
     } catch (error) {
       console.log(error);
@@ -453,10 +453,10 @@ export class NftMarketplaceController {
       const is_user_already_offer: any = await this.nftMarketplaceService.getOfferData({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' });
       console.log(is_user_already_offer)
 
-      
+
       //activity
       const activity = {
-        event: is_user_already_offer?'Update Offer':'Make Offer',
+        event: is_user_already_offer ? 'Update Offer' : 'Make Offer',
         item: {
           name: check_nft_exists.meta_data.name,
           contract_address,
@@ -535,4 +535,11 @@ export class NftMarketplaceController {
       console.log(error);
     }
   }
+  // @Get('test')
+  // async test(): Promise<any> {
+  //   return await this.nftMarketplaceService.addvolume();
+  // }
+
+
+
 }

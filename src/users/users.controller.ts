@@ -35,7 +35,6 @@ export class UsersController {
         message: "Something went Wrong"
       }
     }
-
   }
 
   @Get()
@@ -46,6 +45,7 @@ export class UsersController {
   @Get('/get-user/:wallet_address')
   async findOne(@Param('wallet_address') wallet_address: string): Promise<any> {
     try {
+      //  name banner image profile image wallet address email
       const data = await this.usersService.getUser(wallet_address);
       console.log(data);
       return data || 'you are not registered with us';
@@ -59,7 +59,8 @@ export class UsersController {
     }
 
   }
-
+  // [profle pic,name, banner, name, update 
+  //email]
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
