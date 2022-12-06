@@ -16,8 +16,26 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto): Promise<any> {
     // createUserDto.jwt = await this.JWTservice.Sign(createUserDto);
-    console.log(createUserDto);
-    return await this.UserModel.create(createUserDto);
+    const { wallet_address, email, username } = createUserDto;
+    try {
+      console.log(createUserDto);
+
+      const is_email_exists_already = await this.UserModel.findOne({ email });
+      if (is_email_exists_already) {
+        return `${email} is already Linked to another Wallet Please try another Email `
+      }
+      const is_username_exists_already = await this.UserModel.findOne({ username });
+      if (is_username_exists_already) {
+        return `The Username  ${username} already exists Please try another Username`;
+      }
+      return await this.UserModel.create(createUserDto);
+    }
+    catch (error) {
+      console.log(error);
+      return {
+        mesage: "Something went Wrong"
+      }
+    }
   }
 
   findAll() {
