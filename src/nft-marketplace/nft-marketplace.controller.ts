@@ -535,4 +535,11 @@ export class NftMarketplaceController {
       console.log(error);
     }
   }
+  // @Get('test')
+  // async test(): Promise<any> {
+  //   return await this.nftMarketplaceService.addvolume();
+  // }
+
+
+
 }

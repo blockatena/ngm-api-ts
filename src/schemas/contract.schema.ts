@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, StringExpressionOperatorReturningBoolean } from 'mongoose';
 export type ContractDocument = ContractSchema & Document;
 
 @Schema({ timestamps: true })
@@ -24,6 +24,8 @@ export class ContractSchema {
   baseuri: string;
   @Prop()
   imageuri: Array<string>;
+  @Prop({ default: 0 })
+  trade_volume: string;
 }
 
 export const contractSchema = SchemaFactory.createForClass(ContractSchema);
