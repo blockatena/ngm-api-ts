@@ -24,10 +24,10 @@ export class UsersService {
       if (is_email_exists_already) {
         return `${email} is already Linked to another Wallet Please try another Email `
       }
-      const is_username_exists_already = await this.UserModel.findOne({ username });
-      if (is_username_exists_already) {
-        return `The Username  ${username} already exists Please try another Username`;
-      }
+      // const is_username_exists_already = await this.UserModel.findOne({ username });
+      // if (is_username_exists_already) {
+      //   return `The Username  ${username} already exists Please try another Username`;
+      // }
       return await this.UserModel.create(createUserDto);
     }
     catch (error) {

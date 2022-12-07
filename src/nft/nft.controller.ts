@@ -69,7 +69,7 @@ export class NftController {
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
     private activityService: ActivityService,
-  ) {}
+  ) { }
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MATIC_MUMBAI_RPC_URL',
   );
@@ -184,7 +184,7 @@ export class NftController {
   async totalcount(
     @Param('contract_address') contract_address: string,
   ): Promise<Number> {
-    return this.nftservice.getCountNfts(contract_address);
+    return await this.nftservice.getCountNfts(contract_address);
   }
 
   // //   Get route
