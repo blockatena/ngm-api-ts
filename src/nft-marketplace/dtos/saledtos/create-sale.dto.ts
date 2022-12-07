@@ -13,10 +13,14 @@ export class CreateSaleBody {
   start_date: Date;
   @ApiProperty()
   end_date: string;
+  @ApiProperty()
+  sign:string
 }
 export class CancelSaleBody {
   @ApiProperty()
   contract_address: string;
   @ApiProperty()
   token_id: string;
+  @ApiProperty()
+  sign:string
 }
