@@ -19,13 +19,14 @@ export class UsersController {
   @ApiOperation({ summary: 'This Api will create a User' })
   @Post('create-user')
   async create(@Body() createUserDto: CreateUserDto) {
-    const { wallet_address } = createUserDto;
+    const { wallet_address, username, email } = createUserDto;
     try {
       // check wallet Address is present in Db
       const is_user_exists = await this.usersService.getUser(wallet_address);
       console.log(is_user_exists);
+
       if (is_user_exists) {
-        return 'user already exists';
+        return `${wallet_address} exists already`;
       }
       return await this.usersService.create(createUserDto);
     } catch (error) {
@@ -46,6 +47,9 @@ export class UsersController {
   async findOne(@Param('wallet_address') wallet_address: string): Promise<any> {
     try {
       //  name banner image profile image wallet address email
+      // const data1 = user_details.email || user_details.username || user_details.wallet_address;
+      // console.log(data1);
+
       const data = await this.usersService.getUser(wallet_address);
       console.log(data);
       return data || 'you are not registered with us';
@@ -66,6 +70,10 @@ export class UsersController {
     return this.usersService.update(+id, updateUserDto);
   }
 
+  @Patch('update-user')
+  async updateUser(): Promise<any> {
+
+  }
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
