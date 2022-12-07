@@ -5,7 +5,7 @@ export type UserDocument = UserSchema & Document;
 
 @Schema({ timestamps: true })
 export class UserSchema {
-  @Prop({ unique: true })
+  @Prop()
   username: string;
   @Prop({ unique: true })
   wallet_address: string;
