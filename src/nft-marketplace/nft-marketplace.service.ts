@@ -388,6 +388,7 @@ export class NftMarketplaceService {
         offer_person_address,
         contract_address,
         token_id,
+        offer_status: 'started'
       });
       console.log('getsale', offer_details);
       if (!offer_details) {

@@ -273,9 +273,19 @@ export class NftService {
       return { message: 'Something went Wrong ,Our team is Looking into it' };
     }
   }
+
+  async getCollectionOnly(contract_address: string): Promise<any> {
+    try {
+      return await this.NftModel.find({ contract_address });
+    } catch (error) {
+
+    }
+  }
+
+
   async getContract(contract_address: any): Promise<any> {
     console.log(contract_address, 'From Service');
-    return await this.ContractModel.findOne(contract_address);
+    return await this.ContractModel.findOne({ contract_address });
   }
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(

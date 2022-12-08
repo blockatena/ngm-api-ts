@@ -15,7 +15,7 @@ import { ethers } from 'ethers';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
-import { GetOwner } from './dto/get-owner.dto';
+import { GetOwner } from '../nft/nftitems/get-owner.dto';
 import { NftService } from 'src/nft/nft.service';
 require('dotenv').config();
 // const provider = new ethers.providers.JsonRpcProvider(
@@ -42,30 +42,6 @@ export class DeploymentController {
   );
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.provider);
 
-
-
-
-  // @Get('get-owner/:contract_address/:token_id')
-  // async getOwner(get_Owner: GetOwner): Promise<any> {
-  //   const { contract_address, token_id } = get_Owner;
-  //   try {
-  //     const nft = await this.nftService.getSingleNft({ contract_address, token_id })
-
-  //     const abiPath = path.join(
-  //       process.cwd(),
-  //       `src/utils/constants/${nft.contract_type}/${nft.contract_type}.abi`,
-  //     );
-  //     const abi = fs.readFileSync(abiPath, 'utf-8');
-  //     const block = new ethers.Contract(contract_address, abi);
-
-
-  //   } catch (error) {
-  //     console.log(error);
-  //     return {
-  //       message: "something went Wrong"
-  //     }
-  //   }
-  // }
   @ApiOperation({ summary: 'This Api will create a collection' })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
