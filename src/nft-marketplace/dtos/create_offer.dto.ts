@@ -8,6 +8,8 @@ export class MakeOfferBody {
   offer_price: string;
   @ApiProperty()
   offer_person_address: string;
+  @ApiProperty()
+  sign: string;
 }
 export class AcceptOfferBody {
   @ApiProperty()
@@ -18,6 +20,8 @@ export class AcceptOfferBody {
   offer_person_address: string;
   @ApiProperty()
   token_owner: string;
+  @ApiProperty()
+  sign:string
 }
 
 export class GetAllOffersBody {
@@ -34,4 +38,6 @@ export class CancelOffer {
   offer_person_address: string;
   @ApiProperty()
   caller: string;
+  @ApiProperty()
+  sign:string
 }

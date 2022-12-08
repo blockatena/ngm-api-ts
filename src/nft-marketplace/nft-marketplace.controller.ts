@@ -26,6 +26,7 @@ import {
 import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
+import { off } from 'process';
 @ApiTags('market-place')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
@@ -52,7 +53,18 @@ export class NftMarketplaceController {
   async createAuction(@Body() create_auction: CreateAuctionBody): Promise<any> {
     const { token_owner, token_id, end_date, contract_address, min_price } =
       create_auction;
+    let rawMsg = `{
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}",
+      "token_owner":"${token_owner}",
+      "start_date":"${create_auction.start_date}",
+      "end_date":"${end_date}",
+      "min_price":"${min_price}"
+    }`
     // with contract_address and token_id we can find an unique nft
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Create Auction \n${rawMsg}\n Hash : ${hashMessage}`, create_auction.sign)
+    console.log("signed Message : ",signedAddress)
     const checkCredentials = { contract_address, token_id };
     try {
       const is_nft_exists = await this.nftservice.getSingleNft(
@@ -75,6 +87,10 @@ export class NftMarketplaceController {
       if (!(is_nft_exists.token_owner === token_owner)) {
         console.log('you are not owner');
         return 'You are not the owner of the NFT';
+      }
+
+      if(signedAddress !== token_owner){
+        return { message: "Invalid User"}
       }
       //Saving in Activity.
       const activity_data = {
@@ -113,6 +129,14 @@ export class NftMarketplaceController {
   @Post('cancel-auction')
   async cancelAuction(@Body() cancel_auction: CancelAuctionBody): Promise<any> {
     const { contract_address, token_id } = cancel_auction;
+    let rawMsg = `{
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}"
+    }`
+
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Cancel Auction\n${rawMsg}\n Hash: \n${hashMessage}`, cancel_auction.sign)
+    console.log("signed Message : ",signedAddress)
     try {
       // check contract address and token id  valid or not
       // check auction is present or not
@@ -120,6 +144,16 @@ export class NftMarketplaceController {
       // check  token_owneraddress  , because he is the owner of the token
       // if it already cancelled return "Auction is already cancelled"
       //Activity
+
+      const is_nft_exists = await this.nftservice.getSingleNft(
+        cancel_auction
+      );
+      if(!is_nft_exists){
+        return "nft is not exists"
+      }
+      if(signedAddress !== is_nft_exists.token_owner){
+        return { message: "Invalid User"}
+      }
 
       return await this.nftMarketplaceService.cancelAuction(
         contract_address,
@@ -165,6 +199,17 @@ export class NftMarketplaceController {
     //  nft_id auction id bidding price
     let { token_id, bid_amount, bidder_address, contract_address } = create_bid;
     bidder_address = ethers.utils.getAddress(bidder_address);
+    let rawMsg = `{
+      "bid_amount":"${bid_amount}",
+      "bidder_address":"${bidder_address}",
+    "contract_address":"${contract_address}",
+    "token_id":"${
+      token_id
+    }"
+  }`
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Place Bid\n${rawMsg}\n Hash: \n${hashMessage}`, create_bid.sign)
+    console.log("signed Message : ",signedAddress)
     try {
       const is_nft_exists = await this.nftservice.getSingleNft({
         token_id,
@@ -186,6 +231,10 @@ export class NftMarketplaceController {
       console.log(is_auction_exists);
       if (!is_auction_exists) {
         return 'Invalid Auction Id';
+      }
+      //Check if Signer 
+      if(signedAddress!==bidder_address) {
+        return { message: "Invalid User"}
       }
       //if the person is already bidded or not
       const is_already_bidded = await this.nftMarketplaceService.getBid({
@@ -253,6 +302,14 @@ export class NftMarketplaceController {
     //  is bid exists
     //  you are the rightful owner to cancel the bid or anything we need some api keys
     const { contract_address, token_id, bidder_address } = body;
+    let rawMsg = `{
+      "bidder_address":"${bidder_address}",
+    "contract_address":"${contract_address}",
+    "token_id":"${token_id}"
+  }`
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Cancel Bid\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    console.log("signed Message : ",signedAddress)
     try {
       // is nft exists
       const is_nft_exists = await this.nftservice.getSingleNft({
@@ -269,6 +326,10 @@ export class NftMarketplaceController {
       console.log('existed   :  ', is_auction_exists);
       if (!is_auction_exists) {
         return 'Invalid Auction Id';
+      }
+      //Check if Signer 
+      if(signedAddress!==bidder_address) {
+        return { message: "Invalid User"}
       }
       const is_bid_exits = await this.nftMarketplaceService.getBid({
         auction_id: is_auction_exists._id,
@@ -379,6 +440,18 @@ export class NftMarketplaceController {
   @Post('create-sale')
   async createSale(@Body() body: CreateSaleBody): Promise<any> {
     const { token_owner, contract_address, token_id } = body;
+    let rawMsg = `{
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}",
+      "token_owner":"${token_owner}",
+      "start_date":"${body.start_date}",
+      "end_date":"${body.end_date}",
+      "price":"${body.price}"
+    }`
+    console.log(rawMsg)
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Create Sale \n${rawMsg}\n Hash : ${hashMessage}`, body.sign)
+    console.log("signed Message : ",signedAddress)
     try {
       //is Nft Exists
       const check_nft_exists = await this.nftservice.getSingleNft({
@@ -391,6 +464,9 @@ export class NftMarketplaceController {
       //is Nft belongs to that owner
       if (!(check_nft_exists.token_owner == token_owner)) {
         return 'You are not the Owner of this NFT';
+      }
+      if(signedAddress !== token_owner){
+        return { message: "Invalid User"}
       }
       // is in auction
       if (check_nft_exists.is_in_auction) {
@@ -415,7 +491,23 @@ export class NftMarketplaceController {
   @Post('cancel-sale')
   async cancelSale(@Body() body: CancelSaleBody): Promise<any> {
     // Add Validations
+    let rawMsg = `{
+      "contract_address":"${body.contract_address}",
+      "token_id":"${
+      body.token_id
+    }"
+  }`
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Cancel Sale\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    console.log("signed Message : ",signedAddress)
     try {
+      const nft = await this.nftservice.getSingleNft({
+        contract_address:body.contract_address,
+        token_id:body.token_id,
+      });
+      if(signedAddress !== nft.token_owner){
+        return { message:"Invalid User"}
+      }
       return await this.nftMarketplaceService.cancelSale(body);
     } catch (error) {
       console.log(error);
@@ -434,6 +526,15 @@ export class NftMarketplaceController {
   async makeOffer(@Body() body: MakeOfferBody) {
     try {
       const { token_id, contract_address, offer_person_address, offer_price } = body;
+      let rawMsg = `{
+      "offer_price":"${offer_price}",
+      "offer_person_address":"${offer_person_address}",
+    "contract_address":"${contract_address}",
+    "token_id":"${token_id}"
+  }`
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Make Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    console.log("signed Message : ",signedAddress)
       // Validating sale is enough, because already sale is fully validated
       const check_nft_exists = await this.nftservice.getSingleNft({
         contract_address,
@@ -448,6 +549,10 @@ export class NftMarketplaceController {
       }
       if (is_sale_exists.status !== 'started') {
         return `sale  ${is_sale_exists.status}`;
+      }
+      //Check if Signer 
+      if(signedAddress!==offer_person_address) {
+        return { message: "Invalid User"}
       }
       body[`sale_id`] = is_sale_exists._id;
       const is_user_already_offer: any = await this.nftMarketplaceService.getOfferData({ offer_person_address, sale_id: is_sale_exists._id, offer_status: 'started' });
@@ -490,6 +595,19 @@ export class NftMarketplaceController {
   async acceptOffer(@Body() body: AcceptOfferBody) {
     //we can add validations
     const { contract_address, token_id, offer_person_address, token_owner } = body;
+    let rawMsg = `{
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}",
+      "offer_person_address":"${offer_person_address}",
+      "token_owner":"${token_owner}"
+  }`
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    console.log("signed Message : ",signedAddress)
+    const checkCredentials = {"contract_address":body.contract_address, "token_id":body.token_id };
+      if(signedAddress !== token_owner){
+        return { message: "Invalid User"}
+      }
     return await this.nftMarketplaceService.acceptOffer(body);
   }
 
@@ -499,7 +617,24 @@ export class NftMarketplaceController {
     const { contract_address,
       token_id,
       offer_person_address, caller } = body;
+    let rawMsg = `{
+      "offer_person_address":"${offer_person_address}",
+    "contract_address":"${contract_address}",
+    "token_id":"${token_id}",
+    "caller":"${caller}"
+  }`
+    let hashMessage = await ethers.utils.hashMessage(rawMsg)
+    let signedAddress = await ethers.utils.verifyMessage(`Signing to Cancel Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    console.log("signed Message : ",signedAddress)
+    const checkCredentials = {contract_address,token_id}
     try {
+      //Check if Signer 
+      const is_nft_exists = await this.nftservice.getSingleNft(
+        checkCredentials,
+      );
+      if(signedAddress!==offer_person_address && signedAddress !== is_nft_exists.token_owner) {
+        return { message: "Invalid User"}
+      }
       return await this.nftMarketplaceService.cancelOffer(body);
     } catch (error) {
       console.log(error);

@@ -388,6 +388,7 @@ export class NftMarketplaceService {
         offer_person_address,
         contract_address,
         token_id,
+        offer_status:'started'
       });
       console.log('getsale', offer_details);
       if (!offer_details) {
@@ -409,6 +410,7 @@ export class NftMarketplaceService {
       // console.log("contract address", nftCntr)
       // Get sale details
       // calling to block-chain
+      const feeData = await this.mum_provider.getFeeData()
       console.log('offer price', offer_details.offer_price);
       const price = ethers.utils.parseUnits(offer_details.offer_price, 'ether');
 
@@ -420,6 +422,7 @@ export class NftMarketplaceService {
         token_owner,
         nftCntr.owner_address,
         price,
+         { gasPrice: feeData.gasPrice }
       );
       const transaction_hash = createSale.hash;
       console.log(transaction_hash);
@@ -669,6 +672,7 @@ export class NftMarketplaceService {
           '\ncontract owner address',
           nftCntr.owner_address,
         );
+        const feeData = await this.mum_provider.getFeeData()
         const create_Sale = await marketplaceCntr.createSale(
           erc20Address,
           contract_address,
@@ -677,6 +681,7 @@ export class NftMarketplaceService {
           token_owner,
           nftCntr.owner_address,
           bid_amount,
+           { gasPrice: feeData.gasPrice }
         );
         console.log('sale', create_Sale);
         const transaction_hash = create_Sale.hash;

@@ -476,9 +476,11 @@ export class NftController {
         this.wallet,
       ); // abi and provider to be declared
       // console.log('nftContract: ', nftCntr);
+      const feeData = await this.mum_provider.getFeeData()
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(body.token_owner),
         1,
+         { gasPrice: feeData.gasPrice }
       );
       console.log('minttoken', mintToken);
       const res = await mintToken.wait(1);
