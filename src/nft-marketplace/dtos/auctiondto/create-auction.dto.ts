@@ -13,12 +13,16 @@ export class CreateAuctionBody {
   end_date: string;
   @ApiProperty({ example: 20 })
   min_price: number;
+  @ApiProperty()
+  sign:string
 }
 export class CancelAuctionBody {
   @ApiProperty({ example: '0x2A8b77DF421106C8fCdBE08697c949D519f4c05a' })
   contract_address: string;
   @ApiProperty({ example: '3' })
   token_id: string;
+  @ApiProperty()
+  sign:string
 }
 export class GetAllBids {
   @ApiProperty()

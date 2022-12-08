@@ -105,10 +105,13 @@ export class DeploymentController {
     // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
     // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
     // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
+    const feeData = await this.provider.getFeeData()
+    console.log(feeData)
     let contract = await contractFactory.deploy(
       deploymentBody.collection_name,
       deploymentBody.symbol,
       ' ',
+      { gasPrice: feeData.gasPrice }
     );
     console.log('deployed');
     // const uri =
@@ -117,7 +120,7 @@ export class DeploymentController {
     const confirm = await contract.deployed();
     const address = contract.address;
     const baseUri = `${uri}/metadata/${address}/`;
-    const res = await contract.setBaseURI(baseUri);
+    const res = await contract.setBaseURI(baseUri, { gasPrice: feeData.gasPrice });
     const hash = confirm.deployTransaction.hash;
 
     // Contract Deployment End
