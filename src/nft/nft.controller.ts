@@ -550,7 +550,7 @@ export class NftController {
         item: {
           name: jsonData.name,
           contract_address: arrdb.contract_address,
-          token_id: arrdb.token_id,
+          token_id: `${arrdb.token_id}`,
           image: jsonData.image,
         },
         price: 0,
