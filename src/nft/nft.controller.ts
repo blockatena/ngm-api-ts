@@ -107,23 +107,22 @@ export class NftController {
       console.log(get_collecion);
       get_collecion.forEach(async nft => {
         console.log(nft.contract_address, nft.token_id);
-        const token_idd = parseInt(token_id);
+        const token_idd = parseInt(nft.token_id);
+
         const blkid = await contract_instance.ownerOf(token_idd);
         console.log(nft.token_owner, '==', blkid);
         if (nft.token_owner != blkid) {
           console.log('-----------------[PROBLEM]---------------------------');
-          console.log('|', nft.token_id, '                |');
+          console.log('| FOR Token_ID  ', nft.token_id, '                |');
+          console.log('|   IN DB                     IN BLOCKCHAIN      ')
           console.log('|', nft.token_owner, '==', blkid, '|');
           console.log('--------------------------------------------');
-
+          await this.nftservice.updateNft({ contract_address, token_id: nft.token_id }, { token_owner: blkid });
           // const current_nft = await this.nftservice.updateNft(,);
         }
       });
-
-
-
       // console.log("sss", blkid);
-      return ' ';
+      return 'done ';
     } catch (error) {
       console.log(error);
       return {
@@ -185,7 +184,10 @@ export class NftController {
       // **********
       return tokenUri;
     } catch (error) {
-      return false;
+      return {
+        success: false,
+        message: 'something went Wrong'
+      };
     }
   }
 
@@ -522,9 +524,11 @@ export class NftController {
         this.wallet,
       ); // abi and provider to be declared
       // console.log('nftContract: ', nftCntr);
+      const feeData = await this.mum_provider.getFeeData()
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(body.token_owner),
         1,
+        { gasPrice: feeData.gasPrice }
       );
       console.log('minttoken', mintToken);
       const res = await mintToken.wait(1);
@@ -594,7 +598,7 @@ export class NftController {
         item: {
           name: jsonData.name,
           contract_address: arrdb.contract_address,
-          token_id: arrdb.token_id,
+          token_id: `${arrdb.token_id}`,
           image: jsonData.image,
         },
         price: 0,

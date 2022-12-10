@@ -56,8 +56,14 @@ export class UsersService {
 
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async updateUser(wallet_address: string, update_data: any) {
+
+    return await this.UserModel.updateOne({ wallet_address }, {
+      $set: {
+        ...update_data
+      }
+    })
+    // return `This action updates a #${id} user`;
   }
 
   remove(id: number) {
