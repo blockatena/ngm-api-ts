@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 
 export class GetOwner {
     @ApiProperty()
-    contract_address: string;
+    readonly contract_address: string;
     @ApiProperty()
-    token_id: string;
+    readonly token_id: string;
 }

@@ -388,7 +388,7 @@ export class NftMarketplaceService {
         offer_person_address,
         contract_address,
         token_id,
-        offer_status:'started'
+        offer_status: 'started'
       });
       console.log('getsale', offer_details);
       if (!offer_details) {
@@ -422,7 +422,7 @@ export class NftMarketplaceService {
         token_owner,
         nftCntr.owner_address,
         price,
-         { gasPrice: feeData.gasPrice }
+        { gasPrice: feeData.gasPrice }
       );
       const transaction_hash = createSale.hash;
       console.log(transaction_hash);
@@ -681,7 +681,7 @@ export class NftMarketplaceService {
           token_owner,
           nftCntr.owner_address,
           bid_amount,
-           { gasPrice: feeData.gasPrice }
+          { gasPrice: feeData.gasPrice }
         );
         console.log('sale', create_Sale);
         const transaction_hash = create_Sale.hash;

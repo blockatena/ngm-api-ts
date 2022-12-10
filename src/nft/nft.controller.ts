@@ -46,6 +46,7 @@ import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
+import { GetOwner } from './nftitems/get-owner.dto';
 
 // require('dotenv').config();
 
@@ -85,6 +86,50 @@ export class NftController {
   private token = this.NFT_STORAGE_KEY;
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.mum_provider);
   private storage = new NFTStorage({ token: this.token });
+
+  @ApiOperation({ summary: 'This Api will Gets you the actual owner of the Nft from BlockChain' })
+  @Get('get-owner/:contract_address/:token_id')
+  async getOwner(@Param() get_Owner: GetOwner): Promise<any> {
+    const { contract_address, token_id } = get_Owner;
+    try {
+      // Getting Single Nft
+      // const nft1 = await this.nftservice.getSingleNft({ contract_address, token_id })
+      const nft1 = await this.nftservice.getContract(contract_address);
+      // Getting Abi of requried Contract Type
+      // console.log(get_contract_only);
+      const abiPath = path.join(
+        process.cwd(),
+        `src/utils/constants/${nft1.type}/${nft1.type}.abi`,
+      );
+      const abi = fs.readFileSync(abiPath, 'utf-8');
+      const contract_instance = new ethers.Contract(contract_address, abi, this.wallet);
+      const get_collecion = await this.nftservice.getCollectionOnly(contract_address);
+      console.log(get_collecion);
+      get_collecion.forEach(async nft => {
+        console.log(nft.contract_address, nft.token_id);
+        const token_idd = parseInt(nft.token_id);
+
+        const blkid = await contract_instance.ownerOf(token_idd);
+        console.log(nft.token_owner, '==', blkid);
+        if (nft.token_owner != blkid) {
+          console.log('-----------------[PROBLEM]---------------------------');
+          console.log('| FOR Token_ID  ', nft.token_id, '                |');
+          console.log('|   IN DB                     IN BLOCKCHAIN      ')
+          console.log('|', nft.token_owner, '==', blkid, '|');
+          console.log('--------------------------------------------');
+          await this.nftservice.updateNft({ contract_address, token_id: nft.token_id }, { token_owner: blkid });
+          // const current_nft = await this.nftservice.updateNft(,);
+        }
+      });
+      // console.log("sss", blkid);
+      return 'done ';
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went Wrong"
+      }
+    }
+  }
   // File Upload
 
   @ApiOperation({
@@ -139,7 +184,10 @@ export class NftController {
       // **********
       return tokenUri;
     } catch (error) {
-      return false;
+      return {
+        success: false,
+        message: 'something went Wrong'
+      };
     }
   }
 
@@ -480,7 +528,7 @@ export class NftController {
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(body.token_owner),
         1,
-         { gasPrice: feeData.gasPrice }
+        { gasPrice: feeData.gasPrice }
       );
       console.log('minttoken', mintToken);
       const res = await mintToken.wait(1);

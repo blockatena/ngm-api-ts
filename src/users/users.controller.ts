@@ -6,16 +6,33 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  UploadedFiles,
 } from '@nestjs/common';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { NFTStorage, File, Blob } from 'nft.storage';
 import { UsersService } from './users.service';
-import { CreateUserDto, GetUser } from './dto/create-user.dto';
+import { ConfigService } from '@nestjs/config';
+import { CreateUserDto, GetUser, UserPic } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
-import { Wallet } from 'ethers';
+import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { NftService } from 'src/nft/nft.service';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService, private configService: ConfigService,
+    private readonly nftService: NftService
+  ) {
+  }
+  // 
+  private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
+  private token = this.NFT_STORAGE_KEY;
+  private storage = new NFTStorage({ token: this.token });
+  // 
   @ApiOperation({ summary: 'This Api will create a User' })
   @Post('create-user')
   async create(@Body() createUserDto: CreateUserDto) {
@@ -65,10 +82,10 @@ export class UsersController {
   }
   // [profle pic,name, banner, name, update 
   //email]
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+  //   return this.usersService.update(+id, updateUserDto);
+  // }
 
   @Patch('update-user')
   async updateUser(): Promise<any> {
@@ -78,4 +95,64 @@ export class UsersController {
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
+  // File Upload
+  @ApiOperation({
+    summary: 'This Api will upload your profile pic or banner gets you URI of that Profile pic or banner',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        wallet_address: { type: 'string' },
+        type: { type: 'string' }
+      },
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('file'),
+  )
+  @Post('uploadFile')
+  async uploadFile(@Body() body: UserPic,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 200000 }),// 1kb=1000
+          new FileTypeValidator({ fileType: 'jpeg' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+  ) {
+    const { wallet_address, type } = body;
+    try {
+      //check user is registered or not 
+      const is_user_exists = await this.usersService.getUser(wallet_address);
+      if (!is_user_exists) {
+        return 'User doesnt exists Please Register with us';
+      }
+      console.log(file, body);
+      const blob = new Blob([file.buffer]);
+      const toUploadFile = new File([blob], `/${file.originalname}`, {
+        type: file.mimetype,
+      });
+      const cid = await this.storage.storeDirectory([toUploadFile]);
+      const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
+      console.log({ tokenUri });
+      // // **********Storing in Db
+      if (type == 'profile')
+        await this.usersService.updateUser(wallet_address, { profile_image: tokenUri })
+      if (type == 'banner')
+        await this.usersService.updateUser(wallet_address, { banner_image: tokenUri })
+      // **********
+      return await this.usersService.getUser(wallet_address);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'something went Wrong'
+      };
+    }
+  }
+  // 
 }

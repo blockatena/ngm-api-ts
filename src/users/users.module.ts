@@ -5,9 +5,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { userSchema, UserSchema } from 'src/schemas/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
+import { NftModule } from 'src/nft/nft.module';
 
 @Module({
-  imports: [
+  imports: [NftModule,
     JwtModule.register({
       secret: process.env.jwtSecret,
       signOptions: { expiresIn: process.env.ExpiresIN },
