@@ -398,6 +398,7 @@ export class NftController {
     // if no collctions ,return some message ,
     //  is this route available to all
     try {
+      console.log(body);
       return await this.nftservice.getCollections(body);
     } catch (error) {
       console.log(error);
@@ -444,10 +445,11 @@ export class NftController {
   ): Promise<any> {
     console.log(contract.contract_address);
     try {
+      console.log(contract);
       // Fetching Contract details
-      const collection = await this.nftservice.getContract({
-        contract_address: contract.contract_address,
-      });
+      const collection = await this.nftservice.getContract(contract.contract_address
+      );
+      console.log(collection);
       // fetching all Nfts
       const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
