@@ -92,10 +92,8 @@ export class NftService {
   // To get single Nft
   async getNft(data: any): Promise<any> {
     try {
-      const nft = await this.NftModel.findOne(data);
-      const contract_details = await this.getContract({
-        contract_address: data.contract_address,
-      });
+      const nft = await this.NftModel.findOne({ ...data });
+      const contract_details = await this.getContract(data.contract_address);
       return { contract_details, nft };
     } catch (error) {
       console.log(error);

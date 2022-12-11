@@ -338,6 +338,7 @@ export class NftController {
         contract_address,
         token_id,
       });
+      console.log(is_nft_exists);
       const nft = is_nft_exists;
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
