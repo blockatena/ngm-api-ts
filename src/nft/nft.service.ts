@@ -146,10 +146,10 @@ export class NftService {
   async getCollections(body: GetCollectionBody) {
     const { page_number, items_per_page } = body;
     try {
-      const collections = await this.ContractModel.find({}).limit(items_per_page * 1)
-        .skip((page_number - 1) * items_per_page)
+      const collections = await this.ContractModel.find({}).limit(items_per_page * 1).skip((page_number - 1) * items_per_page)
         .exec();
       const total_collections = await this.ContractModel.countDocuments();
+      console.log(total_collections);
       return {
         total_collections,
         total_pages: Math.ceil(total_collections / items_per_page),
