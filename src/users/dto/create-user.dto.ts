@@ -25,3 +25,10 @@ export class GetUser {
   @ApiPropertyOptional()
   username?: string;
 }
+
+export class UpdateUser {
+  @ApiProperty()
+  wallet_address: string;
+  @ApiProperty()
+  username: string;
+}

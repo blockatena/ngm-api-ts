@@ -17,7 +17,7 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
-import { CreateUserDto, GetUser, UserPic } from './dto/create-user.dto';
+import { CreateUserDto, GetUser, UpdateUser, UserPic } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { NftService } from 'src/nft/nft.service';
@@ -80,16 +80,26 @@ export class UsersController {
     }
 
   }
-  // [profle pic,name, banner, name, update 
-  //email]
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-  //   return this.usersService.update(+id, updateUserDto);
-  // }
 
+  @ApiOperation({ summary: 'This Api will updates username' })
   @Patch('update-user')
-  async updateUser(): Promise<any> {
-
+  async updateUser(@Body() updateUser: UpdateUser): Promise<any> {
+    const { wallet_address, username } = updateUser;
+    try {
+      // First find user exists or not
+      const is_user_exists = await this.usersService.getUser(wallet_address);
+      if (!is_user_exists) {
+        return `${wallet_address} doesnt register with us please register`;
+      }
+      return await this.usersService.updateUser(wallet_address, { username });
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'Something went wrong',
+        error
+      }
+    }
   }
   @Delete(':id')
   remove(@Param('id') id: string) {
