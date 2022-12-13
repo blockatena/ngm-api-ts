@@ -14,6 +14,8 @@ export class NftSchema {
   @Prop({ default: '0' })
   price: string;
   @Prop()
+  highest_price: number;
+  @Prop()
   meta_data_url: string;
   @Prop({ default: false })
   is_in_auction: boolean;

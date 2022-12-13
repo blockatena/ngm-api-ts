@@ -295,7 +295,7 @@ export class NftController {
     summary:
       'This Api will gets you all the nfts by contract address owned by the user',
   })
-  /** [GET ALL NFTS WITH PAGINATION]*/
+  /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
     @Param() nftContractDto: NftContractUser,

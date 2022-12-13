@@ -433,15 +433,30 @@ export class NftMarketplaceService {
       }
       console.log('createSale', createSale);
       console.log('www', res);
+      //  get nft 
+      const nft = await this.nftService.getSingleNft({ contract_address, token_id });
       //Make changes in our Db
-      await this.nftService.updateNft(
-        { contract_address, token_id },
-        {
-          token_owner: offer_person_address,
-          price: offer_details.offer_price,
-          is_in_sale: false,
-        },
-      );
+      if (Number(offer_details.offer_price) > Number(nft.price)) {
+        await this.nftService.updateNft(
+          { contract_address, token_id },
+          {
+            token_owner: offer_person_address,
+            price: offer_details.offer_price,
+            is_in_sale: false,
+            highest_price: offer_details.offer_price
+          },
+        );
+      }
+      else {
+        await this.nftService.updateNft(
+          { contract_address, token_id },
+          {
+            token_owner: offer_person_address,
+            price: offer_details.offer_price,
+            is_in_sale: false
+          },
+        );
+      }
       // validate Nft
       const nft_data = await this.nftService.getSingleNft({
         token_id,
@@ -691,18 +706,32 @@ export class NftMarketplaceService {
         if (!res) {
           return false;
         }
-        const update_nft = await this.nftService.updateNft(
-          {
-            contract_address: tokenDetails.contract_address,
-            token_id: tokenDetails.token_id,
-          },
-          {
-            token_owner: bidder_address,
-            is_in_auction: false,
-            price: price,
-          },
-        );
-
+        if (Number(price) > Number(tokenDetails.price)) {
+          const update_nft = await this.nftService.updateNft(
+            {
+              contract_address: tokenDetails.contract_address,
+              token_id: tokenDetails.token_id,
+            },
+            {
+              token_owner: bidder_address,
+              is_in_auction: false,
+              price: price,
+              highest_price: price
+            },
+          );
+        } else {
+          const update_nft = await this.nftService.updateNft(
+            {
+              contract_address: tokenDetails.contract_address,
+              token_id: tokenDetails.token_id,
+            },
+            {
+              token_owner: bidder_address,
+              is_in_auction: false,
+              price: price,
+            },
+          );
+        }
         const nft_data = await this.nftService.getSingleNft({
           contract_address,
           token_id,
@@ -759,13 +788,7 @@ export class NftMarketplaceService {
         await this.activityService.createActivity(activity1);
         await this.activityService.createActivity(activity2);
 
-        // adding Trade Volume
-        const trade = await this.tradeVolume({ contract_address, price });
-        console.log(trade);
-        // console.log(activities);
-        //check nft is transferred or not
-
-        console.log(update_nft);
+        // console.log(update_nft);
         // checking the owner whether the NFT is transferred suceessfully or not
         const winner_data = bidder_address || 'nobids';
         // Updating the Auction
@@ -806,7 +829,7 @@ export class NftMarketplaceService {
       };
     }
   }
-  //
+  /*****************[TRADE_VOLUME_FOR_COLLECTION]***************/
   async tradeVolume(tradeVolume: TradeVolume): Promise<any> {
     const { contract_address, price } = tradeVolume;
 
@@ -827,7 +850,21 @@ export class NftMarketplaceService {
       }
     }
   }
-
+  /*****************[TRADE_VOLUME_FOR_NFT]***************/
+  // async nftVolume(condition: any, price: number): Promise<any> {
+  //   try {
+  //     const curr_vol = (await this.nftService.getSingleNft(condition)).nft_volume;
+  //     console.log("curr_vol", curr_vol);
+  //     return await this.nftService.updateNft({ contract_address: condition.contract_address, token_id: condition.token_id }, { $set: { nft_volume: Number(curr_vol) + Number(price) } });
+  //   } catch (error) {
+  //     console.log(error);
+  //     return {
+  //       success: false,
+  //       message: 'something went wrong',
+  //       error
+  //     }
+  //   }
+  // }
   /**********************[UPDATE_AUCTION]******************************/
   async updateAuction(data: any, update_data: any) {
     try {
