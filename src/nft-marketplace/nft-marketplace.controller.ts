@@ -53,6 +53,9 @@ export class NftMarketplaceController {
   async createAuction(@Body() create_auction: CreateAuctionBody): Promise<any> {
     const { token_owner, token_id, end_date, contract_address, min_price } =
       create_auction;
+    if (!(Number(min_price) > 0)) {
+      return `please place valid price`;
+    }
     let rawMsg = `{
       "contract_address":"${contract_address}",
       "token_id":"${token_id}",
@@ -182,7 +185,7 @@ export class NftMarketplaceController {
     }
   }
   /******** */
-  /*********************[CREATE-BID]***********************/
+  /*********************[PLACE-BID]***********************/
   @ApiOperation({
     summary: 'This Api will  Place a bid for an NFT which is in auction',
   })
@@ -198,6 +201,9 @@ export class NftMarketplaceController {
   async createBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
     let { token_id, bid_amount, bidder_address, contract_address } = create_bid;
+    if (!(Number(bid_amount) > 0)) {
+      return `please place valid amount`;
+    }
     bidder_address = ethers.utils.getAddress(bidder_address);
     let rawMsg = `{
       "bid_amount":"${bid_amount}",
@@ -232,6 +238,7 @@ export class NftMarketplaceController {
         return 'Invalid Auction Id';
       }
       //Check if Signer 
+      console.log('here', signedAddress, '===', bidder_address)
       if (signedAddress !== bidder_address) {
         return { message: "Invalid User" }
       }
@@ -440,7 +447,10 @@ export class NftMarketplaceController {
   })
   @Post('create-sale')
   async createSale(@Body() body: CreateSaleBody): Promise<any> {
-    const { token_owner, contract_address, token_id } = body;
+    const { token_owner, contract_address, token_id, price } = body;
+    if (!(Number(price) > 0)) {
+      return `please place valid price`;
+    }
     let rawMsg = `{
       "contract_address":"${contract_address}",
       "token_id":"${token_id}",
@@ -526,6 +536,9 @@ export class NftMarketplaceController {
   async makeOffer(@Body() body: MakeOfferBody) {
     try {
       const { token_id, contract_address, offer_person_address, offer_price } = body;
+      if (!(Number(offer_price) > 0)) {
+        return `please place valid price`;
+      }
       let rawMsg = `{
       "offer_price":"${offer_price}",
       "offer_person_address":"${offer_person_address}",
