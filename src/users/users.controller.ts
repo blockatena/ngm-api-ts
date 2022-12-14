@@ -78,7 +78,6 @@ export class UsersController {
         error
       }
     }
-
   }
 
   @ApiOperation({ summary: 'This Api will updates username' })
