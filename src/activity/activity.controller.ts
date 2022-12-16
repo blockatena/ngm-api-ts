@@ -4,15 +4,16 @@ import { ActivityService } from './activity.service';
 import {
   GetItemActivity
 } from "./dtos/itemdto/item-activity.dto";
+import { UserActivity } from './dtos/userdto/user-activity.dto';
 @ApiTags('Activity')
 @Controller('activity')
 export class ActivityController {
   constructor(private readonly activityService: ActivityService) { }
 
-  @Get('get-user-activity/:wallet_address')
-  async getActivity(@Param('wallet_address') wallet_address: string): Promise<any> {
+  @Get('get-user-activity/:wallet_address/:page_number/:items_per_page')
+  async getActivity(@Param() userActivity: UserActivity): Promise<any> {
     try {
-      return await this.activityService.getUserActivity(wallet_address);
+      return await this.activityService.getUserActivity(userActivity);
     } catch (error) {
       console.log(error);
       return {
@@ -22,10 +23,11 @@ export class ActivityController {
     }
   }
 
-  @Get('get-item-activity/:contract_address/:token_id')
+  @Get('get-item-activity/:contract_address/:token_id/:page_number/:items_per_page')
   async getItemActivity(@Param() get_item_activity: GetItemActivity): Promise<any> {
-    try {
 
+    try {
+      // check whether Item exists or not
       return await this.activityService.getItemActivity(get_item_activity);
     } catch (error) {
       console.log(error);

@@ -23,7 +23,6 @@ export class ActivitySchema {
     to: string;
     @Prop()
     read: string;
-
 }
 
 export const activitySchema = SchemaFactory.createForClass(ActivitySchema);

@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Param } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GetItemActivity } from './dtos/itemdto/item-activity.dto';
+import { ReadNotification } from './dtos/read-notification.dto';
+import { UserActivity } from './dtos/userdto/user-activity.dto';
 
 import { ActivityDocument, ActivitySchema } from './schema/activity.schema';
 
@@ -22,10 +24,13 @@ export class ActivityService {
             }
         }
     }
-    async getUserActivity(data: string): Promise<any> {
+    async getUserActivity(data: UserActivity): Promise<any> {
+        const { wallet_address, items_per_page, page_number } = data;
         try {
             console.log(data);
-            return await this.activityModel.find({ $or: [{ from: data }, { to: data }] });
+            return await this.activityModel.find({ $or: [{ from: wallet_address }, { to: wallet_address }] }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+                .skip((page_number - 1) * items_per_page)
+                .exec();
         } catch (error) {
             console.log(error);
             return {
@@ -35,11 +40,45 @@ export class ActivityService {
         }
     }
 
-    async getItemActivity(data: GetItemActivity): Promise<any> {
-        const { contract_address, token_id } = data;
+    // 
+    async getUserNotifications(data: UserActivity): Promise<any> {
+        const { wallet_address, items_per_page, page_number } = data;
         try {
             console.log(data);
-            return await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": token_id }).sort({ createdAt: -1 });
+            return await this.activityModel.find({ read: 'false', $or: [{ from: wallet_address }, { to: wallet_address }] }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+                .skip((page_number - 1) * items_per_page)
+                .exec();
+        } catch (error) {
+            console.log(error);
+            return {
+                message: "something went Wrong",
+                error
+            }
+        }
+    }
+    //
+    //update notification
+    async readNotication(readNotification: ReadNotification): Promise<any> {
+        const { log } = console;
+        try {
+            return await this.activityModel.findOneAndUpdate(readNotification, { $set: { read: true } });
+        } catch (error) {
+            log(error);
+            return {
+                error,
+
+            }
+        }
+    }
+    // 
+
+    async getItemActivity(data: GetItemActivity): Promise<any> {
+        const { contract_address, token_id, items_per_page, page_number } = data;
+        try {
+            console.log(data);
+            return await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": token_id }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+                .skip((page_number - 1) * items_per_page)
+                .exec();
         } catch (error) {
             console.log(error);
             return {
