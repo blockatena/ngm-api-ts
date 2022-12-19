@@ -32,7 +32,7 @@ export class ActivityService {
                 .skip((page_number - 1) * items_per_page)
                 .exec();
             const total_pages = await this.activityModel.countDocuments({ $or: [{ from: wallet_address }, { to: wallet_address }] });
-            return { total_pages, current_page: page_number, activity_data }
+            return { total_pages: total_pages / items_per_page, current_page: page_number, activity_data }
         } catch (error) {
             console.log(error);
             return {
@@ -79,7 +79,7 @@ export class ActivityService {
                 .exec();
 
             const total_pages = await this.activityModel.countDocuments({ "item.contract_address": contract_address, "item.token_id": token_id });
-            return { total_pages, current_page: page_number, activity_data }
+            return { total_pages: total_pages / items_per_page, current_page: page_number, activity_data }
         } catch (error) {
             console.log(error);
             return {
