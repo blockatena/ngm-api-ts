@@ -175,7 +175,6 @@ export class UsersController {
     } catch (error) {
       log(error);
       return {
-
         error,
       }
     }
