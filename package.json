@@ -43,6 +43,7 @@
     "moment-timezone": "^0.5.39",
     "mongoose": "^6.6.4",
     "nft.storage": "^7.0.0",
+    "nodemailer": "^6.8.0",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.2.0"

@@ -28,9 +28,11 @@ export class ActivityService {
         const { wallet_address, items_per_page, page_number } = data;
         try {
             console.log(data);
-            return await this.activityModel.find({ $or: [{ from: wallet_address }, { to: wallet_address }] }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+            const activity_data = await this.activityModel.find({ $or: [{ from: wallet_address }, { to: wallet_address }] }).sort({ createdAt: -1 }).limit(items_per_page * 1)
                 .skip((page_number - 1) * items_per_page)
                 .exec();
+            const total_pages = await this.activityModel.countDocuments({ $or: [{ from: wallet_address }, { to: wallet_address }] });
+            return { total_pages, current_page: page_number, activity_data }
         } catch (error) {
             console.log(error);
             return {
@@ -39,7 +41,6 @@ export class ActivityService {
             }
         }
     }
-
     // 
     async getUserNotifications(data: UserActivity): Promise<any> {
         const { wallet_address, items_per_page, page_number } = data;
@@ -56,7 +57,6 @@ export class ActivityService {
             }
         }
     }
-    //
     //update notification
     async readNotication(readNotification: ReadNotification): Promise<any> {
         const { log } = console;
@@ -66,19 +66,20 @@ export class ActivityService {
             log(error);
             return {
                 error,
-
             }
         }
     }
     // 
-
     async getItemActivity(data: GetItemActivity): Promise<any> {
         const { contract_address, token_id, items_per_page, page_number } = data;
         try {
             console.log(data);
-            return await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": token_id }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+            const activity_data = await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": token_id }).sort({ createdAt: -1 }).limit(items_per_page * 1)
                 .skip((page_number - 1) * items_per_page)
                 .exec();
+
+            const total_pages = await this.activityModel.countDocuments({ "item.contract_address": contract_address, "item.token_id": token_id });
+            return { total_pages, current_page: page_number, activity_data }
         } catch (error) {
             console.log(error);
             return {
