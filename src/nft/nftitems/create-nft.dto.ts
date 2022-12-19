@@ -27,6 +27,10 @@ export class GetNftBody {
   readonly contract_address: string;
   @ApiProperty()
   readonly token_id: string;
+  @ApiProperty()
+  readonly page_number: number;
+  @ApiProperty()
+  readonly items_per_page: number;
 }
 export class Paginate {
   @ApiProperty()

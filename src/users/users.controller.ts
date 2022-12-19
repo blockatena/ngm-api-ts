@@ -21,11 +21,14 @@ import { CreateUserDto, GetUser, UpdateUser, UserPic } from './dto/create-user.d
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
 import { NftService } from 'src/nft/nft.service';
+import { ActivityService } from 'src/activity/activity.service';
+import { GetNotification } from './dto/get-notifiction.dto';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService, private configService: ConfigService,
-    private readonly nftService: NftService
+    private readonly nftService: NftService,
+    private readonly activityService: ActivityService
   ) {
   }
   // 
@@ -164,4 +167,17 @@ export class UsersController {
     }
   }
   // 
+  @Get('get-user-notification/:wallet_address/:page_number/:items_per_page/')
+  async getUserNotification(@Param() getNotification: GetNotification): Promise<any> {
+    const { log } = console;
+    try {
+      return await this.activityService.getUserNotifications(getNotification);
+    } catch (error) {
+      log(error);
+      return {
+
+        error,
+      }
+    }
+  }
 }

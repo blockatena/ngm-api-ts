@@ -326,13 +326,14 @@ export class NftController {
   // ***************/
   // get owner assets pending
   //************ */
-  @Get('get-nft/:contract_address/:token_id')
+  @Get('get-nft/:contract_address/:token_id/:page_number/:items_per_page')
   async getNft(@Param() body: GetNftBody): Promise<any> {
     // Validations
     // check in Db
     //  return await this.nftservice.
     //  const get_nft=await this.nftservice.
-    const { contract_address, token_id } = body;
+    const { contract_address, token_id, page_number
+      , items_per_page } = body;
     try {
       const is_nft_exists = await this.nftservice.getNft({
         contract_address,
@@ -346,6 +347,8 @@ export class NftController {
       const nft_activity = await this.activityService.getItemActivity({
         contract_address,
         token_id,
+        page_number,
+        items_per_page
       });
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
