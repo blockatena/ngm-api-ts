@@ -18,6 +18,7 @@ import { AppService } from './app.service';
 import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
 import { ActivityModule } from './activity/activity.module';
 import { EmailModule } from './email/email.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 import configuration from './config/configuration';
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import configuration from './config/configuration';
     MetadataModule,
     ActivityModule,
     EmailModule,
+    SubscriptionModule,
   ],
   providers: [CronjobService, AppService],
 })

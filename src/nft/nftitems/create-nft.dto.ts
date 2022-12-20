@@ -23,14 +23,10 @@ export class GetCollectionsBody {
   readonly contract_address: string;
 }
 export class GetNftBody {
-  @ApiProperty()
+  @ApiProperty({ example: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
   readonly contract_address: string;
-  @ApiProperty()
+  @ApiProperty({ example: '1' })
   readonly token_id: string;
-  @ApiProperty()
-  readonly page_number: number;
-  @ApiProperty()
-  readonly items_per_page: number;
 }
 export class Paginate {
   @ApiProperty()

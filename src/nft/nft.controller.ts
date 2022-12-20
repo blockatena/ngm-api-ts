@@ -271,7 +271,7 @@ export class NftController {
     summary: 'This Api will gets you all the Assets',
   })
   /****************[GET ALL NFTS WITH PAGINATION]*****************/
-  @Get('Get-all-nfts/:page_number/:items_per_page')
+  @Get('get-all-nfts/:page_number/:items_per_page')
   async getAllNfts(@Param() pagination: Paginate): Promise<any> {
     const { page_number, items_per_page } = pagination;
     try {
@@ -326,14 +326,13 @@ export class NftController {
   // ***************/
   // get owner assets pending
   //************ */
-  @Get('get-nft/:contract_address/:token_id/:page_number/:items_per_page')
+  @Get('get-nft/:contract_address/:token_id')
   async getNft(@Param() body: GetNftBody): Promise<any> {
     // Validations
     // check in Db
     //  return await this.nftservice.
     //  const get_nft=await this.nftservice.
-    const { contract_address, token_id, page_number
-      , items_per_page } = body;
+    const { contract_address, token_id } = body;
     try {
       const is_nft_exists = await this.nftservice.getNft({
         contract_address,
@@ -344,12 +343,6 @@ export class NftController {
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
       }
-      const nft_activity = await this.activityService.getItemActivity({
-        contract_address,
-        token_id,
-        page_number,
-        items_per_page
-      });
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
         console.log(auction._id);
@@ -357,7 +350,6 @@ export class NftController {
         console.log(bids);
         return {
           ...nft,
-          nft_activity,
           auction,
           bids,
         };
@@ -373,9 +365,9 @@ export class NftController {
         const offers = await this.nftMarketPlaceService.getAllOffers({
           sale_id: sale._id,
         });
-        return { ...nft, nft_activity, sale, offers };
+        return { ...nft, sale, offers };
       }
-      return { ...nft, nft_activity };
+      return { ...nft };
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
