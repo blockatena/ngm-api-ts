@@ -10,15 +10,16 @@ import { ActivityService } from 'src/activity/activity.service';
 import { ActivityModule } from 'src/activity/activity.module';
 
 @Module({
-  imports: [NftModule,
-    forwardRef(() => ActivityModule),
-    JwtModule.register({
-      secret: process.env.jwtSecret,
-      signOptions: { expiresIn: process.env.ExpiresIN },
-    }),
-    MongooseModule.forFeature([{ name: UserSchema.name, schema: userSchema }]),
+  imports: [forwardRef(() => NftModule),
+  forwardRef(() => ActivityModule),
+  JwtModule.register({
+    secret: process.env.jwtSecret,
+    signOptions: { expiresIn: process.env.ExpiresIN },
+  }),
+  MongooseModule.forFeature([{ name: UserSchema.name, schema: userSchema }]),
   ],
   controllers: [UsersController],
   providers: [UsersService, JwtAuthService],
+  exports: [UsersService]
 })
 export class UsersModule { }

@@ -5,6 +5,7 @@ import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument, UserSchema } from 'src/schemas/user.schema';
+const { log } = console;
 @Injectable()
 export class UsersService {
   constructor(
@@ -13,7 +14,7 @@ export class UsersService {
   ) {
     UserModel;
   }
-
+  /***************[CREATING_USER]**************/
   async create(createUserDto: CreateUserDto): Promise<any> {
     // createUserDto.jwt = await this.JWTservice.Sign(createUserDto);
     const { wallet_address, email, username } = createUserDto;
@@ -41,7 +42,7 @@ export class UsersService {
   findAll() {
     return `This action returns all users`;
   }
-
+  // To get User
   async getUser(wallet_address: string): Promise<any> {
     try {
       return await this.UserModel.findOne({ wallet_address });
@@ -55,16 +56,30 @@ export class UsersService {
     }
 
   }
-
+  // Update User
   async updateUser(wallet_address: string, update_data: any) {
 
-    return await this.UserModel.updateOne({ wallet_address }, {
-      $set: {
-        ...update_data
-      }
-    })
-    // return `This action updates a #${id} user`;
+    try {
+      return await this.UserModel.updateOne({ wallet_address }, {
+        $set: {
+          ...update_data
+        }
+      })
+      // return `This action updates a #${id} user`;
+    } catch (error) {
+      log(error);
+    }
   }
+
+  /**********[Increse Limit]***********/
+  async increseLimit(wallet_address: string, inc_limit: number): Promise<any> {
+    try {
+      return await this.UserModel.updateOne({ wallet_address }, { $inc: { limit: inc_limit } })
+    } catch (error) {
+      log(error)
+    }
+  }
+
 
   remove(id: number) {
     return `This action removes a #${id} user`;

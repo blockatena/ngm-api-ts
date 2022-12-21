@@ -39,6 +39,7 @@
     "dotenv": "^16.0.2",
     "ethers": "^5.7.1",
     "fs-extra": "^10.1.0",
+    "generate-api-key": "^1.0.2",
     "it-to-buffer": "^2.0.2",
     "moment-timezone": "^0.5.39",
     "mongoose": "^6.6.4",
