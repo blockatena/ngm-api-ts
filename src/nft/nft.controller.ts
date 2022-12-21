@@ -27,7 +27,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { RolesGuard } from 'src/guards/roles.guard';
+// import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
@@ -47,6 +47,9 @@ import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
 import { GetOwner } from './nftitems/get-owner.dto';
+import { APIGuard } from 'src/guards/roles.guard';
+import { log } from 'console';
+import { UsersService } from 'src/users/users.service';
 
 // require('dotenv').config();
 
@@ -61,7 +64,6 @@ import { GetOwner } from './nftitems/get-owner.dto';
 
 @ApiTags('NGM APIs')
 @Controller('nft')
-// @UseGuards(RolesGuard)
 export class NftController {
   constructor(
     private configService: ConfigService,
@@ -70,6 +72,7 @@ export class NftController {
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
     private activityService: ActivityService,
+    private usersService: UsersService
   ) { }
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MATIC_MUMBAI_RPC_URL',
@@ -343,6 +346,7 @@ export class NftController {
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
       }
+      const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
         console.log(auction._id);
@@ -350,11 +354,13 @@ export class NftController {
         console.log(bids);
         return {
           ...nft,
+          token_owner_info,
           auction,
           bids,
         };
       }
-      console.log(is_nft_exists.is_in_sale, 'true');
+      // console.log(is_nft_exists.is_in_sale, 'true');
+      // Get token owner info if he register with us
       if (is_nft_exists.nft.is_in_sale) {
         console.log(' is in sale');
         const sale = await this.nftMarketPlaceService.getSale({
@@ -365,9 +371,9 @@ export class NftController {
         const offers = await this.nftMarketPlaceService.getAllOffers({
           sale_id: sale._id,
         });
-        return { ...nft, sale, offers };
+        return { ...nft, token_owner_info, sale, offers };
       }
-      return { ...nft };
+      return { ...nft, token_owner_info };
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
@@ -475,26 +481,21 @@ export class NftController {
       };
     }
   }
-
-  /* PENDING
-  [GET NFTS WHICH ARE IN AUCTION] 
-  [GET NFTS WHICH ARE IN SALE]
-  [GET NFTS owned by user]
-  wheather price is present on nft or not , if he owns it 
-*/
-
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
-  //
-  // @Roles(Role.Admin)
-  // @Post()
-  //
   @ApiOperation({
     summary: 'This Api will Mint Nft and its details stores it info in DB ',
+
   })
+  @ApiHeader({
+    name: 'X-API-HEADER',
+    description: 'This is my header'
+  })
+  @UseGuards(APIGuard)
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
+    console.log("got it ", body);
     try {
       console.log(body);
       const contract_details =
@@ -576,7 +577,6 @@ export class NftController {
         );
       }
       //
-
       console.log('metadata');
       const arrdb = {
         contract_address: body.contract_address,

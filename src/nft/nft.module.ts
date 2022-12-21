@@ -16,10 +16,12 @@ import { metadata, metadataSchema } from 'src/metadata/schema/metadata.schema';
 import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
 import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 import { ActivityModule } from 'src/activity/activity.module';
+import { UsersModule } from 'src/users/users.module';
 
 require('dotenv').config();
 @Module({
   imports: [
+    forwardRef(() => UsersModule),
     forwardRef(() => NftMarketplaceModule),
     ActivityModule,
     DeploymentModule,

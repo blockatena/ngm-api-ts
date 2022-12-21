@@ -15,6 +15,10 @@ export class UserSchema {
   profile_image: string;
   @Prop()
   banner_image: string;
+  @Prop()
+  limit: number;
+  @Prop({ unique: true })
+  api_key: string;
 }
 
 export const userSchema = SchemaFactory.createForClass(UserSchema);
