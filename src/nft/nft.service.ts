@@ -92,10 +92,8 @@ export class NftService {
   // To get single Nft
   async getNft(data: any): Promise<any> {
     try {
-      const nft = await this.NftModel.findOne(data);
-      const contract_details = await this.getContract({
-        contract_address: data.contract_address,
-      });
+      const nft = await this.NftModel.findOne({ ...data });
+      const contract_details = await this.getContract(data.contract_address);
       return { contract_details, nft };
     } catch (error) {
       console.log(error);
@@ -146,10 +144,10 @@ export class NftService {
   async getCollections(body: GetCollectionBody) {
     const { page_number, items_per_page } = body;
     try {
-      const collections = await this.ContractModel.find({}).limit(items_per_page * 1)
-        .skip((page_number - 1) * items_per_page)
+      const collections = await this.ContractModel.find({}).limit(items_per_page * 1).skip((page_number - 1) * items_per_page)
         .exec();
       const total_collections = await this.ContractModel.countDocuments();
+      console.log(total_collections);
       return {
         total_collections,
         total_pages: Math.ceil(total_collections / items_per_page),
@@ -273,9 +271,19 @@ export class NftService {
       return { message: 'Something went Wrong ,Our team is Looking into it' };
     }
   }
+
+  async getCollectionOnly(contract_address: string): Promise<any> {
+    try {
+      return await this.NftModel.find({ contract_address });
+    } catch (error) {
+
+    }
+  }
+
+
   async getContract(contract_address: any): Promise<any> {
     console.log(contract_address, 'From Service');
-    return await this.ContractModel.findOne(contract_address);
+    return await this.ContractModel.findOne({ contract_address });
   }
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(

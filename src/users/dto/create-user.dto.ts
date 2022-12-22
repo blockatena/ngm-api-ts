@@ -9,6 +9,14 @@ export class CreateUserDto {
   wallet_address: string;
 }
 
+export class UserPic {
+  @ApiProperty()
+  wallet_address: string;
+  @ApiProperty({ enum: ['profile', 'banner'] })
+  type: string;
+}
+
+
 export class GetUser {
   @ApiPropertyOptional()
   wallet_address?: string
@@ -16,4 +24,11 @@ export class GetUser {
   email?: string;
   @ApiPropertyOptional()
   username?: string;
+}
+
+export class UpdateUser {
+  @ApiProperty()
+  wallet_address: string;
+  @ApiProperty()
+  username: string;
 }

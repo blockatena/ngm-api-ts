@@ -15,6 +15,7 @@ export default () => ({
     PORT: process.env.REDIS_PORT,
     DB: process.env.REDIS_DB,
   },
+  EMAIL: { EMAIL_ADDR: process.env.EMAIL_ADDR, EMAIL_PASSWORD: process.env.EMAIL_PASSWORD },
   PRIV_KEY: process.env.PRIV_KEY,
   ATLAS: process.env.ATLAS,
   ExpiresIn: process.env.ExpiresIn,

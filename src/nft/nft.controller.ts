@@ -27,7 +27,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
-import { RolesGuard } from 'src/guards/roles.guard';
+// import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
@@ -46,6 +46,10 @@ import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
+import { GetOwner } from './nftitems/get-owner.dto';
+import { APIGuard } from 'src/guards/roles.guard';
+import { log } from 'console';
+import { UsersService } from 'src/users/users.service';
 
 // require('dotenv').config();
 
@@ -60,7 +64,6 @@ import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.servi
 
 @ApiTags('NGM APIs')
 @Controller('nft')
-// @UseGuards(RolesGuard)
 export class NftController {
   constructor(
     private configService: ConfigService,
@@ -69,6 +72,7 @@ export class NftController {
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
     private activityService: ActivityService,
+    private usersService: UsersService
   ) { }
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MATIC_MUMBAI_RPC_URL',
@@ -85,6 +89,50 @@ export class NftController {
   private token = this.NFT_STORAGE_KEY;
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.mum_provider);
   private storage = new NFTStorage({ token: this.token });
+
+  @ApiOperation({ summary: 'This Api will Gets you the actual owner of the Nft from BlockChain' })
+  @Get('get-owner/:contract_address/:token_id')
+  async getOwner(@Param() get_Owner: GetOwner): Promise<any> {
+    const { contract_address, token_id } = get_Owner;
+    try {
+      // Getting Single Nft
+      // const nft1 = await this.nftservice.getSingleNft({ contract_address, token_id })
+      const nft1 = await this.nftservice.getContract(contract_address);
+      // Getting Abi of requried Contract Type
+      // console.log(get_contract_only);
+      const abiPath = path.join(
+        process.cwd(),
+        `src/utils/constants/${nft1.type}/${nft1.type}.abi`,
+      );
+      const abi = fs.readFileSync(abiPath, 'utf-8');
+      const contract_instance = new ethers.Contract(contract_address, abi, this.wallet);
+      const get_collecion = await this.nftservice.getCollectionOnly(contract_address);
+      console.log(get_collecion);
+      get_collecion.forEach(async nft => {
+        console.log(nft.contract_address, nft.token_id);
+        const token_idd = parseInt(nft.token_id);
+
+        const blkid = await contract_instance.ownerOf(token_idd);
+        console.log(nft.token_owner, '==', blkid);
+        if (nft.token_owner != blkid) {
+          console.log('-----------------[PROBLEM]---------------------------');
+          console.log('| FOR Token_ID  ', nft.token_id, '                |');
+          console.log('|   IN DB                     IN BLOCKCHAIN      ')
+          console.log('|', nft.token_owner, '==', blkid, '|');
+          console.log('--------------------------------------------');
+          await this.nftservice.updateNft({ contract_address, token_id: nft.token_id }, { token_owner: blkid });
+          // const current_nft = await this.nftservice.updateNft(,);
+        }
+      });
+      // console.log("sss", blkid);
+      return 'done ';
+    } catch (error) {
+      console.log(error);
+      return {
+        message: "something went Wrong"
+      }
+    }
+  }
   // File Upload
 
   @ApiOperation({
@@ -139,7 +187,10 @@ export class NftController {
       // **********
       return tokenUri;
     } catch (error) {
-      return false;
+      return {
+        success: false,
+        message: 'something went Wrong'
+      };
     }
   }
 
@@ -223,7 +274,7 @@ export class NftController {
     summary: 'This Api will gets you all the Assets',
   })
   /****************[GET ALL NFTS WITH PAGINATION]*****************/
-  @Get('Get-all-nfts/:page_number/:items_per_page')
+  @Get('get-all-nfts/:page_number/:items_per_page')
   async getAllNfts(@Param() pagination: Paginate): Promise<any> {
     const { page_number, items_per_page } = pagination;
     try {
@@ -247,7 +298,7 @@ export class NftController {
     summary:
       'This Api will gets you all the nfts by contract address owned by the user',
   })
-  /** [GET ALL NFTS WITH PAGINATION]*/
+  /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
     @Param() nftContractDto: NftContractUser,
@@ -290,14 +341,12 @@ export class NftController {
         contract_address,
         token_id,
       });
+      console.log(is_nft_exists);
       const nft = is_nft_exists;
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
       }
-      const nft_activity = await this.activityService.getItemActivity({
-        contract_address,
-        token_id,
-      });
+      const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
         console.log(auction._id);
@@ -305,12 +354,13 @@ export class NftController {
         console.log(bids);
         return {
           ...nft,
-          nft_activity,
+          token_owner_info,
           auction,
           bids,
         };
       }
-      console.log(is_nft_exists.is_in_sale, 'true');
+      // console.log(is_nft_exists.is_in_sale, 'true');
+      // Get token owner info if he register with us
       if (is_nft_exists.nft.is_in_sale) {
         console.log(' is in sale');
         const sale = await this.nftMarketPlaceService.getSale({
@@ -321,9 +371,9 @@ export class NftController {
         const offers = await this.nftMarketPlaceService.getAllOffers({
           sale_id: sale._id,
         });
-        return { ...nft, nft_activity, sale, offers };
+        return { ...nft, token_owner_info, sale, offers };
       }
-      return { ...nft, nft_activity };
+      return { ...nft, token_owner_info };
     } catch (error) {
       console.log(error);
       return { message: 'Something went wrong' };
@@ -350,6 +400,7 @@ export class NftController {
     // if no collctions ,return some message ,
     //  is this route available to all
     try {
+      console.log(body);
       return await this.nftservice.getCollections(body);
     } catch (error) {
       console.log(error);
@@ -396,10 +447,11 @@ export class NftController {
   ): Promise<any> {
     console.log(contract.contract_address);
     try {
+      console.log(contract);
       // Fetching Contract details
-      const collection = await this.nftservice.getContract({
-        contract_address: contract.contract_address,
-      });
+      const collection = await this.nftservice.getContract(contract.contract_address
+      );
+      console.log(collection);
       // fetching all Nfts
       const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
@@ -429,26 +481,21 @@ export class NftController {
       };
     }
   }
-
-  /* PENDING
-  [GET NFTS WHICH ARE IN AUCTION] 
-  [GET NFTS WHICH ARE IN SALE]
-  [GET NFTS owned by user]
-  wheather price is present on nft or not , if he owns it 
-*/
-
   // *****************************************//
   //                POST APIs                 //
   // *****************************************//
-  //
-  // @Roles(Role.Admin)
-  // @Post()
-  //
   @ApiOperation({
     summary: 'This Api will Mint Nft and its details stores it info in DB ',
+
   })
+  @ApiHeader({
+    name: 'X-API-HEADER',
+    description: 'This is my header'
+  })
+  @UseGuards(APIGuard)
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
+    console.log("got it ", body);
     try {
       console.log(body);
       const contract_details =
@@ -480,7 +527,7 @@ export class NftController {
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(body.token_owner),
         1,
-         { gasPrice: feeData.gasPrice }
+        { gasPrice: feeData.gasPrice }
       );
       console.log('minttoken', mintToken);
       const res = await mintToken.wait(1);
@@ -530,7 +577,6 @@ export class NftController {
         );
       }
       //
-
       console.log('metadata');
       const arrdb = {
         contract_address: body.contract_address,
