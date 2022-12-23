@@ -23,12 +23,15 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestj
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
+import { EmailService } from 'src/email/email.service';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService, private configService: ConfigService,
     private readonly nftService: NftService,
-    private readonly activityService: ActivityService
+    private readonly activityService: ActivityService,
+    private readonly emailService: EmailService
+
   ) {
   }
   // 
@@ -48,7 +51,19 @@ export class UsersController {
       if (is_user_exists) {
         return `${wallet_address} exists already`;
       }
-      return await this.usersService.create(createUserDto);
+      const success = await this.usersService.create(createUserDto);
+      // email
+      const mail = await this.emailService.welcomeMail({
+        recepient: {
+          email_addr: email,
+          user_name: username,
+          wallet_address: wallet_address,
+        },
+        subject: 'Welcome',
+        message: 'Thank you'
+      })
+      console.log(mail);
+      return success;
     } catch (error) {
       console.log(error);
       return {

@@ -20,10 +20,39 @@ import { ActivityModule } from './activity/activity.module';
 import { EmailModule } from './email/email.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import configuration from './config/configuration';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { join } from 'path';
+const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
+console.log(EMAIL_ADDR,
+  EMAIL_PASSWORD);
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    MailerModule.forRoot({
+      transport: {
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        ignoreTLS: true,
+        secure: false,
+        auth: {
+          user: EMAIL_ADDR,
+          pass: EMAIL_PASSWORD,
+        },
+      },
+      defaults: {
+        from: '"No Reply" <no-reply@localhost>',
+      },
+      preview: false,
+      template: {
+        dir: join(__dirname, 'template'),
+        adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+        options: {
+          strict: true,
+        },
+      },
+    }),
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(configuration().ATLAS),
     NftModule,
     // AuthModule,

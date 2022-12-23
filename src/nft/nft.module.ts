@@ -4,8 +4,8 @@ import { NftService } from './nft.service';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, forwardRef, Module } from '@nestjs/common';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
-import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
-import { JwtModule } from '@nestjs/jwt';
+// import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
+// import { JwtModule } from '@nestjs/jwt';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -39,10 +39,10 @@ require('dotenv').config();
       { name: AuctionSchema.name, schema: auctionSchema },
       { name: BidSchema.name, schema: bidSchema },
     ]),
-    JwtModule.register({
-      secret: process.env.jwtSecret,
-      signOptions: { expiresIn: process.env.ExpiresIN },
-    }),
+    // JwtModule.register({
+    //   secret: process.env.jwtSecret,
+    //   signOptions: { expiresIn: process.env.ExpiresIN },
+    // }),
     // CacheModule.register({
     //   store: redisStore,
     //   host: process.env.REDIS_HOST,
