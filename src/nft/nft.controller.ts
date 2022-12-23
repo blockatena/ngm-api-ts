@@ -41,16 +41,16 @@ import {
   Paginate,
   NftContractUser,
 } from './nftitems/create-nft.dto';
-import { GetCollectionBody } from './nftitems/collections.dto';
+import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
 import { GetOwner } from './nftitems/get-owner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
-import { log } from 'console';
+// import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
-
+const { log } = console;
 // require('dotenv').config();
 
 //Global
@@ -99,7 +99,7 @@ export class NftController {
       // const nft1 = await this.nftservice.getSingleNft({ contract_address, token_id })
       const nft1 = await this.nftservice.getContract(contract_address);
       // Getting Abi of requried Contract Type
-      // console.log(get_contract_only);
+      // log(get_contract_only);
       const abiPath = path.join(
         process.cwd(),
         `src/utils/constants/${nft1.type}/${nft1.type}.abi`,
@@ -107,27 +107,27 @@ export class NftController {
       const abi = fs.readFileSync(abiPath, 'utf-8');
       const contract_instance = new ethers.Contract(contract_address, abi, this.wallet);
       const get_collecion = await this.nftservice.getCollectionOnly(contract_address);
-      console.log(get_collecion);
+      log(get_collecion);
       get_collecion.forEach(async nft => {
-        console.log(nft.contract_address, nft.token_id);
+        log(nft.contract_address, nft.token_id);
         const token_idd = parseInt(nft.token_id);
 
         const blkid = await contract_instance.ownerOf(token_idd);
-        console.log(nft.token_owner, '==', blkid);
+        log(nft.token_owner, '==', blkid);
         if (nft.token_owner != blkid) {
-          console.log('-----------------[PROBLEM]---------------------------');
-          console.log('| FOR Token_ID  ', nft.token_id, '                |');
-          console.log('|   IN DB                     IN BLOCKCHAIN      ')
-          console.log('|', nft.token_owner, '==', blkid, '|');
-          console.log('--------------------------------------------');
+          log('-----------------[PROBLEM]---------------------------');
+          log('| FOR Token_ID  ', nft.token_id, '                |');
+          log('|   IN DB                     IN BLOCKCHAIN      ')
+          log('|', nft.token_owner, '==', blkid, '|');
+          log('--------------------------------------------');
           await this.nftservice.updateNft({ contract_address, token_id: nft.token_id }, { token_owner: blkid });
           // const current_nft = await this.nftservice.updateNft(,);
         }
       });
-      // console.log("sss", blkid);
+      // log("sss", blkid);
       return 'done ';
     } catch (error) {
-      console.log(error);
+      log(error);
       return {
         message: "something went Wrong"
       }
@@ -174,14 +174,14 @@ export class NftController {
     file: Express.Multer.File,
   ) {
     try {
-      console.log(file);
+      log(file);
       const blob = new Blob([file.buffer]);
       const toUploadFile = new File([blob], `/${file.originalname}`, {
         type: file.mimetype,
       });
       const cid = await this.storage.storeDirectory([toUploadFile]);
       const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
-      console.log({ tokenUri });
+      log({ tokenUri });
       // **********Storing in Db
 
       // **********
@@ -237,7 +237,13 @@ export class NftController {
   ): Promise<Number> {
     return await this.nftservice.getCountNfts(contract_address);
   }
+  async getUserCollections(): Promise<any> {
+    try {
 
+    } catch (error) {
+
+    }
+  }
   // //   Get route
   // @Get(':cntraddr/:id')
   // @ApiResponse({
@@ -246,12 +252,12 @@ export class NftController {
   // })
   // @ApiResponse({ status: 403, description: 'Forbidden.' })
   // async getTokenImage(@Param() NftData: getnft): Promise<string> {
-  //   console.log('The data is: ', NftData.cntraddr, NftData.id);
+  //   log('The data is: ', NftData.cntraddr, NftData.id);
   //   const nftCntr = new ethers.Contract(NftData.cntraddr, baycAbi, provider); // abi and provider to be declared
   //   // const tokenData = erc20.functions.tokenOfOwnerByIndex(NftData.id);
-  //   console.log('Contract Instance: ', nftCntr);
+  //   log('Contract Instance: ', nftCntr);
   //   const tokenURI = await nftCntr.tokenURI(NftData.id);
-  //   console.log('TokenURI: ', tokenURI);
+  //   log('TokenURI: ', tokenURI);
   //   return `your id is ${NftData.cntraddr} and your name is  ${NftData.id}`;
   // }
 
@@ -289,16 +295,43 @@ export class NftController {
       }
       return data;
     } catch (error) {
-      console.log(error);
+      log(error);
       return { message: 'Something went wrong' };
     }
   }
 
+  /***********[GET_COLLECTIONS_OWNED_BY_USER]**********/
+  @ApiOperation({ summary: 'This Api Will Gets You Collections owned by user' })
+  @Get('collections-owned/:owner_address/:page_number/:items_per_page')
+  async getCollectionsOwned(@Param() params: GetUserOwnedCollections): Promise<any> {
+    const { owner_address, page_number, items_per_page } = params;
+    try {
+      return (await this.nftservice.getCollectionsOwned({ owner_address, page_number, items_per_page }));
+    } catch (error) {
+      log(error);
+      return {
+        message: 'something went Wrong',
+        error
+      }
+    }
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+  /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @ApiOperation({
     summary:
       'This Api will gets you all the nfts by contract address owned by the user',
   })
-  /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
     @Param() nftContractDto: NftContractUser,
@@ -316,7 +349,7 @@ export class NftController {
       }
       return data;
     } catch (error) {
-      console.log(error);
+      log(error);
       return { message: 'Something went wrong' };
     }
   }
@@ -341,7 +374,7 @@ export class NftController {
         contract_address,
         token_id,
       });
-      console.log(is_nft_exists);
+      log(is_nft_exists);
       const nft = is_nft_exists;
       if (!is_nft_exists.nft) {
         return 'Nft is not present with that details';
@@ -349,9 +382,9 @@ export class NftController {
       const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
-        console.log(auction._id);
+        log(auction._id);
         const bids = await this.nftservice.getBids(auction._id);
-        console.log(bids);
+        log(bids);
         return {
           ...nft,
           token_owner_info,
@@ -359,10 +392,10 @@ export class NftController {
           bids,
         };
       }
-      // console.log(is_nft_exists.is_in_sale, 'true');
+      // log(is_nft_exists.is_in_sale, 'true');
       // Get token owner info if he register with us
       if (is_nft_exists.nft.is_in_sale) {
-        console.log(' is in sale');
+        log(' is in sale');
         const sale = await this.nftMarketPlaceService.getSale({
           contract_address,
           token_id,
@@ -375,7 +408,7 @@ export class NftController {
       }
       return { ...nft, token_owner_info };
     } catch (error) {
-      console.log(error);
+      log(error);
       return { message: 'Something went wrong' };
     }
   }
@@ -386,7 +419,7 @@ export class NftController {
     try {
       return await this.nftservice.getUserNfts(body);
     } catch (error) {
-      console.log(error);
+      log(error);
       return {
         message: 'Something went wrong',
       };
@@ -400,10 +433,10 @@ export class NftController {
     // if no collctions ,return some message ,
     //  is this route available to all
     try {
-      console.log(body);
+      log(body);
       return await this.nftservice.getCollections(body);
     } catch (error) {
-      console.log(error);
+      log(error);
       return {
         message: 'something went Wrong',
         error,
@@ -418,7 +451,7 @@ export class NftController {
       const data = await this.nftservice.getNftsListed(listed);
       return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
     } catch (error) {
-      console.log(error);
+      log(error);
       return { message: 'something went wrong in controller', error };
     }
   }
@@ -429,13 +462,13 @@ export class NftController {
     @Body() Collections_listed: GetListedCollections,
   ): Promise<any> {
     try {
-      console.log(Collections_listed);
+      log(Collections_listed);
       const get_nfts = await this.nftservice.getNftssListed({
         ...Collections_listed,
       });
       return get_nfts;
     } catch (error) {
-      console.log(error);
+      log(error);
       return { message: 'something went wrong in controller', error };
     }
   }
@@ -445,13 +478,13 @@ export class NftController {
   async GetCollectionsByContractAddress(
     @Param() contract: getcontract,
   ): Promise<any> {
-    console.log(contract.contract_address);
+    log(contract.contract_address);
     try {
-      console.log(contract);
+      log(contract);
       // Fetching Contract details
       const collection = await this.nftservice.getContract(contract.contract_address
       );
-      console.log(collection);
+      log(collection);
       // fetching all Nfts
       const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
@@ -473,7 +506,7 @@ export class NftController {
         nfts,
       };
     } catch (error) {
-      console.log(error);
+      log(error);
       return {
         message: 'Something went wrong ,Our Team is Looking into it ',
         contact: 'For Any Queries You can mail us hello@gmail.com',
@@ -495,14 +528,14 @@ export class NftController {
   @UseGuards(APIGuard)
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
-    console.log("got it ", body);
+    log("got it ", body);
     try {
-      console.log(body);
+      log(body);
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           body.contract_address,
         );
-      console.log(contract_details);
+      log(contract_details);
       const type = contract_details.type;
       //
       if (body.contract_type != type) {
@@ -513,7 +546,7 @@ export class NftController {
         process.cwd(),
         `src/utils/constants/${type}/${type}.abi`,
       );
-      console.log(process.cwd());
+      log(process.cwd());
       const abi = fs.readFileSync(abiPath, 'utf-8');
 
       // mint token using ethersjs
@@ -522,17 +555,17 @@ export class NftController {
         abi,
         this.wallet,
       ); // abi and provider to be declared
-      // console.log('nftContract: ', nftCntr);
+      // log('nftContract: ', nftCntr);
       const feeData = await this.mum_provider.getFeeData()
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(body.token_owner),
         1,
         { gasPrice: feeData.gasPrice }
       );
-      console.log('minttoken', mintToken);
+      log('minttoken', mintToken);
       const res = await mintToken.wait(1);
 
-      console.log('response', res);
+      log('response', res);
 
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
@@ -547,13 +580,13 @@ export class NftController {
       const cid = await this.storage.storeBlob(jsonBlob);
       const nftStorageUri = `https://nftstorage.link/ipfs`;
       const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
-      console.log(baseApiUri, 'baseApiUri');
+      log(baseApiUri, 'baseApiUri');
       const meta_data_url = `${baseApiUri}/metadata/${body.contract_address}/${tokenId}`;
       const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
       /**********saving in Db************/
 
       /******for collection metadata******/
-      console.log('ipfsMetadataUri', ipfsMetadataUri);
+      log('ipfsMetadataUri', ipfsMetadataUri);
 
       const metadata = await this.nftservice.pushTokenUriToDocArray(
         body.contract_address,
@@ -567,17 +600,17 @@ export class NftController {
       const collection = await this.nftservice.getNftsByCollection(
         body.contract_address,
       );
-      console.log(collection);
-      console.log('here', collection.length);
+      log(collection);
+      log('here', collection.length);
       if (collection.length < 3) {
-        console.log(collection.length);
+        log(collection.length);
         this.nftservice.pushImagesToCollection(
           body.contract_address,
           body.image_uri,
         );
       }
       //
-      console.log('metadata');
+      log('metadata');
       const arrdb = {
         contract_address: body.contract_address,
         contract_type: body.contract_type || 'NGM721PSI',
@@ -588,7 +621,7 @@ export class NftController {
         token_owner: ethers.utils.getAddress(body.token_owner),
         meta_data: jsonData,
       };
-      console.log(arrdb);
+      log(arrdb);
       //add to Activity
 
       await this.activityService.createActivity({
@@ -607,10 +640,10 @@ export class NftController {
         read: false,
       });
       const data = await this.nftservice.createNft(arrdb);
-      console.log(data);
+      log(data);
       return data;
     } catch (error) {
-      console.log(error);
+      log(error);
       return false;
     }
   }

@@ -16,7 +16,8 @@ import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
-import { GetCollectionBody } from './nftitems/collections.dto';
+import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
+const { log } = console;
 @Injectable()
 export class NftService {
   constructor(
@@ -285,6 +286,28 @@ export class NftService {
     console.log(contract_address, 'From Service');
     return await this.ContractModel.findOne({ contract_address });
   }
+  async getCollectionsOwned(user: GetUserOwnedCollections): Promise<any> {
+    const { owner_address, items_per_page, page_number } = user;
+    try {
+      const collections = await this.ContractModel.find({ owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page);
+      log(collections);
+      const total = await this.ContractModel.count({ owner_address });
+      return {
+        total,
+        current_page: page_number,
+        items_per_page,
+        collections
+      }
+    } catch (error) {
+      log(error);
+      return {
+        message: 'something went wrong',
+        error
+      }
+    }
+  }
+
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
       {
