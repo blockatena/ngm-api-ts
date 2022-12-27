@@ -307,7 +307,17 @@ export class NftService {
       }
     }
   }
-
+  // Count Collections
+  async countCollections(condition: any): Promise<any> {
+    try {
+      return await this.ContractModel.count({ ...condition });
+    } catch (error) {
+      log(error)
+      return {
+        error
+      }
+    }
+  }
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
       {

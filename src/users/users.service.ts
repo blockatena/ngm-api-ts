@@ -43,7 +43,8 @@ export class UsersService {
     return `This action returns all users`;
   }
   // To get User
-  async getUser(wallet_address: string): Promise<any> {
+  async getUser(getUser: GetUser): Promise<any> {
+    const { wallet_address } = getUser;
     try {
       return await this.UserModel.findOne({ wallet_address });
     } catch (error) {

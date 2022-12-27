@@ -8,6 +8,8 @@ export class UserEntity {
     createdAt: string;
     updatedAt: string;
     __v: string;
+    @Exclude()
+    api_key: string;
     limit: string;
     constructor(partial: Partial<UserEntity>) {
         Object.assign(this, partial);

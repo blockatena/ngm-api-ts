@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { RateLimiter } from 'nft.storage';
 
 export class CreateDeploymentDto {
   @ApiProperty({ default: 'NGM-Nft' })
@@ -25,4 +26,9 @@ export class CreateDeploymentDto {
   readonly imageuri?: string;
   @ApiProperty()
   readonly description: string;
+  // @ApiProperty()
+  readonly limit?: {
+    collection_limit: number;
+    asset_limit: number;
+  };
 }
