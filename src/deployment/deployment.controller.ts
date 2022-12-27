@@ -7,8 +7,9 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
 import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
@@ -17,13 +18,8 @@ import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 import { GetOwner } from '../nft/nftitems/get-owner.dto';
 import { NftService } from 'src/nft/nft.service';
-require('dotenv').config();
-// const provider = new ethers.providers.JsonRpcProvider(
-//   process.env.MATIC_MUMBAI_RPC_URL,
-// );
-// const wallet = new ethers.Wallet(process.env.PRIV_KEY, provider);
-// let contractWithSigner = contract.connect(wallet);
-
+import { APIGuard } from 'src/guards/roles.guard';
+import { log } from 'console';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
@@ -42,91 +38,100 @@ export class DeploymentController {
   );
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.provider);
 
+  @ApiHeader({
+    name: 'X-API-HEADER',
+    description: 'API Key is needed to deploy the collection'
+  })
+  @UseGuards(APIGuard)
   @ApiOperation({ summary: 'This Api will create a collection' })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
-    console.log(deploymentBody);
+    log(deploymentBody);
+    try {
+      // Checkong Number of Contracts that this address hold
+      //  create a constant ***
+      if (
+        (await this.deploymentService.ContractCount(
+          deploymentBody.owner_address,
+        )) > process.env.deploy_limit
+      ) {
+        log('in');
+        return 'you exceeded limit, kindly subscribe to our services';
+      }
+      // Contract deployment start
+      // paths
+      const abiPath = path.join(
+        process.cwd(),
+        `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.abi`,
+      );
+      const binPath = path.join(
+        process.cwd(),
+        `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.bin`,
+      );
+      // log(abiPath, '  ', binPath);
+      //  retrieving abi and bin files through fs module
+      log(process.cwd());
+      const abi = fs.readFileSync(abiPath, 'utf-8');
+      const bin = fs.readFileSync(binPath, 'utf-8');
+      //
+      log('fil read completed');
+      const contractFactory = new ethers.ContractFactory(abi, bin, this.wallet);
+      log('connect to blockchain');
+      // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
+      // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
+      // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
+      const feeData = await this.provider.getFeeData()
+      log(feeData)
+      let contract = await contractFactory.deploy(
+        deploymentBody.collection_name,
+        deploymentBody.symbol,
+        ' ',
+        { gasPrice: feeData.gasPrice }
+      );
+      log('deployed');
+      // const uri =
+      // 'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
+      const uri = process.env.API_BASE_URL || 'http://localhost:8080/';
+      const confirm = await contract.deployed();
+      const address = contract.address;
+      const baseUri = `${uri}/metadata/${address}/`;
+      const res = await contract.setBaseURI(baseUri, { gasPrice: feeData.gasPrice });
+      const hash = confirm.deployTransaction.hash;
 
-    // Checkong Number of Contracts that this address hold
-    //  create a constant ***
-    if (
-      (await this.deploymentService.ContractCount(
-        deploymentBody.owner_address,
-      )) > process.env.deploy_limit
-    ) {
-      console.log('in');
-      return 'you exceeded limit, kindly subscribe to our services';
+      // Contract Deployment End
+
+      // Testing
+      // const confirm = 'conformed';
+      // const address = 'jbvcbcseredavsdasdbkuu1';
+      // const hash = 'sdasdajkhjksdfas';
+
+
+      log(`address: ${address}, txHash: ${hash} \n\n\n${confirm}`);
+      //
+      const keys = [
+        'owner_address',
+        'symbol',
+        'chain',
+        'collection_name',
+        'type',
+      ];
+      const arr = {};
+      keys.forEach((element) => {
+        arr[`${element}`] = deploymentBody[element];
+      });
+      arr[`transactionhash`] = hash;
+      arr[`contract_address`] = address;
+      arr[`description`] = deploymentBody.description;
+      //  /`${uri}/${address}/`
+      arr[`baseuri`] = baseUri;
+      arr[`imageuri`] = deploymentBody.imageuri;
+      return await this.deploymentService.InsertContract(arr);
+    } catch (error) {
+      log(error);
+      return {
+        message: "Something went wrong our Team is Looking into it"
+      }
     }
-
-    // Contract deployment start
-    // paths
-
-    const abiPath = path.join(
-      process.cwd(),
-      `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.abi`,
-    );
-    const binPath = path.join(
-      process.cwd(),
-      `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.bin`,
-    );
-    // console.log(abiPath, '  ', binPath);
-    //  retrieving abi and bin files through fs module
-    console.log(process.cwd());
-    const abi = fs.readFileSync(abiPath, 'utf-8');
-    const bin = fs.readFileSync(binPath, 'utf-8');
-    //
-    console.log('fil read completed');
-    const contractFactory = new ethers.ContractFactory(abi, bin, this.wallet);
-    console.log('connect to blockchain');
-    // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
-    // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
-    // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
-    const feeData = await this.provider.getFeeData()
-    console.log(feeData)
-    let contract = await contractFactory.deploy(
-      deploymentBody.collection_name,
-      deploymentBody.symbol,
-      ' ',
-      { gasPrice: feeData.gasPrice }
-    );
-    console.log('deployed');
-    // const uri =
-    //   'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
-    const uri = process.env.API_BASE_URL || 'http://localhost:8080/';
-    const confirm = await contract.deployed();
-    const address = contract.address;
-    const baseUri = `${uri}/metadata/${address}/`;
-    const res = await contract.setBaseURI(baseUri, { gasPrice: feeData.gasPrice });
-    const hash = confirm.deployTransaction.hash;
-
-    // Contract Deployment End
-
-    // Testing
-    // const confirm = 'conformed';
-    // const address = 'jbvcbcseredavsdasdbkuu1';
-    // const hash = 'sdasdajkhjksdfas';
-
-    //
-    console.log(`address: ${address}, txHash: ${hash} \n\n\n${confirm}`);
-    //
-    const keys = [
-      'owner_address',
-      'symbol',
-      'chain',
-      'collection_name',
-      'type',
-    ];
-    const arr = {};
-    keys.forEach((element) => {
-      arr[`${element}`] = deploymentBody[element];
-    });
-    arr[`transactionhash`] = hash;
-    arr[`contract_address`] = address;
-    arr[`description`] = deploymentBody.description;
-    //  /`${uri}/${address}/`
-    arr[`baseuri`] = baseUri;
-    arr[`imageuri`] = deploymentBody.imageuri;
-    return await this.deploymentService.InsertContract(arr);
   }
   //
   // @Get()
@@ -145,14 +150,14 @@ export class DeploymentController {
   //     process.cwd(),
   //     `src/utils/constants/NGM721PSI/NGM721PSI.abi`,
   //   );
-  //   console.log(process.cwd());
+  //   log(process.cwd());
   //   const abi = fs.readFileSync(abiPath, 'utf-8');
   //   const nftCntr = new ethers.Contract(
   //     '0xe528a4898c00F9B48e302B7b3Ba535319fD51bBd',
   //     abi,
   //     wallet,
   //   ); // abi and provider to be declared
-  //   console.log('nftContract: ', nftCntr, owneraddr);
+  //   log('nftContract: ', nftCntr, owneraddr);
   //   const minted = await nftCntr.safeMint(
   //     '0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390',
   //     1,
@@ -161,13 +166,19 @@ export class DeploymentController {
   //   // const minted = await nftCntr.safeMint(owneraddr, 1, '0x0');
   //   // const uri = await nftCntr.name();
   //   const uri = await nftCntr.baseURI(0);
-  //   console.log('uri', uri);
+  //   log('uri', uri);
   // }
 
   @Get('contract-Details/:cntraddr')
   async getContractdetails(@Param('cntraddr') cntraddr: string) {
-    console.log(cntraddr);
-    return this.deploymentService.getContractDetailsByContractAddress(cntraddr);
+    try {
+      log(cntraddr);
+      return await this.deploymentService.getContractDetailsByContractAddress(cntraddr);
+    }
+    catch (error) {
+      log(error);
+      return { error }
+    }
   }
   // //
   // @Post('pause-contract/:cntraddress')

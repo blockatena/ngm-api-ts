@@ -4,9 +4,10 @@ import { DeploymentController } from './deployment.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { NftModule } from 'src/nft/nft.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
-  imports: [
+  imports: [UsersModule,
     MongooseModule.forFeature([
       { name: ContractSchema.name, schema: contractSchema },
     ]),

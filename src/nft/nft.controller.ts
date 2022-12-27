@@ -50,6 +50,7 @@ import { GetOwner } from './nftitems/get-owner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
+import { ignoreElements } from 'rxjs';
 const { log } = console;
 // require('dotenv').config();
 
@@ -108,24 +109,26 @@ export class NftController {
       const contract_instance = new ethers.Contract(contract_address, abi, this.wallet);
       const get_collecion = await this.nftservice.getCollectionOnly(contract_address);
       log(get_collecion);
-      get_collecion.forEach(async nft => {
-        log(nft.contract_address, nft.token_id);
-        const token_idd = parseInt(nft.token_id);
+      // get_collecion.forEach(async nft => {
+      //   log(nft.contract_address, nft.token_id);
+      //   const token_idd = parseInt(nft.token_id);
 
-        const blkid = await contract_instance.ownerOf(token_idd);
-        log(nft.token_owner, '==', blkid);
-        if (nft.token_owner != blkid) {
-          log('-----------------[PROBLEM]---------------------------');
-          log('| FOR Token_ID  ', nft.token_id, '                |');
-          log('|   IN DB                     IN BLOCKCHAIN      ')
-          log('|', nft.token_owner, '==', blkid, '|');
-          log('--------------------------------------------');
-          await this.nftservice.updateNft({ contract_address, token_id: nft.token_id }, { token_owner: blkid });
-          // const current_nft = await this.nftservice.updateNft(,);
-        }
-      });
+      //   const blkid = await contract_instance.ownerOf(token_idd);
+      //   log(nft.token_owner, '==', blkid);
+      //   if (nft.token_owner != blkid) {
+      //     log('-----------------[PROBLEM]---------------------------');
+      //     log('| FOR Token_ID  ', nft.token_id, '                |');
+      //     log('|   IN DB                     IN BLOCKCHAIN      ')
+      //     log('|', nft.token_owner, '==', blkid, '|');
+      //     log('--------------------------------------------');
+      //     await this.nftservice.updateNft({ contract_address, token_id: nft.token_id }, { token_owner: blkid });
+      //     // const current_nft = await this.nftservice.updateNft(,);
+      //   }
+      // });
       // log("sss", blkid);
-      return 'done ';
+      const token_idd = parseInt(get_collecion.token_id);
+      const blkid = await contract_instance.ownerOf(token_idd);
+      return blkid;
     } catch (error) {
       log(error);
       return {
@@ -149,17 +152,6 @@ export class NftController {
   })
   @UseInterceptors(
     FileInterceptor('file'),
-    // {
-    // storage: diskStorage({
-    //   destination: './files',
-    //   filename: (req, file, callback) => {
-    // const uniqueSuffix = Date.now() + '-' + Math.random() * 1e9;
-    // const ext = extname(file.originalname);
-    // const filename = `${file.originalname}-${uniqueSuffix}${ext}`;
-    // callback(null, filename);
-    // },
-    // }),
-    // }
   )
   @Post('uploadFile')
   async uploadFile(
@@ -182,9 +174,6 @@ export class NftController {
       const cid = await this.storage.storeDirectory([toUploadFile]);
       const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
       log({ tokenUri });
-      // **********Storing in Db
-
-      // **********
       return tokenUri;
     } catch (error) {
       return {
@@ -523,18 +512,25 @@ export class NftController {
   })
   @ApiHeader({
     name: 'X-API-HEADER',
-    description: 'This is my header'
+    description: 'API key needed for mint'
   })
   @UseGuards(APIGuard)
   @Post('mint-nft')
   async mintNFT(@Body() body: mintToken) {
     log("got it ", body);
     try {
-      log(body);
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           body.contract_address,
         );
+      const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
+      const is_limit_exceeded = body.limit <= collection_count;
+      log(`${body.limit} <= ${collection_count}`, body.limit <= collection_count)
+      if (is_limit_exceeded) {
+        log("yes");
+        return `Hello ${contract_details.owner_address} you exceeded your Limit, Please Subscribe for more `;
+      }
+      log("nope");
       log(contract_details);
       const type = contract_details.type;
       //
@@ -642,9 +638,13 @@ export class NftController {
       const data = await this.nftservice.createNft(arrdb);
       log(data);
       return data;
-    } catch (error) {
+    }
+    catch (error) {
       log(error);
-      return false;
+      return {
+        message: "Something went Wrong",
+        error
+      }
     }
   }
   // @Post('mint-batch-nft/:ERC_TOKEN')

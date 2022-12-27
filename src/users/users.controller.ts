@@ -12,6 +12,8 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   UploadedFiles,
+  ClassSerializerInterceptor,
+  SerializeOptions,
 } from '@nestjs/common';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { NFTStorage, File, Blob } from 'nft.storage';
@@ -24,6 +26,7 @@ import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/email/email.service';
+import { UserEntity } from './dto/user.dto';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
@@ -45,7 +48,7 @@ export class UsersController {
     const { wallet_address, username, email } = createUserDto;
     try {
       // check wallet Address is present in Db
-      const is_user_exists = await this.usersService.getUser(wallet_address);
+      const is_user_exists = await this.usersService.getUser({ wallet_address });
       console.log(is_user_exists);
 
       if (is_user_exists) {
@@ -77,17 +80,28 @@ export class UsersController {
   async findAll() {
     return await this.usersService.findAll();
   }
-
+  @ApiOperation({ summary: 'This API gets you user details' })
   @Get('/get-user/:wallet_address')
-  async findOne(@Param('wallet_address') wallet_address: string): Promise<any> {
+  async findOne(@Param() getUser: GetUser): Promise<any> {
+    const { wallet_address } = getUser;
     try {
-      //  name banner image profile image wallet address email
-      // const data1 = user_details.email || user_details.username || user_details.wallet_address;
-      // console.log(data1);
-
-      const data = await this.usersService.getUser(wallet_address);
+      console.log(wallet_address);
+      const data = await this.usersService.getUser({ wallet_address });
       console.log(data);
-      return data || 'you are not registered with us';
+      const { username,
+        email,
+        createdAt,
+        updatedAt,
+        limit, } = data
+      return {
+        username,
+        wallet_address,
+        email,
+        createdAt,
+        updatedAt,
+        limit
+      }
+
     } catch (error) {
       console.log(error);
       return {
@@ -104,7 +118,7 @@ export class UsersController {
     const { wallet_address, username } = updateUser;
     try {
       // First find user exists or not
-      const is_user_exists = await this.usersService.getUser(wallet_address);
+      const is_user_exists = await this.usersService.getUser({ wallet_address });
       if (!is_user_exists) {
         return `${wallet_address} doesnt register with us please register`;
       }
@@ -155,7 +169,7 @@ export class UsersController {
     const { wallet_address, type } = body;
     try {
       //check user is registered or not 
-      const is_user_exists = await this.usersService.getUser(wallet_address);
+      const is_user_exists = await this.usersService.getUser({ wallet_address });
       if (!is_user_exists) {
         return 'User doesnt exists Please Register with us';
       }
@@ -173,7 +187,7 @@ export class UsersController {
       if (type == 'banner')
         await this.usersService.updateUser(wallet_address, { banner_image: tokenUri })
       // **********
-      return await this.usersService.getUser(wallet_address);
+      return await this.usersService.getUser({ wallet_address });
     } catch (error) {
       return {
         success: false,

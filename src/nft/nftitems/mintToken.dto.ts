@@ -10,8 +10,8 @@ export class mintToken {
   readonly contract_type: string;
 
   @ApiProperty({
-    description: 'Contract Address of the deployed contract',
-    example: '44fdfsdfdsfsfsdgssd',
+    description: 'Contract Address of the deployed contract (Battle Field)',
+    example: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F',
   })
   readonly contract_address: string;
 
@@ -24,7 +24,7 @@ export class mintToken {
   @ApiProperty({
     description:
       'Number of tokens for ERC1155 type contract (optional for ERC721 type contracts)',
-    example: '4',
+    example: '1',
   })
   readonly number_of_tokens?: number;
 
@@ -60,6 +60,8 @@ export class mintToken {
     example: 'https://google.com',
   })
   readonly external_uri: string;
+
+  readonly limit?: number;
 }
 
 @ApiExtraModels()

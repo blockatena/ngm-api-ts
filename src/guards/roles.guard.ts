@@ -27,13 +27,15 @@ export class APIGuard implements CanActivate {
     if (!api_key) {
       return false;
     }
-    const token_owner = request?.body?.token_owner;
+    // for deployment owner_addresss , for minting token_owner
+    const token_owner = request?.body?.token_owner || request?.body?.owner_address;
     log(token_owner);
     // check api key if that api key matches the requrirements
     const owner_info = await this.userService.getUser(token_owner);
-    log(owner_info);
+    // log(owner_info?.limit);
     if (api_key === owner_info?.api_key) {
       log('API KEY IS CORRECT')
+      request.body.limit = owner_info?.limit;
       return true;
     } else {
       throw new HttpException(
