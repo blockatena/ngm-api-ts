@@ -10,8 +10,8 @@ export class ContractSchema {
   owner_address: string;
   @Prop({ unique: true })
   collection_name: string;
-  @Prop()
-  chain: string;
+  @Prop({ type: Object })
+  chain: { id: number, name: string };
   @Prop()
   type: string;
   @Prop()

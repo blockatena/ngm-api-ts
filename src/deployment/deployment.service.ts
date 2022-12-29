@@ -18,10 +18,10 @@ export class DeploymentService {
     });
   }
 
-  async InsertContract(data: any): Promise<any> {
+  async createContract(data: any): Promise<any> {
     console.log('from data', data);
     try {
-      return (await this.ContractModel.create(data)).save();
+      return (await this.ContractModel.create(data));
     } catch (error) {
       return { mesasge: 'problem in service', error };
     }

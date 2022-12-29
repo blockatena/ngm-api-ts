@@ -9,7 +9,7 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
 import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
@@ -20,6 +20,9 @@ import { GetOwner } from '../nft/nftitems/get-owner.dto';
 import { NftService } from 'src/nft/nft.service';
 import { APIGuard } from 'src/guards/roles.guard';
 import { log } from 'console';
+import { GetChain } from 'src/utils/enum/common.enum.';
+import { ChainType } from './enum/contract.enum';
+import { getEnvironment } from 'src/utils/common';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
@@ -28,15 +31,6 @@ export class DeploymentController {
     private readonly deploymentService: DeploymentService,
     // private readonly nftService: NftService
   ) { }
-  //Global
-  private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
-    'MATIC_MUMBAI_RPC_URL',
-  );
-  private PRIV_KEY = this.configService.get<string>('PRIV_KEY');
-  private provider = new ethers.providers.JsonRpcProvider(
-    this.MATIC_MUMBAI_RPC_URL,
-  );
-  private wallet = new ethers.Wallet(this.PRIV_KEY, this.provider);
 
   @ApiHeader({
     name: 'X-API-HEADER',
@@ -47,26 +41,55 @@ export class DeploymentController {
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
     log(deploymentBody);
+    const { symbol, owner_address, roles, collection_name, chain, type, imageuri,
+      description } = deploymentBody;
     try {
-      // Checkong Number of Contracts that this address hold
-      //  create a constant ***
-      if (
-        (await this.deploymentService.ContractCount(
-          deploymentBody.owner_address,
-        )) > process.env.deploy_limit
-      ) {
-        log('in');
-        return 'you exceeded limit, kindly subscribe to our services';
+      // Get Environment
+      const ENVIRONMENT = getEnvironment();
+      const check_environment = ENVIRONMENT === 'DEV' || ENVIRONMENT === 'PROD';
+      if (!check_environment) {
+        return `Invalid Environment check env  current Environment is ${ENVIRONMENT}`;
       }
-      // Contract deployment start
-      // paths
+      log(`Current Environment is ${ENVIRONMENT}`);
+      const chain_typee = this.configService.get<any>(
+        ENVIRONMENT,
+      );
+      // chain validation 
+      const current_chain = chain.toUpperCase();
+      const chains = Object.keys(chain_typee);
+      const chain_available = chains.find(chain => chain === current_chain);
+      if (!chain_available) {
+        return {
+          message: `you are on ${ENVIRONMENT} `,
+          chains
+        }
+      }
+      // log(`Requested Chain ${chain_typee}`);
+      const chain_type = chain_typee[`${current_chain}`];
+      log(`RPC is ${chain_type}`);
+      // Multi Chain Integration
+      const RPC_URL = chain_type;
+      //  log("jjjj", RPC_URL);
+      const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
+      const API_BASE_URL = this.configService.get<string>('API_BASE_URL');
+      // const deploy_limit = this.configService.get<string>('deploy_limit');
+      log(`RPC_URL   ${RPC_URL} \n
+      PRIV_KEY   ${PRIV_KEY} \n
+      API_BASE_URL  ${API_BASE_URL} \n
+      `)
+      // Get Provider
+      const provider = new ethers.providers.JsonRpcProvider(
+        RPC_URL,
+      );
+      const wallet = new ethers.Wallet(PRIV_KEY, provider);
+
       const abiPath = path.join(
         process.cwd(),
-        `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.abi`,
+        `src/utils/constants/${type}/${type}.abi`,
       );
       const binPath = path.join(
         process.cwd(),
-        `src/utils/constants/${deploymentBody.type}/${deploymentBody.type}.bin`,
+        `src/utils/constants/${type}/${type}.bin`,
       );
       // log(abiPath, '  ', binPath);
       //  retrieving abi and bin files through fs module
@@ -74,70 +97,78 @@ export class DeploymentController {
       const abi = fs.readFileSync(abiPath, 'utf-8');
       const bin = fs.readFileSync(binPath, 'utf-8');
       //
-      log('fil read completed');
-      const contractFactory = new ethers.ContractFactory(abi, bin, this.wallet);
-      log('connect to blockchain');
+      log('file read completed');
+      const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
+      log(contractFactory);
+      log('connected to blockchain');
       // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
       // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
       // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
-      const feeData = await this.provider.getFeeData()
+      const feeData = await provider.getFeeData()
       log(feeData)
-      let contract = await contractFactory.deploy(
-        deploymentBody.collection_name,
-        deploymentBody.symbol,
+      const contract = await contractFactory.deploy(
+        collection_name,
+        symbol,
         ' ',
         { gasPrice: feeData.gasPrice }
       );
       log('deployed');
+      log('contract', contract);
       // const uri =
       // 'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
-      const uri = process.env.API_BASE_URL || 'http://localhost:8080/';
+      const uri = API_BASE_URL || 'http://localhost:8080/';
       const confirm = await contract.deployed();
-      const address = contract.address;
-      const baseUri = `${uri}/metadata/${address}/`;
+      const contract_address = contract.address;
+      const baseUri = `${uri}/metadata/${contract_address}/`;
       const res = await contract.setBaseURI(baseUri, { gasPrice: feeData.gasPrice });
-      const hash = confirm.deployTransaction.hash;
+      const transactionhash = confirm.deployTransaction.hash;
 
-      // Contract Deployment End
-
-      // Testing
-      // const confirm = 'conformed';
-      // const address = 'jbvcbcseredavsdasdbkuu1';
-      // const hash = 'sdasdajkhjksdfas';
-
-
-      log(`address: ${address}, txHash: ${hash} \n\n\n${confirm}`);
+      log(`address: ${contract_address}, txHash: ${transactionhash} \n\n\n${confirm}`);
       //
-      const keys = [
-        'owner_address',
-        'symbol',
-        'chain',
-        'collection_name',
-        'type',
-      ];
-      const arr = {};
-      keys.forEach((element) => {
-        arr[`${element}`] = deploymentBody[element];
-      });
-      arr[`transactionhash`] = hash;
-      arr[`contract_address`] = address;
-      arr[`description`] = deploymentBody.description;
-      //  /`${uri}/${address}/`
-      arr[`baseuri`] = baseUri;
-      arr[`imageuri`] = deploymentBody.imageuri;
-      return await this.deploymentService.InsertContract(arr);
+      const arr = {
+        owner_address,
+        symbol,
+        collection_name,
+        chain: { id: res.chainId, name: chain },
+        type,
+        transactionhash,
+        contract_address,
+        description,
+        baseuri: baseUri,
+        imageuri,
+      }
+      log(arr);
+      return await this.deploymentService.createContract(arr);
     } catch (error) {
       log(error);
       return {
+        error,
         message: "Something went wrong our Team is Looking into it"
       }
     }
   }
   //
-  // @Get()
-  // async gellAll() {
-  //   return await this.deploymentService.getallContractData();
-  // }
+  @Get('/test-rpc-url')
+  async testRpc() {
+    try {
+      const ETHEREUM_GOERLI_RPC_URL = this.configService.get<string>(
+        'ETHEREUM_GOERLI_RPC_URL',
+      );
+      const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
+      const provider = new ethers.providers.JsonRpcProvider(
+        ETHEREUM_GOERLI_RPC_URL,
+      );
+      const wallet = new ethers.Wallet(PRIV_KEY, provider);
+      log(wallet);
+      return wallet;
+    } catch (error) {
+      log(error);
+      return {
+        error,
+        message: "something went wrong"
+      }
+    }
+  }
   // @Get('GetAll-contracts/:owneraddr')
   // async getContractsOfUser(@Param('owneraddr') owneraddr: string) {
   //   return this.deploymentService.getContractByOwnerAddr(owneraddr);
