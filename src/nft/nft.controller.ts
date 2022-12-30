@@ -9,6 +9,7 @@ import {
   Post,
   SetMetadata,
   UseGuards,
+  Put,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getcontract, transactions } from './nftitems/tokeninfo.dto';
@@ -31,7 +32,7 @@ import { extname } from 'path';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
-import { mintToken } from './nftitems/mintToken.dto';
+import { MintToken } from './nftitems/mintToken.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -138,7 +139,6 @@ export class NftController {
     }
   }
   // File Upload
-
   @ApiOperation({
     summary: 'This Api will upload your asset and gets you URI of that asset',
   })
@@ -184,33 +184,6 @@ export class NftController {
     }
   }
 
-  //
-  // To Get all All NFTs in the Db
-  // For Docs
-  // You can Specify access to single person or multiple persons
-  // You can give permissions to as many people as you want
-  // @SetMetadata('roles', [Role.Admin, Role.User])
-  // @Get('get-all-nfts/:jwt')
-  // // @ApiOperation({ summary: 'To Get All Nfts' })
-  // @ApiCreatedResponse({
-  //   status: 201,
-  //   description: 'The records has been fetched successfully.',
-  //   type: [getnft],
-  // })
-  //
-  // Logic
-  // @ApiResponse({ status: 403, description: 'Forbidden.' })
-  // async getallNfts(@Param('jwt') jwt: string): Promise<any> {
-  //   // const data = await this.RedisService.getEx('allNfts');
-  //   // if (data) {
-  //   //   return data;
-  //   // }
-  //   const fetchData = [{ cntraddr: 'cntraddr', id: 'id' }];
-  //   // await this.RedisService.set('allNfts', JSON.stringify(fetchData));
-  //   return fetchData;
-  // }
-
-  // to fetch total number of NFTs related to the game
   @Get('total-count/:contract_address')
   @ApiCreatedResponse({
     status: 201,
@@ -305,18 +278,6 @@ export class NftController {
       }
     }
   }
-
-
-
-
-
-
-
-
-
-
-
-
   /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @ApiOperation({
     summary:
@@ -349,15 +310,9 @@ export class NftController {
     summary:
       'This Api will gets you Specific asset given by contract_address and Token_id in Params',
   })
-  // ***************/
-  // get owner assets pending
-  //************ */
+
   @Get('get-nft/:contract_address/:token_id')
   async getNft(@Param() body: GetNftBody): Promise<any> {
-    // Validations
-    // check in Db
-    //  return await this.nftservice.
-    //  const get_nft=await this.nftservice.
     const { contract_address, token_id } = body;
     try {
       const is_nft_exists = await this.nftservice.getNft({
@@ -382,8 +337,6 @@ export class NftController {
           bids,
         };
       }
-      // log(is_nft_exists.is_in_sale, 'true');
-      // Get token owner info if he register with us
       if (is_nft_exists.nft.is_in_sale) {
         log(' is in sale');
         const sale = await this.nftMarketPlaceService.getSale({
@@ -420,8 +373,6 @@ export class NftController {
   @ApiOperation({ summary: 'This Api Will get all the Collections' })
   @Get('get-collections/:page_number/:items_per_page')
   async getCollections(@Param() body: GetCollectionBody): Promise<any> {
-    // if no collctions ,return some message ,
-    //  is this route available to all
     try {
       log(body);
       return await this.nftservice.getCollections(body);
@@ -509,7 +460,6 @@ export class NftController {
   // *****************************************//
   @ApiOperation({
     summary: 'This Api will Mint Nft and its details stores it info in DB ',
-
   })
   @ApiHeader({
     name: 'X-API-HEADER',
@@ -517,42 +467,47 @@ export class NftController {
   })
   @UseGuards(APIGuard)
   @Post('mint-nft')
-  async mintNFT(@Body() body: mintToken) {
-    const { contract_address, contract_type, token_owner, number_of_tokens, name,
+  async mintNft(@Body() body: MintToken) {
+    const { contract_address, token_owner, number_of_tokens, name,
       image_uri,
       description,
       external_uri,
       attributes } = body;
     try {
       // 
-      /*
       const ENVIRONMENT = getEnvironment();
-
-      // 
-
-      // 
       const check_environment = ENVIRONMENT === 'DEV' || ENVIRONMENT === 'PROD';
       if (!check_environment) {
         return `Invalid Environment check env  current Environment is ${ENVIRONMENT}`;
       }
+
       log(`Current Environment is ${ENVIRONMENT}`);
       const chain_typee = this.configService.get<any>(
         ENVIRONMENT,
       );
-      // 
+
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           contract_address,
         );
-      // 
+      const type = contract_details.type;
+      if (!(token_owner === contract_details.owner_address)) {
+        return `Only the Contract Owner should Mint the NFT`
+      }
+      log(contract_details);
 
-      console.log(chain_typee[`${}`]);
-      // chain validation 
+      const current_chain = contract_details?.chain?.name;
+
+      log(`current_chain ${current_chain}`,)
       const chains = Object.keys(chain_typee);
+
+      log(`  chains ${chains}`,)
       const chain_available = chains.find(chain => chain === current_chain);
+
+      log(`chain_available    ${chain_available}  `);
       if (!chain_available) {
         return {
-          message: `you are on ${ENVIRONMENT} `,
+          message: `you are on ${ENVIRONMENT}  your collection ${contract_details.collection_name} is not deployed here `,
           chains
         }
       }
@@ -561,7 +516,7 @@ export class NftController {
       log(`RPC is ${chain_type}`);
       // Multi Chain Integration
       const RPC_URL = chain_type;
-      //  log("jjjj", RPC_URL);
+
       const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
 
       log(`RPC_URL   ${RPC_URL} \n
@@ -571,26 +526,16 @@ export class NftController {
       const provider = new ethers.providers.JsonRpcProvider(
         RPC_URL,
       );
+      // add limit
+      log(RPC_URL, provider);
       const wallet = new ethers.Wallet(PRIV_KEY, provider);
-
-
-      // 
-
+      // only the contract owner should be the minter 
+      log(wallet);
       const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
-      const is_limit_exceeded = body.limit <= collection_count;
-      log(`${body.limit} <= ${collection_count}`, body.limit <= collection_count)
-      if (is_limit_exceeded) {
-        log("yes");
-        return `Hello ${contract_details.owner_address} you exceeded your Limit, Please Subscribe for more `;
-      }
-      log("nope");
+      // const is_limit_exceeded = body.limit <= collection_count;
+      // log("nope");
       log(contract_details);
-      const type = contract_details.type;
-      //
-      if (contract_type != type) {
-        return `The contract is of type ${type} but you entered ${body.contract_type}`;
-      }
-      //
+
       const abiPath = path.join(
         process.cwd(),
         `src/utils/constants/${type}/${type}.abi`,
@@ -604,8 +549,8 @@ export class NftController {
         abi,
         wallet,
       ); // abi and provider to be declared
-      // log('nftContract: ', nftCntr);
-      const feeData = await this.mum_provider.getFeeData()
+      log('nftContract: ', nftCntr);
+      const feeData = await this.provider.getFeeData();
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(token_owner),
         1,
@@ -634,13 +579,8 @@ export class NftController {
       const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
 
       log('ipfsMetadataUri', ipfsMetadataUri);
+      const chain = { id: res.chainId || 5, name: current_chain };
 
-      const metadata = await this.nftservice.pushTokenUriToDocArray(
-        contract_address,
-        ipfsMetadataUri,
-        tokenId,
-        contract_type,
-      );
 
       const collection = await this.nftservice.getNftsByCollection(
         body.contract_address,
@@ -658,11 +598,11 @@ export class NftController {
       log('metadata');
       const arrdb = {
         contract_address,
-        contract_type,
+        contract_type: type,
         token_id: tokenId,
         contract_details,
-        chain:
-          meta_data_url,
+        chain: { id: res?.chainId || 5, name: current_chain },
+        meta_data_url,
         is_in_auction: false,
         token_owner: ethers.utils.getAddress(body.token_owner),
         meta_data: jsonData,
@@ -687,8 +627,15 @@ export class NftController {
       });
       const data = await this.nftservice.createNft(arrdb);
       log(data);
+      const metadata = await this.nftservice.pushTokenUriToDocArray(
+        contract_address,
+        ipfsMetadataUri,
+        tokenId,
+        type,
+        chain
+      );
       return data;
-*/
+
     }
     catch (error) {
       log(error);
@@ -702,4 +649,5 @@ export class NftController {
   // async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
   // @Post('blacklist-nft/:tokenid/:cntraddr')
   // async blacklistNFT(@Param() blacklist: transactions) {}
+
 }
