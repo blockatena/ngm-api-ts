@@ -128,32 +128,34 @@ export class MetadataService {
     contract_type: string,
     tokenUri: string,
   ) {
-    const textileUri = `https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space/${contract_address}/${token_id}.json`; // this needs to be changed afterwards
-    const metadataJson = await this.httpService.axiosRef.get(
-      tokenUri.replace(
-        'https://ngm-api-tpnng.ondigitalocean.app',
-        'http://[::1]:8080',
-      ),
-    );
-    //update the metadata in mongo nftschema
-    const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
-    const nftStorageUri = `https://nftstorage.link/ipfs`;
-    const metadataUri = `${baseApiUri}/metadata/${contract_address}/${token_id}`;
-    const nft = await this.NftModel.findOneAndUpdate(
-      { contract_address, token_id },
-      { $set: { meta_data: metadataJson.data, meta_data_url: metadataUri } },
-    );
+    // const textileUri = `https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space/${contract_address}/${token_id}.json`; // this needs to be changed afterwards
+    // const metadataJson = await this.httpService.axiosRef.get(
+    //   tokenUri.replace(
+    //     'https://ngm-api-tpnng.ondigitalocean.app',
+    //     'http://[::1]:8080',
+    //   ),
+    // );
+    // //update the metadata in mongo nftschema
+    // const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
+    // const nftStorageUri = `https://nftstorage.link/ipfs`;
+    // const metadataUri = `${baseApiUri}/metadata/${contract_address}/${token_id}`;
+    // const nft = await this.NftModel.findOneAndUpdate(
+    //   { contract_address, token_id },
+    //   { $set: { meta_data: metadataJson.data, meta_data_url: metadataUri } },
+    // );
 
-    const jsonBlob = new Blob([JSON.stringify(metadataJson.data)]);
-    const cid = await storage.storeBlob(jsonBlob);
-    const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
-    console.log('ipfsMetadataUri', ipfsMetadataUri);
-    const metadata = await this.nftservice.pushTokenUriToDocArray(
-      contract_address,
-      ipfsMetadataUri,
-      parseInt(token_id),
-      contract_type,
-    );
-    console.log(contract_address, token_id, '-----\n');
+    // const jsonBlob = new Blob([JSON.stringify(metadataJson.data)]);
+    // const cid = await storage.storeBlob(jsonBlob);
+    // const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
+    // console.log('ipfsMetadataUri', ipfsMetadataUri);
+
+    // const metadata = await this.nftservice.pushTokenUriToDocArray(
+    //   contract_address,
+    //   ipfsMetadataUri,
+    //   parseInt(token_id),
+    //   contract_type,
+    //   chain
+    // );
+    // console.log(contract_address, token_id, '-----\n');
   }
 }

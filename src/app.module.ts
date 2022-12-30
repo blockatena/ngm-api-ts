@@ -24,8 +24,6 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
-console.log(EMAIL_ADDR,
-  EMAIL_PASSWORD);
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
@@ -46,7 +44,7 @@ console.log(EMAIL_ADDR,
       preview: false,
       template: {
         dir: join(__dirname, 'template'),
-        adapter: new HandlebarsAdapter(), // or new PugAdapter() or new EjsAdapter()
+        adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
         },
@@ -55,12 +53,10 @@ console.log(EMAIL_ADDR,
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(configuration().ATLAS),
     NftModule,
-    // AuthModule,
     DeploymentModule,
     TextileModule,
     UsersModule,
     NftMarketplaceModule,
-    // AdminModule,
     MetadataModule,
     ActivityModule,
     EmailModule,
@@ -72,7 +68,6 @@ export class AppModule implements OnModuleInit {
   constructor(private appService: AppService) { }
 
   onModuleInit() {
-    console.log(`Initialization...`);
     this.appService.handleCron();
   }
 }

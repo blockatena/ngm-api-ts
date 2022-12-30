@@ -1,23 +1,15 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
-
-// @ApiExtraModels()
-export class mintToken {
-  @ApiProperty({
-    description:
-      'Type of the contract that you want to deploy currently we are deploying NGMTINY721 and NGM721PSI later we can add NGM1155',
-    example: 'NGMTINY721',
-  })
-  readonly contract_type: string;
+export class MintToken {
 
   @ApiProperty({
     description: 'Contract Address of the deployed contract (Battle Field)',
-    example: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F',
+    example: '0x2F9792620f776d5f5231F5f24b5194Ad36967B8a',
   })
   readonly contract_address: string;
 
   @ApiProperty({
-    description: 'Token ID of the NFT',
-    example: 'dfsed454fdfsdfdsfsfsdgssd',
+    description: 'Token Owner of the NFT',
+    example: '0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72',
   })
   readonly token_owner: string;
 

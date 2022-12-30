@@ -360,7 +360,7 @@ export class NftService {
     tokenUri: string,
     tokenId: number,
     contract_type: string,
-    chain = 'Polygon', //will use it later
+    chain: object, //will use it later
   ) {
     const doc = await this.MetadataModel.findOne({
       contract_address,
@@ -406,6 +406,12 @@ export class NftService {
         error
       }
     }
+  }
+
+  async updateMany(data: any, update_data: any): Promise<any> {
+    return await this.ContractModel.updateMany({ data }, {
+      $set: update_data,
+    })
   }
   /*****************[TO_GET_A_SINGLE_NFT]*******************************/
   async getSingleNft(data: object): Promise<any> {

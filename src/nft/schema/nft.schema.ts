@@ -9,6 +9,8 @@ export class NftSchema {
   contract_address: string;
   @Prop({ enum: ['NGM721PSI', 'NGM1155', 'NGMTINY721'] })
   contract_type: string;
+  @Prop({ type: Object })
+  chain: { id: number, name: string };
   @Prop()
   token_id: string;
   @Prop({ default: '0' })

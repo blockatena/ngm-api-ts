@@ -16,8 +16,8 @@ export class metadata {
     uri: string;
   }>;
 
-  @Prop()
-  chain: string;
+  @Prop({ type: Object })
+  chain: { id: number, name: string };
 }
 
 export const metadataSchema = SchemaFactory.createForClass(metadata);
