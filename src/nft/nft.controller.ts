@@ -53,6 +53,7 @@ import { APIGuard } from 'src/guards/roles.guard';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
 import { getEnvironment } from 'src/utils/common';
+import { getWallet } from '../utils/common';
 const { log } = console;
 // require('dotenv').config();
 
@@ -474,14 +475,12 @@ export class NftController {
       external_uri,
       attributes } = body;
     try {
-      // 
       const ENVIRONMENT = getEnvironment();
       const check_environment = ENVIRONMENT === 'DEV' || ENVIRONMENT === 'PROD';
       if (!check_environment) {
         return `Invalid Environment check env  current Environment is ${ENVIRONMENT}`;
       }
-
-      log(`Current Environment is ${ENVIRONMENT}`);
+      // log(`Current Environment is ${ENVIRONMENT}`);
       const chain_typee = this.configService.get<any>(
         ENVIRONMENT,
       );
@@ -495,15 +494,11 @@ export class NftController {
         return `Only the Contract Owner should Mint the NFT`
       }
       log(contract_details);
-
       const current_chain = contract_details?.chain?.name;
-
       log(`current_chain ${current_chain}`,)
       const chains = Object.keys(chain_typee);
-
       log(`  chains ${chains}`,)
       const chain_available = chains.find(chain => chain === current_chain);
-
       log(`chain_available    ${chain_available}  `);
       if (!chain_available) {
         return {
@@ -516,33 +511,39 @@ export class NftController {
       log(`RPC is ${chain_type}`);
       // Multi Chain Integration
       const RPC_URL = chain_type;
-
       const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
-
       log(`RPC_URL   ${RPC_URL} \n
       PRIV_KEY   ${PRIV_KEY} \n
       `)
+      // 
+      log("completed");
+      const { provider,
+        wallet } = getWallet({
+          RPC_URL,
+          PRIV_KEY
+        })
+      // log(provider, wallet);
+
       // Get Provider
-      const provider = new ethers.providers.JsonRpcProvider(
-        RPC_URL,
-      );
-      // add limit
-      log(RPC_URL, provider);
-      const wallet = new ethers.Wallet(PRIV_KEY, provider);
+      // const provider = new ethers.providers.JsonRpcProvider(
+      //   RPC_URL,
+      // );
+      // // add limit
+      // log(RPC_URL, provider);
+      // const wallet = new ethers.Wallet(PRIV_KEY, provider);
       // only the contract owner should be the minter 
+
       log(wallet);
       const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
       // const is_limit_exceeded = body.limit <= collection_count;
       // log("nope");
       log(contract_details);
-
       const abiPath = path.join(
         process.cwd(),
         `src/utils/constants/${type}/${type}.abi`,
       );
       log(process.cwd());
       const abi = fs.readFileSync(abiPath, 'utf-8');
-
       // mint token using ethersjs
       const nftCntr = new ethers.Contract(
         contract_address,
@@ -564,31 +565,28 @@ export class NftController {
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
       const jsonData = {
-        name: body.name,
-        image: body.image_uri,
-        description: body.description,
-        external_uri: body.external_uri || '',
-        attributes: body.attributes,
+        name,
+        image: image_uri,
+        description,
+        external_uri,
+        attributes,
       };
       const jsonBlob = new Blob([JSON.stringify(jsonData)]);
       const cid = await this.storage.storeBlob(jsonBlob);
       const nftStorageUri = `https://nftstorage.link/ipfs`;
       const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
       log(baseApiUri, 'baseApiUri');
-      const meta_data_url = `${baseApiUri}/metadata/${body.contract_address}/${tokenId}`;
+      const meta_data_url = `${baseApiUri}/metadata/${contract_address}/${tokenId}`;
       const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
 
       log('ipfsMetadataUri', ipfsMetadataUri);
       const chain = { id: res.chainId || 5, name: current_chain };
-
-
       const collection = await this.nftservice.getNftsByCollection(
         body.contract_address,
       );
-      log(collection);
-      log('here', collection.length);
+      // log(collection);
+      // log('here', collection.length);
       if (collection.length < 3) {
-        log(collection.length);
         this.nftservice.pushImagesToCollection(
           contract_address,
           image_uri,
@@ -600,8 +598,7 @@ export class NftController {
         contract_address,
         contract_type: type,
         token_id: tokenId,
-        contract_details,
-        chain: { id: res?.chainId || 5, name: current_chain },
+        chain: { id: mintToken.chainId, name: current_chain },
         meta_data_url,
         is_in_auction: false,
         token_owner: ethers.utils.getAddress(body.token_owner),
@@ -635,7 +632,6 @@ export class NftController {
         chain
       );
       return data;
-
     }
     catch (error) {
       log(error);

@@ -8,7 +8,7 @@ import { SendAPiKey } from './dto/sendapikey.dto';
 import { EmailService } from 'src/email/email.service';
 import { ConfigService } from '@nestjs/config';
 const { log } = console;
-@ApiTags('subscription')
+@ApiTags('API Key Management')
 @Controller('subscription')
 export class SubscriptionController {
   constructor(

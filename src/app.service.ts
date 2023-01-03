@@ -22,22 +22,21 @@ export class AppService implements OnModuleInit {
 
     all_auctions.forEach(async (auction) => {
       if (new Date(auction.end_date) <= new Date()) {
-        console.log(
-          '',
-          new Date(auction.end_date).toISOString(),
-          ' <',
-          new Date(auction.start_date).toISOString(),
-          '   ==',
-          new Date(auction.end_date) < new Date(),
-        );
-        console.log('auction over');
+        // console.log(
+        //   '',
+        //   new Date(auction.end_date).toISOString(),
+        //   ' <',
+        //   new Date(auction.start_date).toISOString(),
+        //   '   ==',
+        //   new Date(auction.end_date) < new Date(),
+        // );
+        // console.log('auction over');
         await this.nftmrktservice.declareWinner(auction);
       }
     });
   }
   onModuleInit() {
     console.log(`Initialization...`);
-
     this.handleCron();
   }
 }

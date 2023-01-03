@@ -39,14 +39,19 @@ export class MetadataService {
   async getMetadata(
     contract_address: string,
     token_id: string,
-    chain = 'Polygon',
+    // chain = 'Polygon',
   ): Promise<any> {
     const metadataDoc = await this.MetadataModel.findOne({
       contract_address,
-      chain,
+      // chain,
     });
+    console.log(metadataDoc);
     if (metadataDoc) {
-      const uri = metadataDoc.tokenUri[parseInt(token_id)].uri;
+      const uri = metadataDoc.tokenUri[parseInt(token_id)]?.uri || null;
+      if (!uri) {
+        return `Token ID doesnt Exists`
+      }
+      console.log(uri);
       const res = await this.httpService.axiosRef.get(uri);
       return res.data;
     } else {
@@ -54,50 +59,50 @@ export class MetadataService {
     }
   }
 
-  async tokenUriFix() {
-    try {
-      const collections = await this.ContractModel.find();
-      for (let i = 0; i < collections.length; i++) {
-        const collection = collections[i];
-        const contract_address = collection['contract_address'];
-        if (contract_address == '0xfc4b9e15b9b94e8d48dCBC8F11575e8fdaaD58Fd') {
-          const contract_type = collection['type'];
-          // ---- The below is for smart contract uri fix ----
-          //uncomment this when needed
-          // const res1 = await this.updateSmartContractTokenUri(
-          //   contract_address,
-          //   contract_type,
-          // );
+  // async tokenUriFix() {
+  //   try {
+  //     const collections = await this.ContractModel.find();
+  //     for (let i = 0; i < collections.length; i++) {
+  //       const collection = collections[i];
+  //       const contract_address = collection['contract_address'];
+  //       if (contract_address == '0xfc4b9e15b9b94e8d48dCBC8F11575e8fdaaD58Fd') {
+  //         const contract_type = collection['type'];
+  //         // ---- The below is for smart contract uri fix ----
+  //         //uncomment this when needed
+  //         // const res1 = await this.updateSmartContractTokenUri(
+  //         //   contract_address,
+  //         //   contract_type,
+  //         // );
 
-          // ---- The below is for updating the metadata uri for mongo for every nft ----
-          const nfts = await this.NftModel.find({ contract_address }).sort({
-            token_id: 1,
-          });
-          for (let j = 0; j < nfts.length; j++) {
-            const nft = nfts[j];
-            const token_id = nft['token_id'];
-            const res = await this.updateTokenData(
-              contract_address,
-              token_id,
-              contract_type,
-              nft['meta_data_url'],
-            );
-          }
-          // update the baseUri for contract
-          const baseApiUri =
-            process.env.API_BASE_URL || 'http://localhost:8080';
-          const baseuri = `${baseApiUri}/metadata/${contract_address}/`;
-          const res = await this.ContractModel.findOneAndUpdate(
-            { contract_address },
-            { baseuri },
-          );
-        }
-      }
-      return 'done';
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //         // ---- The below is for updating the metadata uri for mongo for every nft ----
+  //         const nfts = await this.NftModel.find({ contract_address }).sort({
+  //           token_id: 1,
+  //         });
+  //         for (let j = 0; j < nfts.length; j++) {
+  //           const nft = nfts[j];
+  //           const token_id = nft['token_id'];
+  //           const res = await this.updateTokenData(
+  //             contract_address,
+  //             token_id,
+  //             contract_type,
+  //             nft['meta_data_url'],
+  //           );
+  //         }
+  //         // update the baseUri for contract
+  //         const baseApiUri =
+  //           process.env.API_BASE_URL || 'http://localhost:8080';
+  //         const baseuri = `${baseApiUri}/metadata/${contract_address}/`;
+  //         const res = await this.ContractModel.findOneAndUpdate(
+  //           { contract_address },
+  //           { baseuri },
+  //         );
+  //       }
+  //     }
+  //     return 'done';
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   async updateSmartContractTokenUri(
     contract_address: string,

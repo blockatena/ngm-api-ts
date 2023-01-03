@@ -8,11 +8,33 @@ async function bootstrap() {
   app.enableCors();
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
-    .setTitle('NFT Game Machine API')
-    .setDescription('API Demontstration ')
+    .setTitle('GamesToWeb3')
+    .setDescription(`This is Api Demonstraion for <strong>GamesToWeb3</strong> , an Nft <em>Marketplace</em> 
+    <article>
+    What is a marketplace in NFT?
+    Non-Fungible Token or NFT marketplace is a marketplace that functions as a public Blockchain platform. However, this platform is gaining traction and driving developers and businesses to construct a marketplace, despite being in its nascent stage.
+    </article>
+    <h4>We support Multi chain Environment </h4>
+    <p>In Production</p>
+    <ul>
+    <li>Ethereum</li>
+    <li>Polygon</li>
+    </ul>
+    <p>In Development</p>
+    <ul>
+    <li>Goeril</li>
+    <li>Mumbai</li>
+    </ul>
+    
+    `)
     .setVersion('1.0')
     .addTag('NGM APIs')
-    .build();
+    .addServer("https://www.api.gamestoweb3.com", "Production")
+    .addServer("https://www.testnets-api.gamestoweb3.com", "Development")
+    .addServer("http://[::1]:8080", "localhost")
+    .setContact("Customer Care", "www.blockatena.com", "hello@blockatena.com").
+
+    build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('ngmapi', app, document);
