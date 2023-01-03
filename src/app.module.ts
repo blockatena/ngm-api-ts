@@ -18,11 +18,11 @@ import { AppService } from './app.service';
 import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
 import { ActivityModule } from './activity/activity.module';
 import { EmailModule } from './email/email.module';
-import { SubscriptionModule } from './subscription/subscription.module';
 import configuration from './config/configuration';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
+import { SubscriptionModule } from './subscription/subscription.module';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 @Module({
   imports: [

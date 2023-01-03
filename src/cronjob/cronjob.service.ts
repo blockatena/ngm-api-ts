@@ -9,9 +9,9 @@ export class CronjobService {
   constructor(private schedulerRegistry: SchedulerRegistry) { }
 
   addCornJob(name: string, date: string, callback: any) {
-    console.log('date', date);
+    // console.log('date', date);
     const utcdate = Math.floor(new Date(date).getTime() / 1000);
-    console.log('utc date:', utcdate);
+    // console.log('utc date:', utcdate);
     const job = new CronJob(utcdate.toString(), callback);
     this.schedulerRegistry.addCronJob(name, job);
     job.start();

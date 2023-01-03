@@ -27,7 +27,7 @@ import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/email/email.service';
 import { UserEntity } from './dto/user.dto';
-@ApiTags('users')
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService, private configService: ConfigService,
