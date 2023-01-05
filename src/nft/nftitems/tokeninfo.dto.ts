@@ -1,28 +1,19 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 
 @ApiExtraModels()
-export class getnft {
+export class getcontract {
   @ApiProperty({
-    description: 'Id of Your Wallet',
-    example: "44fdfsdfdsfsfsdgssd",
+    description: 'Address of the Collection',
+    example: '0xE0B8BF7DB5Cd76033f036658De37a06D6C014D9C',
   })
-  readonly cntraddr: string;
-  @ApiProperty({
-    description: 'Counter Address Of the Wallet ( Wallet Address of the others )',
-    example: "dfsed454fdfsdfdsfsfsdgssd"
-  })
-  readonly id: string;
+  contract_address: string;
 }
-
 
 @ApiExtraModels()
-export class transactions{
+export class transactions {
   @ApiProperty()
-    readonly "token-id": string;
- 
-  @ApiProperty()
-    readonly "cntr-addr": string;
+  readonly 'token-id': string;
 
-     
+  @ApiProperty()
+  readonly 'cntr-addr': string;
 }
-

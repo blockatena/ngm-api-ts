@@ -4,34 +4,44 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
+  Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
-
+import { UsersService } from 'src/users/users.service';
+// import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
+const { log } = console;
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class APIGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private readonly jwtService: JwtAuthService,
-  ) {}
+    // private readonly jwtService: JwtAuthService,
+    //  private userService: UsersService
+    @Inject(UsersService) private readonly userService: UsersService
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // This is meta data which we set in particular route we call
-    // You need to specify the roles in the form of array
-    const roles = this.reflector.get<string[]>('roles', context.getHandler());
-    console.log('meta role', roles);
-    // This context get use http request Object
     const request = await context.switchToHttp().getRequest();
-    // Decoding the payload
-    const user = await this.jwtService.Verify(request.params.jwt);
-    const check = roles.some((role) => user.roles?.includes(role));
-    if (check) {
+    // log("ss",);
+    const api_key = request?.headers['x-api-header'];
+    log(api_key);
+    if (!api_key) {
+      return false;
+    }
+    const token_owner = request?.body?.token_owner;
+    log(token_owner);
+    // check api key if that api key matches the requrirements
+    const owner_info = await this.userService.getUser(token_owner);
+    log(owner_info);
+    if (api_key === owner_info?.api_key) {
+      log('API KEY IS CORRECT')
       return true;
     } else {
       throw new HttpException(
         {
+          message: `Hello ${token_owner}`,
           status: HttpStatus.FORBIDDEN,
-          error: `This Route requires permission ${roles}`,
+          error: 'error'
+          // error: `This Route requires permission ${roles}`,
         },
         HttpStatus.FORBIDDEN,
       );

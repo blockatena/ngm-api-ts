@@ -20,7 +20,11 @@ export class DeploymentService {
 
   async InsertContract(data: any): Promise<any> {
     console.log('from data', data);
-    return (await this.ContractModel.create(data)).save();
+    try {
+      return (await this.ContractModel.create(data)).save();
+    } catch (error) {
+      return { mesasge: 'problem in service', error };
+    }
   }
 
   async getallContractData(): Promise<any> {
@@ -29,8 +33,8 @@ export class DeploymentService {
   async getContractByOwnerAddr(ownerAddress: string): Promise<any> {
     return await this.ContractModel.find({ ownerAddress: ownerAddress });
   }
-  async getContractDetailsByContractAddress(cntraddr: string) {
+  async getContractDetailsByContractAddress(cntraddr: string): Promise<any> {
     console.log(cntraddr);
-    return await this.ContractModel.findOne({ contractaddress: cntraddr });
+    return await this.ContractModel.findOne({ contract_address: cntraddr });
   }
 }
