@@ -18,7 +18,7 @@ export class CreateDeploymentDto {
   @ApiProperty({
     description:
       'Type of contract you want to deploy.We provide 3 options Erc721Psi TinyErc721 Erc1155-D',
-    examples: ['Erc721Psi', 'NGMTINY721', 'Erc1155-D'],
+    enum: ['Erc721Psi', 'TinyErc721', 'Erc1155-D'],
     default: 'NGM721PSI',
   })
   readonly type: string;
