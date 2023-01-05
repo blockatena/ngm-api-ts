@@ -52,7 +52,12 @@ export class NftService {
     return { msg: 'Metadata Fetched' };
   }
   async createNft(data: any): Promise<any> {
-    return await (await this.NftModel.create(data)).save();
+    try {
+      return await (await this.NftModel.create(data)).save();
+    } catch (error) {
+
+    }
+
   }
   // To get all Nfts
   async getAllNfts(page_details: Paginate): Promise<any> {

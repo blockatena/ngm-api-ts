@@ -22,7 +22,13 @@ export default () => ({
     PORT: process.env.REDIS_PORT,
     DB: process.env.REDIS_DB,
   },
-  EMAIL: { EMAIL_ADDR: process.env.EMAIL_ADDR, EMAIL_PASSWORD: process.env.EMAIL_PASSWORD },
+  EMAIL: {
+    EMAIL_ADDR: process.env.EMAIL_ADDR, EMAIL_PASSWORD: process.env.EMAIL_PASSWORD
+  },
+  RATE_LIMIT: {
+    TTL: process.env.REQUEST_TTL,
+    LIMIT: process.env.REQUEST_LIMIT
+  },
   PRIV_KEY: process.env.PRIV_KEY,
   ATLAS: process.env.ATLAS,
   NFT_STORAGE_KEY: process.env.NFT_STORAGE_KEY,
