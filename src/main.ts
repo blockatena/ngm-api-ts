@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import * as fs from 'fs';
+
 global.__basedir = __dirname;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
@@ -16,6 +18,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
+  fs.writeFileSync("./swagger-spec.json", JSON.stringify(document));
   SwaggerModule.setup('ngmapi', app, document);
   const PORT = configService.get('PORT') || 3000;
   await app.listen(PORT);
