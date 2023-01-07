@@ -35,7 +35,6 @@ async function bootstrap() {
     .addServer("https://www.testnets-api.gamestoweb3.com", "Development")
     .addServer("http://[::1]:8080", "localhost")
     .setContact("Customer Care", "www.blockatena.com", "hello@blockatena.com").
-
     build();
 
   const document = SwaggerModule.createDocument(app, config);

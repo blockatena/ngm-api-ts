@@ -10,6 +10,7 @@ import {
   SetMetadata,
   UseGuards,
   Put,
+  MaxFileSizeValidator,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getcontract, transactions } from './nftitems/tokeninfo.dto';
@@ -66,7 +67,7 @@ const { log } = console;
 // const wallet = new ethers.Wallet(process.env.PRIV_KEY, this.mum_provider);
 // const storage = new NFTStorage({ token });
 
-@ApiTags('NGM APIs')
+@ApiTags('GamesToWeb3 APIs')
 @Controller('nft')
 export class NftController {
   constructor(
@@ -94,16 +95,14 @@ export class NftController {
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.mum_provider);
   private storage = new NFTStorage({ token: this.token });
 
-  @ApiOperation({ summary: 'This Api will Gets you the actual owner of the Nft from BlockChain' })
+  @ApiOperation({ summary: 'Get Owner of the Nft from BlockChain' })
   @Get('get-owner/:contract_address/:token_id')
   async getOwner(@Param() get_Owner: GetOwner): Promise<any> {
     const { contract_address, token_id } = get_Owner;
     try {
-      // Getting Single Nft
-      // const nft1 = await this.nftservice.getSingleNft({ contract_address, token_id })
+
       const nft1 = await this.nftservice.getContract(contract_address);
-      // Getting Abi of requried Contract Type
-      // log(get_contract_only);
+
       const abiPath = path.join(
         process.cwd(),
         `src/utils/constants/${nft1.type}/${nft1.type}.abi`,
@@ -135,13 +134,14 @@ export class NftController {
     } catch (error) {
       log(error);
       return {
-        message: "something went Wrong"
+        message: "something went Wrong",
+        error
       }
     }
   }
   // File Upload
   @ApiOperation({
-    summary: 'This Api will upload your asset and gets you URI of that asset',
+    summary: 'Upload  asset and gets you URI of that asset',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -160,7 +160,7 @@ export class NftController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          // new MaxFileSizeValidator({ maxSize: 10000 }),
+          new MaxFileSizeValidator({ maxSize: 50000 }),
           // new FileTypeValidator({ fileType: 'text' }),
         ],
       }),
@@ -185,29 +185,29 @@ export class NftController {
     }
   }
 
-  @Get('total-count/:contract_address')
-  @ApiCreatedResponse({
-    status: 201,
-    description: 'Total has been Fetched successfully.',
-    type: Number,
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'There are no NFTS associated with that Game',
-  })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
-  async totalcount(
-    @Param('contract_address') contract_address: string,
-  ): Promise<Number> {
-    return await this.nftservice.getCountNfts(contract_address);
-  }
-  async getUserCollections(): Promise<any> {
-    try {
+  // @Get('total-count/:contract_address')
+  // @ApiCreatedResponse({
+  //   status: 201,
+  //   description: 'Total has been Fetched successfully.',
+  //   type: Number,
+  // })
+  // @ApiResponse({
+  //   status: 204,
+  //   description: 'There are no NFTS associated with that Game',
+  // })
+  // @ApiResponse({ status: 403, description: 'Forbidden.' })
+  // async totalcount(
+  //   @Param('contract_address') contract_address: string,
+  // ): Promise<Number> {
+  //   return await this.nftservice.getCountNfts(contract_address);
+  // }
+  // async getUserCollections(): Promise<any> {
+  //   try {
 
-    } catch (error) {
+  //   } catch (error) {
 
-    }
-  }
+  //   }
+  // }
   // //   Get route
   // @Get(':cntraddr/:id')
   // @ApiResponse({
@@ -241,7 +241,7 @@ export class NftController {
   // }
 
   @ApiOperation({
-    summary: 'This Api will gets you all the Assets',
+    summary: 'Get all your Assets',
   })
   /****************[GET ALL NFTS WITH PAGINATION]*****************/
   @Get('get-all-nfts/:page_number/:items_per_page')
@@ -265,7 +265,7 @@ export class NftController {
   }
 
   /***********[GET_COLLECTIONS_OWNED_BY_USER]**********/
-  @ApiOperation({ summary: 'This Api Will Gets You Collections owned by user' })
+  @ApiOperation({ summary: 'Get User Collections' })
   @Get('collections-owned/:owner_address/:page_number/:items_per_page')
   async getCollectionsOwned(@Param() params: GetUserOwnedCollections): Promise<any> {
     const { owner_address, page_number, items_per_page } = params;
@@ -282,7 +282,7 @@ export class NftController {
   /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @ApiOperation({
     summary:
-      'This Api will gets you all the nfts by contract address owned by the user',
+      'Get Assets by Collection',
   })
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
@@ -309,9 +309,8 @@ export class NftController {
   //
   @ApiOperation({
     summary:
-      'This Api will gets you Specific asset given by contract_address and Token_id in Params',
+      'Get Asset',
   })
-
   @Get('get-nft/:contract_address/:token_id')
   async getNft(@Param() body: GetNftBody): Promise<any> {
     const { contract_address, token_id } = body;
@@ -357,7 +356,7 @@ export class NftController {
     }
   }
   //
-  @ApiOperation({ summary: 'This API will get user nfts' })
+  @ApiOperation({ summary: 'Get User Assets' })
   @Get('get-user-nfts/:token_owner/:page_number/:items_per_page')
   async getUserNfts(@Param() body: GetUserNfts): Promise<any> {
     try {
@@ -371,7 +370,7 @@ export class NftController {
   }
 
   //******************[GET_ALL_COLLECTIONS]************************/
-  @ApiOperation({ summary: 'This Api Will get all the Collections' })
+  @ApiOperation({ summary: 'Get User Collections' })
   @Get('get-collections/:page_number/:items_per_page')
   async getCollections(@Param() body: GetCollectionBody): Promise<any> {
     try {
@@ -386,7 +385,7 @@ export class NftController {
     }
   }
   /******************************[GET_NFTS_LISTED]******************/
-  @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
+  @ApiOperation({ summary: 'Get Listed Assets' })
   @Get('get-nfts-listed/:listed_in')
   async getNftsListed(@Param('listed_in') listed: string): Promise<any> {
     try {
@@ -398,7 +397,7 @@ export class NftController {
     }
   }
   /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
-  @ApiOperation({ summary: 'This Api will gets you Nfts that are in Auction' })
+  @ApiOperation({ summary: ' will gets you Nfts that are in Auction' })
   @Post('get-nfts-listed-collection')
   async getNftsListedCollection(
     @Body() Collections_listed: GetListedCollections,
@@ -415,7 +414,7 @@ export class NftController {
     }
   }
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
-  @ApiOperation({ summary: 'This Api Will get  all Nfts of the  Collections' })
+  @ApiOperation({ summary: 'Get Assets by Collection' })
   @Get('collection/:contract_address')
   async GetCollectionsByContractAddress(
     @Param() contract: getcontract,
@@ -460,7 +459,7 @@ export class NftController {
   //                POST APIs                 //
   // *****************************************//
   @ApiOperation({
-    summary: 'This Api will Mint Nft and its details stores it info in DB ',
+    summary: 'Mint Asset',
   })
   @ApiHeader({
     name: 'X-API-HEADER',
