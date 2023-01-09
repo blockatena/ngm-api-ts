@@ -11,15 +11,19 @@ import {
   UseGuards,
   Put,
   MaxFileSizeValidator,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getcontract, transactions } from './nftitems/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
+  ApiAcceptedResponse,
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
   ApiHeader,
+  ApiOkResponse,
   ApiOperation,
   ApiProperty,
   ApiResponse,
@@ -55,6 +59,9 @@ import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
 import { getEnvironment } from 'src/utils/common';
 import { getWallet } from '../utils/common';
+import { UploadAsset, UploadAssetError } from './schemas/upload-asset.schema';
+import { GetAllNfts } from './schemas/get-all-nfts.schema';
+import { ErrorHandler } from './utils/errorhandlers';
 const { log } = console;
 // require('dotenv').config();
 
@@ -94,7 +101,6 @@ export class NftController {
   private token = this.NFT_STORAGE_KEY;
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.mum_provider);
   private storage = new NFTStorage({ token: this.token });
-
   @ApiOperation({ summary: 'Get Owner of the Nft from BlockChain' })
   @Get('get-owner/:contract_address/:token_id')
   async getOwner(@Param() get_Owner: GetOwner): Promise<any> {
@@ -140,6 +146,22 @@ export class NftController {
     }
   }
   // File Upload
+  @ApiResponse({
+    status: 200,
+    description: `Successfully Get the <b>URI</b> of your Asset`,
+    type: UploadAsset
+  })
+
+  @ApiResponse({
+    status: 400,
+    type: UploadAssetError,
+    description: ``
+  })
+  @ApiResponse({
+    status: 500,
+    type: UploadAssetError,
+    description: `Something went wrong in out server.`
+  })
   @ApiOperation({
     summary: 'Upload  asset and gets you URI of that asset',
   })
@@ -166,7 +188,7 @@ export class NftController {
       }),
     )
     file: Express.Multer.File,
-  ) {
+  ): Promise<UploadAsset | UploadAssetError> {
     try {
       log(file);
       const blob = new Blob([file.buffer]);
@@ -176,11 +198,12 @@ export class NftController {
       const cid = await this.storage.storeDirectory([toUploadFile]);
       const tokenUri = `https://nftstorage.link/ipfs/${cid}/${file.originalname}`;
       log({ tokenUri });
-      return tokenUri;
+      return { uri: tokenUri };
     } catch (error) {
       return {
         success: false,
-        message: 'something went Wrong'
+        message: `Something went Wrong Please Raise a Ticket or contact Support :<b>vinay@blocktena.com</b>`,
+        error
       };
     }
   }
@@ -240,10 +263,19 @@ export class NftController {
   //   return `ddf`;
   // }
 
-  @ApiOperation({
-    summary: 'Get all your Assets',
-  })
+
   /****************[GET ALL NFTS WITH PAGINATION]*****************/
+  @ApiResponse({
+    status: 200,
+    type: GetAllNfts
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
+  @ApiOperation({
+    summary: 'Get all Assets',
+  })
   @Get('get-all-nfts/:page_number/:items_per_page')
   async getAllNfts(@Param() pagination: Paginate): Promise<any> {
     const { page_number, items_per_page } = pagination;
@@ -260,7 +292,7 @@ export class NftController {
       return data;
     } catch (error) {
       log(error);
-      return { message: 'Something went wrong' };
+      return { success: false, message: 'Something went wrong', error };
     }
   }
 
