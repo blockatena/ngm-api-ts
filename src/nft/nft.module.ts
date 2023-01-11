@@ -17,6 +17,7 @@ import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
 import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
 import { ActivityModule } from 'src/activity/activity.module';
 import { UsersModule } from 'src/users/users.module';
+import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
 
 require('dotenv').config();
 @Module({
@@ -38,6 +39,7 @@ require('dotenv').config();
       },
       { name: AuctionSchema.name, schema: auctionSchema },
       { name: BidSchema.name, schema: bidSchema },
+      { name: Nft1155Schema.name, schema: nft1155Schema }
     ]),
     // JwtModule.register({
     //   secret: process.env.jwtSecret,

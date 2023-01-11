@@ -99,7 +99,7 @@ export class DeploymentController {
       //
       log('file read completed');
       const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
-      log(contractFactory);
+      // log(contractFactory);
       log('connected to blockchain');
       // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
       // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
@@ -109,18 +109,20 @@ export class DeploymentController {
       const contract = await contractFactory.deploy(
         collection_name,
         symbol,
-        ' ',
+        '0x00',
         { gasPrice: feeData.gasPrice }
       );
       log('deployed');
-      log('contract', contract);
+      log('contract:::', contract);
       // const uri =
       // 'https://bafzbeigcbumfj5l2uerqp4pd76pctqrklhdqsupmhjydp6hriwb42rivbq.textile.space';
       const uri = API_BASE_URL || 'http://localhost:8080/';
       const confirm = await contract.deployed();
+      log("CONFIRM", confirm);
       const contract_address = contract.address;
       const baseUri = `${uri}/metadata/${contract_address}/`;
       const res = await contract.setBaseURI(baseUri, { gasPrice: feeData.gasPrice });
+      log("SET_BASE_URI  ", res);
       const transactionhash = confirm.deployTransaction.hash;
 
       log(`address: ${contract_address}, txHash: ${transactionhash} \n\n\n${confirm}`);

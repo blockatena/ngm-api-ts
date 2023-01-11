@@ -37,3 +37,7 @@ lerna-debug.log*
 # Environment variables
 .env
 .env.localll
+
+# Test Files
+721.json
+1155.json
