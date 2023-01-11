@@ -17,6 +17,7 @@ import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
 import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
+import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -29,12 +30,14 @@ export class NftService {
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
+    @InjectModel(Nft1155Schema.name) private Nft11555Model: Model<Nft1155Document>
   ) {
     NftModel;
     BidModel;
     AuctionModel;
     MetadataModel;
     ContractModel;
+    Nft11555Model;
   }
   async getMetadata(cid: string, ipfsFlag: boolean): Promise<any> {
     return await this.httpService.axiosRef.get(
@@ -53,7 +56,7 @@ export class NftService {
   }
   async createNft(data: any): Promise<any> {
     try {
-      return await (await this.NftModel.create(data)).save();
+      return await this.NftModel.create(data);
     } catch (error) {
 
     }
@@ -428,6 +431,19 @@ export class NftService {
         message: 'Something went wrong in getSingleNft Service',
         error,
       };
+    }
+  }
+
+  // Store 1155
+  async create1155Nft(arrdb: any): Promise<any> {
+    try {
+      return await this.Nft11555Model.create(arrdb);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in getSingleNft Service',
+        error,
+      }
     }
   }
 }

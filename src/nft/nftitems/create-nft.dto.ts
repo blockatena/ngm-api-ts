@@ -19,24 +19,24 @@ export class GetNft {
   readonly token_id: string;
 }
 export class GetCollectionsBody {
-  @ApiProperty()
+  @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
   readonly contract_address: string;
 }
 export class GetNftBody {
-  @ApiProperty({ example: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
+  @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
   readonly contract_address: string;
   @ApiProperty({ example: '1' })
   readonly token_id: string;
 }
 export class Paginate {
-  @ApiProperty()
+  @ApiProperty({ default: 1 })
   readonly page_number: number;
-  @ApiProperty()
+  @ApiProperty({ default: 10 })
   readonly items_per_page: number;
 }
 
 export class NftContractUser {
-  @ApiProperty()
+  @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
   readonly contract_address: string;
   @ApiProperty()
   readonly user_address: string;
