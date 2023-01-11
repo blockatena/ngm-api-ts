@@ -9,6 +9,7 @@ import { nftSchema, NftSchema } from 'src/nft/schema/nft.schema';
 import { MetadataController } from './metadata.controller';
 import { MetadataService } from './metadata.service';
 import { metadata, metadataSchema } from './schema/metadata.schema';
+import { nft1155Schema, Nft1155Schema } from 'src/nft/schema/nft.1155.schema';
 
 @Module({
   imports: [
@@ -28,9 +29,10 @@ import { metadata, metadataSchema } from './schema/metadata.schema';
       },
       { name: AuctionSchema.name, schema: auctionSchema },
       { name: BidSchema.name, schema: bidSchema },
+      { name: Nft1155Schema.name, schema: nft1155Schema }
     ]),
   ],
   controllers: [MetadataController],
   providers: [MetadataService, NftService],
 })
-export class MetadataModule {}
+export class MetadataModule { }

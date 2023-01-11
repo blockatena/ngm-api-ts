@@ -12,9 +12,9 @@ export class AppService implements OnModuleInit {
   async handleCron() {
     //need to check end date for auction if the end date is less we nned to call the winner
     const all_auctions = await this.nftmrktservice.getAllAuctions();
-    console.log('****************************');
-    console.log('Getting All Auctions', all_auctions);
-    console.log('****************************');
+    // console.log('****************************');
+    // console.log('Getting All Auctions', all_auctions);
+    // console.log('****************************');
     //  new Date('2017-09-28T22:59:02.448804522Z') > new Date()
     // true
     // new Date('2017-09-28T22:59:02.448804522Z') < new Date();

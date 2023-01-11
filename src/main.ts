@@ -31,9 +31,9 @@ async function bootstrap() {
     `)
     .setVersion('1.0')
     .addTag('NGM APIs')
-    .addServer("https://www.api.gamestoweb3.com", "Production")
-    .addServer("https://www.testnets-api.gamestoweb3.com", "Development")
     .addServer("http://[::1]:8080", "localhost")
+    .addServer("https://www.testnets-api.gamestoweb3.com", "Development")
+    .addServer("https://www.api.gamestoweb3.com", "Production")
     .setContact("Customer Care", "www.blockatena.com", "hello@blockatena.com").
     build();
 

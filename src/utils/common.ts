@@ -25,8 +25,7 @@ export function getWallet(walletData: WalletData): WalletObj {
     const { RPC_URL,
         PRIV_KEY } = walletData;
     try {
-        log(RPC_URL,
-            PRIV_KEY)
+        log("wallet Data :::::", walletData);
         const provider = new ethers.providers.JsonRpcProvider(
             RPC_URL,
         );
