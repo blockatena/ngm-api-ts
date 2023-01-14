@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
@@ -16,8 +16,10 @@ import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
-import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
+import { GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
+import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
+import { GetNft1155 } from './nftitems/get-nft-1155';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -30,7 +32,8 @@ export class NftService {
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
-    @InjectModel(Nft1155Schema.name) private Nft11555Model: Model<Nft1155Document>
+    @InjectModel(Nft1155Schema.name) private Nft11555Model: Model<Nft1155Document>,
+    @InjectModel(Nft1155OwnerSchema.name) private Nft1155OwnerModel: Model<Nft1155OwnerDocument>
   ) {
     NftModel;
     BidModel;
@@ -38,6 +41,7 @@ export class NftService {
     MetadataModel;
     ContractModel;
     Nft11555Model;
+    Nft1155OwnerModel;
   }
   async getMetadata(cid: string, ipfsFlag: boolean): Promise<any> {
     return await this.httpService.axiosRef.get(
@@ -204,7 +208,9 @@ export class NftService {
           },
         },
       ]);
-    } catch (error) { }
+    } catch (error) {
+      return { success: false, message: "Something went Wrong", error }
+    }
   }
 
   async getNftssListed(data: GetListedCollections): Promise<any> {
@@ -285,7 +291,10 @@ export class NftService {
     try {
       return await this.NftModel.find({ contract_address });
     } catch (error) {
-
+      return {
+        message: 'something went wrong',
+        error
+      }
     }
   }
 
@@ -294,7 +303,7 @@ export class NftService {
     console.log(contract_address, 'From Service');
     return await this.ContractModel.findOne({ contract_address });
   }
-  async getCollectionsOwned(user: GetUserOwnedCollections): Promise<any> {
+  async getCollectionsOwned(user: GetUserOwnedAssets): Promise<any> {
     const { owner_address, items_per_page, page_number } = user;
     try {
       const collections = await this.ContractModel.find({ owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1)
@@ -322,6 +331,7 @@ export class NftService {
     } catch (error) {
       log(error)
       return {
+        message: 'something went wrong',
         error
       }
     }
@@ -346,6 +356,7 @@ export class NftService {
       console.log(error);
       return {
         message: 'Something went wrong in service',
+        error
       };
     }
   }
@@ -357,7 +368,12 @@ export class NftService {
         auction_id,
         status: 'started',
       }).sort({ bid_amount: -1 });
-    } catch (error) { }
+    } catch (error) {
+      return {
+        message: 'Something went wrong in service',
+        error
+      };
+    }
   }
   async getSale(): Promise<any> {
     try {
@@ -441,7 +457,51 @@ export class NftService {
     } catch (error) {
       return {
         success: false,
-        message: 'Something went wrong in getSingleNft Service',
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  //Get 1155
+  async get1155Nft(getNft1155: GetNft1155): Promise<any> {
+    const { contract_address, token_id } = getNft1155;
+    try {
+      return {
+        nft1155: await this.Nft11555Model.findOne({ contract_address, token_id }),
+        owners: await this.Nft1155OwnerModel.find({ contract_address, token_id })
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  // 
+  async get1155NftByOwner(getUserOwnedAssets: GetUserOwnedAssets): Promise<any> {
+    const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
+    try {
+      log(getUserOwnedAssets);
+      return await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page);
+
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  // 
+
+  async create1155NftOwner(arrdb: any): Promise<any> {
+    try {
+      return await this.Nft1155OwnerModel.create(arrdb);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
         error,
       }
     }
