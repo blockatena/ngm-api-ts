@@ -23,18 +23,12 @@ export class Nft1155Schema {
     is_in_auction: boolean;
     @Prop({ default: false })
     is_in_sale: boolean;
-    @Prop()
-    token_owner: string;
     @Prop({ type: Object })
     meta_data: {
         name: string;
-
         image: string;
-
         description: string;
-
         external_uri: string;
-
         attributes: [object];
     };
 }

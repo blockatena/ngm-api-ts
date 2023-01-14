@@ -47,7 +47,7 @@ import {
   Paginate,
   NftContractUser,
 } from './nftitems/create-nft.dto';
-import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
+import { GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
@@ -66,6 +66,7 @@ import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
 import { blockParams } from 'handlebars';
 import { GetBal1155 } from './nftitems/getbal';
 import { formatEther } from 'ethers/lib/utils';
+import { GetNft1155 } from './nftitems/get-nft-1155';
 const { log } = console;
 // require('dotenv').config();
 
@@ -304,7 +305,7 @@ export class NftController {
   /***********[GET_COLLECTIONS_OWNED_BY_USER]**********/
   @ApiOperation({ summary: 'Get User Collections' })
   @Get('collections-owned/:owner_address/:page_number/:items_per_page')
-  async getCollectionsOwned(@Param() params: GetUserOwnedCollections): Promise<any> {
+  async getCollectionsOwned(@Param() params: GetUserOwnedAssets): Promise<any> {
     const { owner_address, page_number, items_per_page } = params;
     try {
       return (await this.nftservice.getCollectionsOwned({ owner_address, page_number, items_per_page }));
@@ -830,6 +831,7 @@ export class NftController {
       }
       //
       log('metadata');
+
       const arrdb = {
         contract_address,
         contract_type: type,
@@ -841,9 +843,16 @@ export class NftController {
         token_owner: ethers.utils.getAddress(body.token_owner),
         meta_data: jsonData,
       };
+
       log(arrdb);
       //add to Activity
-
+      const user_stake = {
+        contract_address,
+        token_id,
+        chain,
+        token_owner,
+        number_of_tokens,
+      }
       await this.activityService.createActivity({
         event: 'Minted',
         item: {
@@ -859,8 +868,12 @@ export class NftController {
         to: ethers.utils.getAddress(body.token_owner),
         read: false,
       });
+      // if nft is already present update the nft or skip it 
       const data = await this.nftservice.create1155Nft(arrdb);
-      log(data);
+      // log(data); 
+      // if nft is already
+      const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
+      log(user_1155);
       const metadata = await this.nftservice.pushTokenUriToDocArray(
         contract_address,
         ipfsMetadataUri,
@@ -868,7 +881,7 @@ export class NftController {
         type,
         chain
       );
-      return data;
+      return { data, user_1155 };
 
     } catch (error) {
       log(error);
@@ -879,14 +892,11 @@ export class NftController {
       }
     }
   }
-
   // @Post('mint-batch-nft/:ERC_TOKEN')
   // async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
   // @Post('blacklist-nft/:tokenid/:cntraddr')
   // async blacklistNFT(@Param() blacklist: transactions) {}
-
-
-  @Get('Get-Balance-of-Token/:contract_address/:token_id')
+  @Get('get-balance-of-token/:contract_address/:token_id')
   async getBalanceOf1155Token(@Param() getBal: GetBal1155): Promise<any> {
     const { contract_address, token_id } = getBal;
     try {
@@ -900,7 +910,6 @@ export class NftController {
       const chain_typee = this.configService.get<any>(
         ENVIRONMENT,
       );
-
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           contract_address,
@@ -909,7 +918,6 @@ export class NftController {
       if (!(type === "NGM1155")) {
         return `You can only mint 1155 Here`;
       }
-
       log(contract_details);
       const current_chain = contract_details?.chain?.name;
       log(`current_chain ${current_chain}`,)
@@ -940,7 +948,6 @@ export class NftController {
           PRIV_KEY
         })
       // log(provider, wallet);
-
       // Get Provider
       // const provider = new ethers.providers.JsonRpcProvider(
       //   RPC_URL,
@@ -949,7 +956,6 @@ export class NftController {
       // log(RPC_URL, provider);
       // const wallet = new ethers.Wallet(PRIV_KEY, provider);
       // only the contract owner should be the minter 
-
       log(wallet);
       const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
       // const is_limit_exceeded = body.limit <= collection_count;
@@ -970,12 +976,44 @@ export class NftController {
       console.log(nftCntr);
       const bal = await nftCntr.balanceOf(ethers.utils.getAddress("0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72"), 0);
       const fmt = parseInt(bal._hex);
-
       log("balu", fmt)
-
       return fmt;
     } catch (error) {
+      return {
+        message: "Something Went Wrong",
+        error,
+      }
+    }
+  }
 
+  @ApiOperation({ summary: 'Get the 1155 token details along with its stakeHolders' })
+  @Get('g2w3-1155/:contract_address/:token_id')
+  async g2Web3_1155(@Param() getNft1155: GetNft1155): Promise<any> {
+    const { contract_address, token_id } = getNft1155;
+    try {
+      //Check Nft is Present or Not
+      //return the Nft along with owners and their stake 
+      return await this.nftservice.get1155Nft({ contract_address, token_id });
+    } catch (error) {
+      return {
+        message: `Something went Wrong`,
+        error,
+      }
+    }
+  }
+  @Get('g2w3-1155/:owner_address/:page_number/:items_per_page')
+  async g2Web3User1155(@Param() getUserOwnedAssets: GetUserOwnedAssets):
+    Promise<any> {
+    const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
+    try {
+      return await this.nftservice.get1155NftByOwner(getUserOwnedAssets);
+    } catch (error) {
+      error
+      return {
+        success: false,
+        message: "something Went Wrong",
+        error
+      }
     }
   }
 }

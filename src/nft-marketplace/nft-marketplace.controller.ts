@@ -678,21 +678,18 @@ export class NftMarketplaceController {
 
   // @Post('change-nft-bid-price')
   // async changeBidPrice() {}
-  @ApiOperation({ summary: ' will return all the bids of the auction' })
-  @Post('get-bid-list-by-auction')
-  async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
-    try {
-      //Auction
-      return;
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  // @ApiOperation({ summary: ' will return all the bids of the auction' })
+  // @Post('get-bid-list-by-auction')
+  // async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
+  //   try {
+  //     //Auction
+  //     return ``;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
   // @Get('test')
   // async test(): Promise<any> {
   //   return await this.nftMarketplaceService.addvolume();
   // }
-
-
-
 }
