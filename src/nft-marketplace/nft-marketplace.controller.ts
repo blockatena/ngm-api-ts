@@ -122,8 +122,8 @@ export class NftMarketplaceController {
     }
   }
   //  Create 1155-
-  @Post('create-1155-nft-auction')
-  async createG2W3_1155Auction(@Body() g2W3_1155Auction: G2W3_1155Auction) {
+  @Post('create-1155-nft-sale')
+  async createG2W3_1155_Sale(@Body() g2W3_1155Auction: G2W3_1155Auction) {
     const { token_owner, contract_address, token_id, number_of_tokens, start_date, end_date,
       min_price } = g2W3_1155Auction;
     try {
