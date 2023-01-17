@@ -19,7 +19,8 @@ import { metadata, metadataDocument } from './schema/metadata.schema';
 import { GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
-import { GetNft1155 } from './nftitems/get-nft-1155';
+import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
+import { UpdateTokens } from './nftitems/update-tokens';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -466,10 +467,7 @@ export class NftService {
   async get1155Nft(getNft1155: GetNft1155): Promise<any> {
     const { contract_address, token_id } = getNft1155;
     try {
-      return {
-        nft1155: await this.Nft11555Model.findOne({ contract_address, token_id }),
-        owners: await this.Nft1155OwnerModel.find({ contract_address, token_id })
-      };
+      return await this.Nft11555Model.findOne({ contract_address, token_id });
     } catch (error) {
       return {
         success: false,
@@ -478,6 +476,70 @@ export class NftService {
       }
     }
   }
+
+
+
+  // get 1155 nft along with its owner
+  async get1155NftOwners(getNft1155: GetNft1155): Promise<any> {
+    const { contract_address, token_id } = getNft1155;
+    try {
+      return await this.Nft1155OwnerModel.find({ contract_address, token_id });
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  // get number of tokens does user hold
+  async getTokensUserHold(getTokensUserHold: GetTokensUserHold): Promise<any> {
+    const { contract_address, token_id, token_owner } = getTokensUserHold;
+    try {
+      const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
+      if (!check_nft_exists) {
+        return `There is no Asset with ${contract_address} and ${token_id}`
+      }
+      //  check he ownes nft or not 
+      // getting all owners
+      const get_owners = await this.get1155NftOwners({ contract_address, token_id });
+
+      // check owner exists or not
+      const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
+      console.log(is_owner_exists);
+
+      if (!is_owner_exists) {
+        return `${token_owner} doesnt hold this ${contract_address} ${token_id}`;
+      }
+      return { tokens: is_owner_exists.number_of_tokens };
+    } catch (error) {
+      log(error)
+      return {
+        message: `something went wrong`,
+      }
+    }
+  }
+
+
+  // update user Tokens
+  async updateTokens(updateTokens: UpdateTokens): Promise<any> {
+    const { contract_address, token_id, _tokens, token_owner, operation } = updateTokens;
+    try {
+      if (operation === "INCREMENT")
+        return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $inc: { number_of_tokens: _tokens } })
+      else
+        return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $dec: { number_of_tokens: _tokens } });
+
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: `Something went Wrong`,
+        error
+      }
+    }
+  }
+
   // 
   async get1155NftByOwner(getUserOwnedAssets: GetUserOwnedAssets): Promise<any> {
     const { owner_address, page_number, items_per_page } = getUserOwnedAssets;

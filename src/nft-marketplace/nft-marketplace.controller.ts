@@ -27,6 +27,8 @@ import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { off } from 'process';
+import { brotliDecompress } from 'zlib';
+import { G2W3_1155Auction } from './dtos/auctiondto/create-1155-auction.dto';
 @ApiTags('MarketPlace')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
@@ -119,6 +121,71 @@ export class NftMarketplaceController {
       return 'something wrong in the system';
     }
   }
+  //  Create 1155-
+  @Post('create-1155-nft-auction')
+  async createG2W3_1155Auction(@Body() g2W3_1155Auction: G2W3_1155Auction) {
+    const { token_owner, contract_address, token_id, number_of_tokens, start_date, end_date,
+      min_price } = g2W3_1155Auction;
+    try {
+      //  check nft exists or not 
+
+      //  update is_in_auction or is_in_sale === true
+
+      //  create Auction or sale
+
+      const check_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
+      if (!check_nft_exists) {
+        return `There is no Asset with ${contract_address} and ${token_id}`
+      }
+      //  check he ownes nft or not 
+      // getting all owners
+      const get_owners = await this.nftservice.get1155NftOwners({ contract_address, token_id });
+
+      // check owner exists or not
+      const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
+      console.log(is_owner_exists);
+
+      if (!is_owner_exists) {
+        return `${token_owner} doesnt hold this ${contract_address} ${token_id}`;
+      }
+      //  put it on auction 
+      //
+
+      //  check he has Quatity or not
+      console.log(`${is_owner_exists.number_of_tokens} > ${number_of_tokens}`);
+      if (is_owner_exists.number_of_tokens < number_of_tokens) {
+        return `You dont have Sufficient Tokens ${is_owner_exists.number_of_tokens}`;
+      }
+
+      // un comment this once auction schema is over for 1155
+      // const activity_data = {
+      //   event: 'List',
+      //   item: {
+      //     name: check_nft_exists.meta_data.name,
+      //     contract_address,
+      //     token_id,
+      //     image: check_nft_exists.meta_data.image
+      //   },
+      //   'price': min_price,
+      //   'quantity': 1,
+      //   'from': ethers.utils.getAddress(token_owner),
+      //   'to': '----',
+      //   'read': false
+      // }
+      // await this.activityService.createActivity(activity_data);
+      // return await this.nftMarketplaceService.createAuction(g2W3_1155Auction);
+
+    } catch (error) {
+      console.log(error)
+      return {
+        success: false,
+        message: 'Something Went Wrong',
+        error,
+      }
+    }
+  }
+
+  // 
   /*********************[CANCEL-AUCTION]*******************/
   @ApiOperation({
     summary: 'Cancel the Auction',

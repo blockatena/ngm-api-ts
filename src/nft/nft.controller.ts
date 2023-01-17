@@ -66,7 +66,7 @@ import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
 import { blockParams } from 'handlebars';
 import { GetBal1155 } from './nftitems/getbal';
 import { formatEther } from 'ethers/lib/utils';
-import { GetNft1155 } from './nftitems/get-nft-1155';
+import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
 const { log } = console;
 // require('dotenv').config();
 
@@ -685,6 +685,45 @@ export class NftController {
       }
     }
   }
+  // get number of tokens does user holder
+  @ApiOperation({ summary: "Number of Tokens does user hold" })
+  @Get('g2w3-1155/:token_owner/:contract_address/:token_id')
+  async getTokensUsrHold(@Param() getTokensUserHold: GetTokensUserHold): Promise<any> {
+    const { contract_address, token_id, token_owner } = getTokensUserHold;
+    try {
+      //get nft
+      log(getTokensUserHold);
+      return await this.nftservice.getTokensUserHold(getTokensUserHold);
+    } catch (error) {
+      log(error);
+      return {
+        message: 'Something Went Wrong',
+        error
+      }
+    }
+  }
+  // get type of nft 1155 or 721
+  @ApiOperation({ summary: "Get the type of Collection" })
+  @Get('get-type-of-nft/:contract_address')
+  async getNftType(@Param('contract_address') contract_address: string): Promise<any> {
+    try {
+      log(contract_address);
+
+      const collection = await this.nftservice.getContract(contract_address);
+      log(collection);
+      return { type: collection.type };
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: `Something Went Wrong`,
+        error
+
+      }
+    }
+  }
+
+
   //  Minting Helpers
   @ApiOperation({ summary: "Mint GTW3 1155 Tokens" })
   @Post('mint-1155')
@@ -721,9 +760,9 @@ export class NftController {
       if (!(type === "NGM1155")) {
         return `You can only mint 1155 Here`;
       }
-      if (!(token_owner === contract_details.owner_address)) {
-        return `Only the Contract Owner should Mint the NFT`
-      }
+      // if (!(token_owner === contract_details.owner_address)) {
+      //   return `Only the Contract Owner should Mint the NFT`
+      // }
       log(contract_details);
       const current_chain = contract_details?.chain?.name;
       log(`current_chain ${current_chain}`,)
@@ -781,7 +820,7 @@ export class NftController {
         abi,
         wallet,
       ); // abi and provider to be declared
-      log('nftContract:::::: ', nftCntr);
+      log('nftContract::::::', nftCntr);
       const feeData = await provider.getFeeData();
 
       //  Minting Part
@@ -792,12 +831,9 @@ export class NftController {
         "0x00",
       );
       // here
-
       log('minttoken::::', mintToken);
       const res = await mintToken.wait(1);
-
       log('response', res);
-
       // const tokenId = parseInt(res?.events[0]?.args?.tokenId?._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
       const jsonData = {
@@ -868,10 +904,22 @@ export class NftController {
         to: ethers.utils.getAddress(body.token_owner),
         read: false,
       });
+
+      const is_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
+      if (is_nft_exists) {
+        // update limit
+        const update_Tokens = await this.nftservice.updateTokens({
+          contract_address,
+          token_id,
+          token_owner,
+          _tokens: number_of_tokens,
+          operation: 'INCREMENT'
+        });
+        return update_Tokens;
+      }
       // if nft is already present update the nft or skip it 
       const data = await this.nftservice.create1155Nft(arrdb);
       // log(data); 
-      // if nft is already
       const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
       log(user_1155);
       const metadata = await this.nftservice.pushTokenUriToDocArray(
@@ -882,7 +930,6 @@ export class NftController {
         chain
       );
       return { data, user_1155 };
-
     } catch (error) {
       log(error);
       return {
@@ -985,7 +1032,9 @@ export class NftController {
       }
     }
   }
+  // get type of nft  
 
+  // get number of tokens does he have
   @ApiOperation({ summary: 'Get the 1155 token details along with its stakeHolders' })
   @Get('g2w3-1155/:contract_address/:token_id')
   async g2Web3_1155(@Param() getNft1155: GetNft1155): Promise<any> {
@@ -993,7 +1042,10 @@ export class NftController {
     try {
       //Check Nft is Present or Not
       //return the Nft along with owners and their stake 
-      return await this.nftservice.get1155Nft({ contract_address, token_id });
+      return {
+        nft1155: await this.nftservice.get1155Nft({ contract_address, token_id }),
+        owners: await this.nftservice.get1155NftOwners({ contract_address, token_id })
+      }
     } catch (error) {
       return {
         message: `Something went Wrong`,
@@ -1001,6 +1053,7 @@ export class NftController {
       }
     }
   }
+  // Get 1155 nft by owner 
   @Get('g2w3-1155/:owner_address/:page_number/:items_per_page')
   async g2Web3User1155(@Param() getUserOwnedAssets: GetUserOwnedAssets):
     Promise<any> {
