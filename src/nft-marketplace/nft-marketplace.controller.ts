@@ -27,7 +27,7 @@ import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { off } from 'process';
-@ApiTags('MarketPlace')
+// @ApiTags('MarketPlace')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
   constructor(
@@ -35,21 +35,23 @@ export class NftMarketplaceController {
     private readonly nftservice: NftService,
     private readonly activityService: ActivityService,
   ) { }
+
   /*********************[CREATE-AUCTION]*****************/
   /*[Documentation]*/
-  @ApiOperation({
-    summary: ' creates an Auction for a NFT',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Successfully created Auction',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Something went wrong',
-  })
+  // @ApiOperation({
+  //   summary: ' Creates an Auction for a Asset',
+  // })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'Successfully created Auction',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: 'Something went wrong',
+  // })
   /****************************[ROUTER-FUNCTION]************************/
-  @Post('create-nft-auction')
+  // @Post('create-nft-auction')
+
   async createAuction(@Body() create_auction: CreateAuctionBody): Promise<any> {
     const { token_owner, token_id, end_date, contract_address, min_price } =
       create_auction;
@@ -120,18 +122,18 @@ export class NftMarketplaceController {
     }
   }
   /*********************[CANCEL-AUCTION]*******************/
-  @ApiOperation({
-    summary: 'Cancel the Auction',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Successfully Cancelled the Auction',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Something went Wrong',
-  })
-  @Post('cancel-auction')
+  // @ApiOperation({
+  //   summary: 'Cancel the Auction',
+  // })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'Successfully Cancelled the Auction',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: 'Something went Wrong',
+  // })
+  // @Post('cancel-auction')
   async cancelAuction(@Body() cancel_auction: CancelAuctionBody): Promise<any> {
     const { contract_address, token_id } = cancel_auction;
     let rawMsg = `{
@@ -173,8 +175,8 @@ export class NftMarketplaceController {
     }
   }
   /************************[Get-Auction]***********************/
-  @ApiOperation({ summary: ' will gets you ' })
-  @Get('get-auction/:contract_address/:token_id/:end_date')
+  // @ApiOperation({ summary: ' will gets you ' })
+  // @Get('get-auction/:contract_address/:token_id/:end_date')
   async getAuction(@Param() get_auction: GetAuction): Promise<any> {
     try {
       console.log(get_auction);
@@ -188,18 +190,18 @@ export class NftMarketplaceController {
   }
   /******** */
   /*********************[CREATE-BID]***********************/
-  @ApiOperation({
-    summary: ' will  Place a bid for an NFT which is in auction',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Successfully created the bid',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Something went wrong',
-  })
-  @Post('place-nft-bid')
+  // @ApiOperation({
+  //   summary: ' will  Place a bid for an NFT which is in auction',
+  // })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'Successfully created the bid',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: 'Something went wrong',
+  // })
+  // @Post('place-nft-bid')
   async createBid(@Body() create_bid: CreateBidBody) {
     //  nft_id auction id bidding price
     let { token_id, bid_amount, bidder_address, contract_address } = create_bid;
@@ -293,18 +295,18 @@ export class NftMarketplaceController {
     }
   }
   /*********************[CANCEL-BID]***********************/
-  @ApiOperation({
-    summary: ' will Cancel  a bid for an NFT which is in auction',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'The bid is cancelled for the NFT',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Something went wrong',
-  })
-  @Post('cancel-bid')
+  // @ApiOperation({
+  //   summary: ' will Cancel  a bid for an NFT which is in auction',
+  // })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'The bid is cancelled for the NFT',
+  // })
+  // @ApiResponse({
+  //   status: 400,
+  //   description: 'Something went wrong',
+  // })
+  // @Post('cancel-bid')
   async cancelBid(@Body() body: CancelBidBody) {
     //  write validations
     //  is nft exists
@@ -380,13 +382,13 @@ export class NftMarketplaceController {
   }
 
   /*********************[ACCEPT-BID]***********************/
-  @ApiOperation({ summary: ' will accept a bid ' })
-  @ApiResponse({
-    status: 201,
-    description: 'This Bid is acccepted',
-  })
-  @ApiResponse({ status: 400, description: 'Something went wrong' })
-  @Post('accept-bid')
+  // @ApiOperation({ summary: ' will accept a bid ' })
+  // @ApiResponse({
+  //   status: 201,
+  //   description: 'This Bid is acccepted',
+  // })
+  // @ApiResponse({ status: 400, description: 'Something went wrong' })
+  //  @Post('accept-bid')
   async acceptBid(@Body() body: Acceptbid) {
     try {
       const { auction_id } = body;
@@ -415,10 +417,10 @@ export class NftMarketplaceController {
       };
     }
   }
-  @ApiOperation({
-    summary: ' will get all the bids of particular Auction',
-  })
-  @Get('get-bids-of-auction')
+  // @ApiOperation({
+  //   summary: ' will get all the bids of particular Auction',
+  // })
+  // @Get('get-bids-of-auction')
   async getBidsOfAuction(body: GetBids): Promise<any> {
     // that nft is present
     // That nft is in auction ?
@@ -443,10 +445,10 @@ export class NftMarketplaceController {
     }
   }
   /******************[SALE_AND_OFFER]******************************** */
-  @ApiOperation({
-    summary: ' will put your Nft in sale with Timer',
-  })
-  @Post('create-sale')
+  // @ApiOperation({
+  //   summary: ' will put your Nft in sale with Timer',
+  // })
+  // @Post('create-sale')
   async createSale(@Body() body: CreateSaleBody): Promise<any> {
     const { token_owner, contract_address, token_id, price } = body;
     //  dis allow negative price
@@ -501,8 +503,8 @@ export class NftMarketplaceController {
       };
     }
   }
-  @ApiOperation({ summary: ' Cancels the Nft from sale' })
-  @Post('cancel-sale')
+  // @ApiOperation({ summary: ' Cancels the Nft from sale' })
+  // @Post('cancel-sale')
   async cancelSale(@Body() body: CancelSaleBody): Promise<any> {
     // Add Validations
     let rawMsg = `{
@@ -532,10 +534,10 @@ export class NftMarketplaceController {
 
   }
   /***************[MAKE_OFFER_TO_NFT]************************/
-  @ApiOperation({
-    summary: ' will makes an offer to the Nft which is in sale',
-  })
-  @Post('make-offer-to-nft')
+  // @ApiOperation({
+  //   summary: ' will makes an offer to the Nft which is in sale',
+  // })
+  // @Post('make-offer-to-nft')
   async makeOffer(@Body() body: MakeOfferBody) {
     try {
       const { token_id, contract_address, offer_person_address, offer_price } = body;
@@ -608,8 +610,8 @@ export class NftMarketplaceController {
       };
     }
   }
-  @ApiOperation({ summary: ' accepts the offer ' })
-  @Post('accept-offer')
+  // @ApiOperation({ summary: ' accepts the offer ' })
+  // @Post('accept-offer')
   async acceptOffer(@Body() body: AcceptOfferBody) {
     //we can add validations
     const { contract_address, token_id, offer_person_address, token_owner } = body;
@@ -629,8 +631,8 @@ export class NftMarketplaceController {
     return await this.nftMarketplaceService.acceptOffer(body);
   }
 
-  @ApiOperation({ summary: ' Cancels the offer' })
-  @Post('cancel-offer')
+  // @ApiOperation({ summary: ' Cancels the offer' })
+  // @Post('cancel-offer')
   async cancelOffer(@Body() body: CancelOffer): Promise<any> {
     const { contract_address,
       token_id,
@@ -664,10 +666,10 @@ export class NftMarketplaceController {
   }
   // @Post('put-for-sale-fixed-price')
   // async putSaleFixedPrice() {}
-  @ApiOperation({
-    summary: 'under Progress',
-  })
-  @Post('get-all-offers')
+  // @ApiOperation({
+  //   summary: 'under Progress',
+  // })
+  // @Post('get-all-offers')
   async getAllOffers(@Body() body: GetAllOffersBody) {
     // check sale exists or not
     //  sale ended
@@ -678,8 +680,8 @@ export class NftMarketplaceController {
 
   // @Post('change-nft-bid-price')
   // async changeBidPrice() {}
-  @ApiOperation({ summary: ' will return all the bids of the auction' })
-  @Post('get-bid-list-by-auction')
+  // @ApiOperation({ summary: ' will return all the bids of the auction' })
+  // @Post('get-bid-list-by-auction')
   async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
     try {
       //Auction
@@ -692,7 +694,6 @@ export class NftMarketplaceController {
   // async test(): Promise<any> {
   //   return await this.nftMarketplaceService.addvolume();
   // }
-
 
 
 }

@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { getSystemErrorMap } from "util";
 
 class Attributes {
     @ApiProperty({ default: "score" })
@@ -56,3 +57,4 @@ export class GetAllNfts {
     @ApiProperty({ type: GetSingleNft })
     nfts: [];
 }
+

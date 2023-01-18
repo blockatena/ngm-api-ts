@@ -271,7 +271,7 @@ export class NftController {
 
   /****************[GET ALL NFTS WITH PAGINATION]*****************/
   @ApiResponse({
-    status: 200,
+    status: 201,
     type: GetAllNfts
   })
   @ApiResponse({
