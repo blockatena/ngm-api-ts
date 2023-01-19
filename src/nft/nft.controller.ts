@@ -47,7 +47,7 @@ import {
   Paginate,
   NftContractUser,
 } from './nftitems/create-nft.dto';
-import { GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
@@ -270,7 +270,7 @@ export class NftController {
   // }
 
 
-  /****************[GET ALL NFTS WITH PAGINATION]*****************/
+  /****************[GET_ALL_NFTS_WITH_PAGINATION]*****************/
   @ApiResponse({
     status: 200,
     type: GetAllNfts
@@ -468,7 +468,6 @@ export class NftController {
       const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
-
       // fetching data for analysis
       const total_volume = nfts.length;
       const floor_price = 0;
@@ -700,6 +699,23 @@ export class NftController {
         message: 'Something Went Wrong',
         error
       }
+    }
+  }
+  /*********[GET_1155_NFTS_BY_COLLECTION]***********/
+  @ApiOperation({ summary: 'Get Assets by collection' })
+  @Post('get-nfts-1155-collection')
+  async getNfts1155Collection(
+    @Body() Collections_listed: GetAssets,
+  ): Promise<any> {
+    try {
+      log(Collections_listed);
+      const get_nfts = await this.nftservice.get1155Nfts({
+        ...Collections_listed,
+      });
+      return get_nfts;
+    } catch (error) {
+      log(error);
+      return { message: 'something went wrong in controller', error };
     }
   }
   // get type of nft 1155 or 721
