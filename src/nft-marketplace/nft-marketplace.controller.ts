@@ -28,7 +28,7 @@ import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { off } from 'process';
 import { brotliDecompress } from 'zlib';
-import { G2W3_1155Auction } from './dtos/auctiondto/create-1155-auction.dto';
+import { G2W3_1155Sale } from './dtos/auctiondto/create-1155-auction.dto';
 @ApiTags('MarketPlace')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
@@ -122,17 +122,14 @@ export class NftMarketplaceController {
     }
   }
   //  Create 1155-
-  @Post('create-1155-nft-auction')
-  async createG2W3_1155Auction(@Body() g2W3_1155Auction: G2W3_1155Auction) {
+  @Post('create-1155-nft-sale')
+  async createG2W3_1155_Sale(@Body() g2W3_1155Sale: G2W3_1155Sale) {
     const { token_owner, contract_address, token_id, number_of_tokens, start_date, end_date,
-      min_price } = g2W3_1155Auction;
+      per_unit_price } = g2W3_1155Sale;
     try {
-      //  check nft exists or not 
-
-      //  update is_in_auction or is_in_sale === true
-
       //  create Auction or sale
 
+      //  check nft exists or not 
       const check_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
       if (!check_nft_exists) {
         return `There is no Asset with ${contract_address} and ${token_id}`

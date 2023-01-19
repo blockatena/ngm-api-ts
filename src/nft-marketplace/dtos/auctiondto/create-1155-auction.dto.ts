@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 
-export class G2W3_1155Auction {
+export class G2W3_1155Sale {
     @ApiProperty()
     token_owner: string;
     @ApiProperty()
@@ -14,7 +14,7 @@ export class G2W3_1155Auction {
     @ApiProperty()
     end_date: Date;
     @ApiProperty()
-    min_price: number;
+    per_unit_price: number;
     // @ApiProperty()
     // sign
 }

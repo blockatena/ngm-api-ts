@@ -47,7 +47,7 @@ import {
   Paginate,
   NftContractUser,
 } from './nftitems/create-nft.dto';
-import { GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
@@ -270,7 +270,7 @@ export class NftController {
   // }
 
 
-  /****************[GET ALL NFTS WITH PAGINATION]*****************/
+  /****************[GET_ALL_NFTS_WITH_PAGINATION]*****************/
   @ApiResponse({
     status: 200,
     type: GetAllNfts
@@ -468,7 +468,6 @@ export class NftController {
       const nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
-
       // fetching data for analysis
       const total_volume = nfts.length;
       const floor_price = 0;
@@ -702,6 +701,23 @@ export class NftController {
       }
     }
   }
+  /*********[GET_1155_NFTS_BY_COLLECTION]***********/
+  @ApiOperation({ summary: 'Get Assets by collection' })
+  @Post('get-nfts-1155-collection')
+  async getNfts1155Collection(
+    @Body() Collections_listed: GetAssets,
+  ): Promise<any> {
+    try {
+      log(Collections_listed);
+      const get_nfts = await this.nftservice.get1155Nfts({
+        ...Collections_listed,
+      });
+      return get_nfts;
+    } catch (error) {
+      log(error);
+      return { message: 'something went wrong in controller', error };
+    }
+  }
   // get type of nft 1155 or 721
   @ApiOperation({ summary: "Get the type of Collection" })
   @Get('get-type-of-nft/:contract_address')
@@ -908,14 +924,26 @@ export class NftController {
       const is_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
       if (is_nft_exists) {
         // update limit
-        const update_Tokens = await this.nftservice.updateTokens({
-          contract_address,
-          token_id,
-          token_owner,
-          _tokens: number_of_tokens,
-          operation: 'INCREMENT'
-        });
-        return update_Tokens;
+        //  if it is the owner exists increment the Quantity
+        const get_owners = await this.nftservice.get1155NftOwners({ contract_address, token_id });
+
+        // check owner exists or not
+        const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
+        console.log(is_owner_exists);
+
+        if (is_owner_exists) {
+          const update_Tokens = await this.nftservice.updateTokens({
+            contract_address,
+            token_id,
+            token_owner,
+            _tokens: number_of_tokens,
+            operation: 'INCREMENT'
+          });
+          return update_Tokens;
+        }
+        const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
+        log(user_1155);
+        return user_1155;
       }
       // if nft is already present update the nft or skip it 
       const data = await this.nftservice.create1155Nft(arrdb);
