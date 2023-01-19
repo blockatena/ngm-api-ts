@@ -16,7 +16,7 @@ import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
-import { GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
 import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
@@ -177,6 +177,7 @@ export class NftService {
     }
 
   }
+  // Get Nfts By Collection
   async getNftsByCollection(contract_address: string): Promise<any> {
     try {
       return await this.NftModel.aggregate([
@@ -213,7 +214,7 @@ export class NftService {
       return { success: false, message: "Something went Wrong", error }
     }
   }
-
+  /****[GET_NFTS_LISTED]*/
   async getNftssListed(data: GetListedCollections): Promise<any> {
     const {
       contract_address,
@@ -238,11 +239,20 @@ export class NftService {
       const recent = order == 'NewToOld' ? -1 : 1;
       console.log(recent, alpha_order);
       const condition = {};
+
+      if (!listed_in && !contract_address && !token_owner) {
+        return {
+          success: false,
+          message: 'Required Fields need to be Provided',
+        }
+      }
       if (listed_in) {
-        condition[`filter`] =
-          listed_in == 'auction'
-            ? { is_in_auction: true }
-            : { is_in_sale: true };
+        if (listed_in === 'auction') {
+          condition[`is_in_auction`] = true;
+        }
+        if (listed_in === 'sale') {
+          condition[`is_in_sale`] = true;
+        }
       }
       if (contract_address) {
         condition[`contract_address`] = contract_address;
@@ -337,6 +347,7 @@ export class NftService {
       }
     }
   }
+  // Push Images to token 
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
       {
@@ -477,7 +488,54 @@ export class NftService {
     }
   }
 
-
+  /********[GET 1155 NFTS]*********/
+  async get1155Nfts(getListedCollections: GetAssets): Promise<any> {
+    const { contract_address, page_number, items_per_page, order, listed_in, alphabetical_order } = getListedCollections;
+    try {
+      const alpha_order = alphabetical_order == 'ZtoA' ? -1 : 1;
+      const recent = order == 'NewToOld' ? -1 : 1;
+      console.log(recent, alpha_order);
+      const condition = {};
+      if (listed_in) {
+        condition[`filter`] =
+          listed_in == 'auction'
+            ? { is_in_auction: true }
+            : { is_in_sale: true };
+      }
+      if (contract_address) {
+        condition[`contract_address`] = contract_address;
+      }
+      const sort_order = {};
+      if (order) {
+        sort_order['createdAt'] = recent;
+      }
+      if (alphabetical_order) {
+        sort_order['meta_data.name'] = alpha_order;
+      }
+      console.log(sort_order);
+      console.log('condition', condition);
+      const nfts = await this.Nft11555Model.find(condition)
+        .sort({ ...sort_order })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
+      const total_nfts = await this.Nft11555Model.find(condition).countDocuments();
+      return {
+        collection: await this.getContract(contract_address),
+        total_nfts,
+        total_pages: Math.ceil(total_nfts / items_per_page),
+        currentPage: page_number,
+        nfts,
+      }
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        error,
+        message: "Something Went Wrong"
+      }
+    }
+  }
 
   // get 1155 nft along with its owner
   async get1155NftOwners(getNft1155: GetNft1155): Promise<any> {

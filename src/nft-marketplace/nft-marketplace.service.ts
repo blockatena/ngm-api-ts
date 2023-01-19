@@ -829,6 +829,10 @@ export class NftMarketplaceService {
       };
     }
   }
+  /**************[NFT1155_TRANSFER]****************/
+  async Nft1155Transfer(): Promise<any> {
+
+  }
   /*****************[TRADE_VOLUME_FOR_COLLECTION]***************/
   async tradeVolume(tradeVolume: TradeVolume): Promise<any> {
     const { contract_address, price } = tradeVolume;

@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { type } from "os";
 
 class Attributes {
     @ApiProperty({ default: "score" })
@@ -7,7 +8,7 @@ class Attributes {
     value: string
 }
 class MetaData {
-    @ApiProperty({})
+    @ApiProperty()
     name: string;
     @ApiProperty({})
     image: string;
@@ -15,7 +16,7 @@ class MetaData {
     description: string;
     @ApiProperty({ default: "" })
     external_uri: string;
-    @ApiProperty()
+    @ApiProperty({})
     attributes: [];
 }
 
