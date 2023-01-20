@@ -8,7 +8,7 @@ import { SendAPiKey } from './dto/sendapikey.dto';
 import { EmailService } from 'src/email/email.service';
 import { ConfigService } from '@nestjs/config';
 const { log } = console;
-@ApiTags('API Key Management')
+// @ApiTags('API Key Management')
 @Controller('subscription')
 export class SubscriptionController {
   constructor(
@@ -21,8 +21,8 @@ export class SubscriptionController {
     name: 'SECRET',
     description: 'Secret of the Enterprise for creating an API key'
   })
-  @ApiOperation({ summary: 'This Route will create a Api key' })
-  @Post('create-api-key')
+  @ApiOperation({ summary: 'Create Api Key' })
+  // @Post('create-api-key')
   async subscribeToPremium(@Headers('SECRET') SECRET: string, @Body() body: UserBody): Promise<any> {
     const { wallet_address, email } = body;
     try {
@@ -71,8 +71,8 @@ export class SubscriptionController {
     }
   }
 
-  @ApiOperation({ summary: "This API sends the Api Key to registered Email" })
-  @Post('send-api-key')
+  @ApiOperation({ summary: "API Key Sender" })
+  // @Post('send-api-key')
   async sendApiKey(@Body() sendApikey: SendAPiKey): Promise<any> {
     const { wallet_address, email } = sendApikey;
     try {

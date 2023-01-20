@@ -52,7 +52,7 @@ import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
-import { GetOwner } from './nftitems/get-owner.dto';
+import { GetOwner,getOwnerRes } from './nftitems/get-owner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
@@ -60,7 +60,7 @@ import { ignoreElements } from 'rxjs';
 import { getEnvironment } from 'src/utils/common';
 import { getWallet } from '../utils/common';
 import { UploadAsset, UploadAssetError } from './schemas/upload-asset.schema';
-import { GetAllNfts } from './schemas/get-all-nfts.schema';
+import { GetAllNfts, getListedNFts, GetAllCollections,GetSingleNft, getAsset,getAllCollections,getAllNfts, GetSingleCollection,getTokenBalance} from './schemas/get-all-nfts.schema';
 import { ErrorHandler } from './utils/errorhandlers';
 import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
 import { blockParams } from 'handlebars';
@@ -78,7 +78,7 @@ const { log } = console;
 // const wallet = new ethers.Wallet(process.env.PRIV_KEY, this.mum_provider);
 // const storage = new NFTStorage({ token });
 
-@ApiTags('GamesToWeb3 APIs')
+@ApiTags('ERC721 NFTs')
 @Controller('nft')
 export class NftController {
   constructor(
@@ -105,7 +105,15 @@ export class NftController {
   private token = this.NFT_STORAGE_KEY;
   private wallet = new ethers.Wallet(this.PRIV_KEY, this.mum_provider);
   private storage = new NFTStorage({ token: this.token });
-  @ApiOperation({ summary: 'Get Owner of the Nft from BlockChain' })
+  @ApiOperation({ summary: 'Fetch owner from blockchain' })
+  @ApiResponse({
+    status: 201,
+    type: getOwnerRes
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('get-owner/:contract_address/:token_id')
   async getOwner(@Param() get_Owner: GetOwner): Promise<any> {
     const { contract_address, token_id } = get_Owner;
@@ -168,7 +176,7 @@ export class NftController {
     description: `Something went wrong in out server.`
   })
   @ApiOperation({
-    summary: 'Upload  asset and gets you URI of that asset',
+    summary: 'Upload Assets',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -303,6 +311,14 @@ export class NftController {
 
   /***********[GET_COLLECTIONS_OWNED_BY_USER]**********/
   @ApiOperation({ summary: 'Get User Collections' })
+  @ApiResponse({
+    status: 201,
+    type: GetAllCollections
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('collections-owned/:owner_address/:page_number/:items_per_page')
   async getCollectionsOwned(@Param() params: GetUserOwnedCollections): Promise<any> {
     const { owner_address, page_number, items_per_page } = params;
@@ -319,7 +335,15 @@ export class NftController {
   /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @ApiOperation({
     summary:
-      'Get Assets by Collection',
+      'Get Users Assets by Collection',
+  })
+  @ApiResponse({
+    status: 201,
+    type: [GetSingleNft]
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
   })
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
@@ -347,6 +371,14 @@ export class NftController {
   @ApiOperation({
     summary:
       'Get Asset',
+  })
+  @ApiResponse({
+    status: 201,
+    type: getAsset
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
   })
   @Get('get-nft/:contract_address/:token_id')
   async getNft(@Param() body: GetNftBody): Promise<any> {
@@ -394,6 +426,14 @@ export class NftController {
   }
   //
   @ApiOperation({ summary: 'Get User Assets' })
+  @ApiResponse({
+    status: 201,
+    type: [GetSingleNft]
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('get-user-nfts/:token_owner/:page_number/:items_per_page')
   async getUserNfts(@Param() body: GetUserNfts): Promise<any> {
     try {
@@ -407,7 +447,15 @@ export class NftController {
   }
 
   //******************[GET_ALL_COLLECTIONS]************************/
-  @ApiOperation({ summary: 'Get User Collections' })
+  @ApiOperation({ summary: 'Get All Collections' })
+  @ApiResponse({
+    status: 201,
+    type: getAllCollections
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('get-collections/:page_number/:items_per_page')
   async getCollections(@Param() body: GetCollectionBody): Promise<any> {
     try {
@@ -423,18 +471,34 @@ export class NftController {
   }
   /******************************[GET_NFTS_LISTED]******************/
   @ApiOperation({ summary: 'Get Listed Assets' })
+  @ApiResponse({
+    status: 201,
+    type: [GetSingleNft]
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('get-nfts-listed/:listed_in')
-  async getNftsListed(@Param('listed_in') listed: string): Promise<any> {
+  async getNftsListed(@Param() getListedNFts: getListedNFts): Promise<any> {
     try {
-      const data = await this.nftservice.getNftsListed(listed);
-      return data.length > 0 ? data : `Curently no nfts are in ${listed}`;
+      const data = await this.nftservice.getNftsListed(getListedNFts.listed_in);
+      return data.length > 0 ? data : `Curently no nfts are in ${getListedNFts.listed_in}`;
     } catch (error) {
       log(error);
       return { message: 'something went wrong in controller', error };
     }
   }
   /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
-  @ApiOperation({ summary: ' will gets you Nfts that are in Auction' })
+  @ApiOperation({ summary: 'Get Assets with advance filter' })
+  @ApiResponse({
+    status: 201,
+    type: getAllNfts
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Post('get-nfts-listed-collection')
   async getNftsListedCollection(
     @Body() Collections_listed: GetListedCollections,
@@ -452,6 +516,14 @@ export class NftController {
   }
   /*******************[GET_NFTS_BY_COLLECTIONS]**********************/
   @ApiOperation({ summary: 'Get Assets by Collection' })
+  @ApiResponse({
+    status: 201,
+    type: GetSingleCollection
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('collection/:contract_address')
   async GetCollectionsByContractAddress(
     @Param() contract: getcontract,
@@ -498,14 +570,22 @@ export class NftController {
   @ApiOperation({
     summary: 'Mint ERC 721 Asset',
   })
+  @ApiResponse({
+    status: 201,
+    type: GetSingleNft
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @ApiHeader({
     name: 'X-API-HEADER',
     description: 'API key needed for mint'
   })
   @UseGuards(APIGuard)
-  @Post('mint-nft')
+  // @Post('mint-nft')
   async mintNft(@Body() body: MintToken) {
-    const { contract_address, token_owner, number_of_tokens, name,
+    const { contract_address, token_owner, name,
       image_uri,
       description,
       external_uri,
@@ -686,7 +766,7 @@ export class NftController {
   }
   //  Minting Helpers
   @ApiOperation({ summary: "Mint GTW3 1155 Tokens" })
-  @Post('mint-1155')
+  // @Post('mint-1155')
   async g2Web31155(@Body() body: G2Web3_1155): Promise<any> {
     const {
       token_owner,
@@ -886,6 +966,15 @@ export class NftController {
   // async blacklistNFT(@Param() blacklist: transactions) {}
 
 
+  @ApiOperation({ summary: 'Get ERC1155 token quantity' })
+  @ApiResponse({
+    status: 201,
+    type: getTokenBalance
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('Get-Balance-of-Token/:contract_address/:token_id')
   async getBalanceOf1155Token(@Param() getBal: GetBal1155): Promise<any> {
     const { contract_address, token_id } = getBal;

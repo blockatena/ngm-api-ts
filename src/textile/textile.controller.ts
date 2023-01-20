@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Bucket } from './helper/textileHelper';
 import { TextileService } from './textile.service';
 
-@ApiTags('Textile')
+// @ApiTags('Textile')
 @Controller('textile')
 export class TextileController {
   constructor(private readonly textileService: TextileService) {}
@@ -11,7 +11,7 @@ export class TextileController {
   // Swagger UI Options
   @ApiOperation({
     summary:
-      'This api is a demonstration for storing files in a json format while keeping the base link same',
+      'Textile links',
   })
   @ApiResponse({
     status: 201,
@@ -23,7 +23,7 @@ export class TextileController {
   })
   /**************************** */
   // Actual Get Route
-  @Get('/link')
+  // @Get('/link')
   async getBucketLink(): Promise<string> {
     try {
       const buckInstance = new Bucket();
