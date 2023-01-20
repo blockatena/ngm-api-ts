@@ -347,6 +347,62 @@ export class NftService {
       }
     }
   }
+  // Count Assets by User
+  async count1155Assets(wallet_address: string): Promise<any> {
+    try {
+      return await this.Nft1155OwnerModel.countDocuments({ token_owner: wallet_address });
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: "Something Went Wrong",
+        error
+      }
+    }
+  }
+  // Get Limits
+  async checKLimit(asset_limit: number, token_owner: string): Promise<any> {
+
+    //  Only the Contract-Owner should Mint
+    // Limit
+    const get_721_count = await this.count721Assets(token_owner)
+    const get_1155_count = await this.count1155Assets(token_owner);
+    const total_count = Number(get_721_count) + Number(get_1155_count);
+
+    log(`1155 Count: ${get_1155_count}  \n 
+   721 Count  ${get_721_count} \n 
+     total=  ${total_count}  \n
+     ${asset_limit}  `)
+
+    const condition = Number(total_count) > Number(asset_limit)
+    console.log(condition);
+    if (condition) {
+      log('exceeded');
+      return {
+        permit: false,
+        message: `Hello ${token_owner} you have Exceeded you Limit Your current_limit for Assets :  ${asset_limit}
+       Your current Nfts ${total_count}`
+      };
+    }
+    return { permit: true }
+  }
+
+
+  async count721Assets(wallet_address: string): Promise<any> {
+    try {
+      return await this.NftModel.countDocuments({ token_owner: wallet_address });
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: "Something Went Wrong",
+        error
+      }
+    }
+  }
+
+
+  // 
   // Push Images to token 
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(

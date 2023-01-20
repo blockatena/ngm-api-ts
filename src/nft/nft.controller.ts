@@ -529,9 +529,9 @@ export class NftController {
       // if (type === "NGM1155") {
       //   return `You can\'t mint 1155 here`;
       // }
-      if (!(token_owner === contract_details.owner_address)) {
-        return `Only the Contract Owner should Mint the NFT`
-      }
+      // if (!(token_owner === contract_details.owner_address)) {
+      //   return `Only the Contract Owner should Mint the NFT`
+      // }
       log(contract_details);
       const current_chain = contract_details?.chain?.name;
       log(`current_chain ${current_chain}`,)
@@ -573,9 +573,18 @@ export class NftController {
       // only the contract owner should be the minter 
 
       log(wallet);
-      const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
+      // const collection_count = await this.nftservice.countCollections({ owner_address: token_owner });
+
+      const get_limit = await this.usersService.getUser({ wallet_address: token_owner });
+      const asset_limit = get_limit?.limit?.assets
+      const check_limit = await this.nftservice.checKLimit(asset_limit, token_owner)
+      if (!check_limit.permit) {
+        return check_limit;
+      }
       // const is_limit_exceeded = body.limit <= collection_count;
       // log("nope");
+
+
       log(contract_details);
       const abiPath = path.join(
         process.cwd(),
@@ -741,6 +750,12 @@ export class NftController {
 
 
   //  Minting Helpers
+  // Guard
+  @ApiHeader({
+    name: 'X-API-HEADER',
+    description: 'API key needed for mint'
+  })
+  @UseGuards(APIGuard)
   @ApiOperation({ summary: "Mint GTW3 1155 Tokens" })
   @Post('mint-1155')
   async g2Web31155(@Body() body: G2Web3_1155): Promise<any> {
@@ -808,6 +823,13 @@ export class NftController {
           RPC_URL,
           PRIV_KEY
         })
+      // check limit
+      const get_limit = await this.usersService.getUser({ wallet_address: token_owner });
+      const asset_limit = get_limit?.limit?.assets
+      const check_limit = await this.nftservice.checKLimit(asset_limit, token_owner)
+      if (!check_limit.permit) {
+        return check_limit;
+      }
       // log(provider, wallet);
 
       // Get Provider

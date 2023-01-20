@@ -5,6 +5,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument, UserSchema } from 'src/schemas/user.schema';
+import { FixedNumber } from 'ethers';
 const { log } = console;
 @Injectable()
 export class UsersService {
@@ -29,7 +30,9 @@ export class UsersService {
       // if (is_username_exists_already) {
       //   return `The Username  ${username} already exists Please try another Username`;
       // }
-      return await this.UserModel.create(createUserDto);
+      return await this.UserModel.create({
+        ...createUserDto, limit: { collections: 5, assets: 50 }
+      });
     }
     catch (error) {
       console.log(error);
@@ -73,16 +76,24 @@ export class UsersService {
   }
 
   /**********[Increse Limit]***********/
-  async increseLimit(wallet_address: string, inc_limit: number): Promise<any> {
+  async increseLimit(wallet_address: string, collection: number, assets: number): Promise<any> {
     try {
-      return await this.UserModel.updateOne({ wallet_address }, { $inc: { limit: inc_limit } })
+      return await this.UserModel.updateOne({ wallet_address }, { $inc: { "limit.collection": collection, "limit.assets": assets } });
     } catch (error) {
       log(error)
+      return {
+        success: false,
+        message: 'Something Went Wrong',
+        error
+      }
     }
   }
-
-
+  // Remove User
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
+
+  // async testFix(): Promise<any> {
+  //   return this.UserModel.updateMany({}, { $set: { limit: { collection: 0, assets: 0 }, } });
+  // }
 }
