@@ -1,7 +1,7 @@
 import { Body, Controller, Headers, Post } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from 'src/users/users.service';
-import { UserBody } from './dto/user.dto';
+import { User, UserBody } from './dto/user.dto';
 import { SubscriptionService } from './subscription.service';
 import { generateApiKey } from 'generate-api-key';
 import { SendAPiKey } from './dto/sendapikey.dto';
@@ -23,7 +23,7 @@ export class SubscriptionController {
   })
   @ApiOperation({ summary: 'This Route will create a Api key' })
   @Post('create-api-key')
-  async subscribeToPremium(@Headers('SECRET') SECRET: string, @Body() body: UserBody): Promise<any> {
+  async subscribeToPremium(@Headers('SECRET') SECRET: string, @Body() body: User): Promise<any> {
     const { wallet_address, email } = body;
     try {
       //check person is authorized or not 
@@ -50,8 +50,7 @@ export class SubscriptionController {
         log("New Subscriber Thankyou Your API key is", api_key);
         // store api key
         const store_api_key = await this.userService.updateUser(wallet_address, { api_key });
-        const limit = await this.userService.increseLimit(wallet_address, 5);
-        return limit;
+        return store_api_key;
       }
       else {
         return `You already have an Api key if you want to change your API key contact hello@blockatena.com`
@@ -70,7 +69,48 @@ export class SubscriptionController {
       }
     }
   }
+  // 
+  @ApiOperation({ summary: "Increse Limit" })
+  @ApiHeader({
+    name: 'SECRET',
+    description: 'Secret of the Enterprise for creating an API key'
+  })
+  @Post('increse-limit')
+  async increseLimit(@Headers('SECRET') SECRET: string, @Body() body: UserBody,): Promise<any> {
+    const { wallet_address, email, increse_limit } = body;
+    const { collections_limit, asset_limit } = increse_limit
+    try {
+      //check person is authorized or not 
+      log(SECRET);
+      const secret = this.configservice.get<string>('ADMIN_SECRET');
+      log(secret);
 
+      if (!(secret === SECRET)) {
+        return `Invalid Secret ask admin for Key`
+      }
+      // check user is registered or not
+      const check_user_exists = await this.userService.getUser({ wallet_address });
+      log(check_user_exists);
+      if (!check_user_exists)
+        return `There is no user with wallet ${wallet_address} is registered with us kindly register`;
+      // check user is wallet is linked to provided mail 
+      if (!(email === check_user_exists.email))
+        return `The wallet  ${wallet_address} is  not linked to ${email}`;
+
+      // increse Limit
+      return await this.userService.increseLimit(wallet_address, collections_limit, asset_limit)
+
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: 'Something Went Wrong',
+        error
+      }
+    }
+  }
+
+  // 
   @ApiOperation({ summary: "This API sends the Api Key to registered Email" })
   @Post('send-api-key')
   async sendApiKey(@Body() sendApikey: SendAPiKey): Promise<any> {

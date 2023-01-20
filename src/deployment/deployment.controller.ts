@@ -23,6 +23,7 @@ import { log } from 'console';
 import { GetChain } from 'src/utils/enum/common.enum.';
 import { ChainType } from './enum/contract.enum';
 import { getEnvironment } from 'src/utils/common';
+import { UsersService } from 'src/users/users.service';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
@@ -30,6 +31,7 @@ export class DeploymentController {
     private readonly configService: ConfigService,
     private readonly deploymentService: DeploymentService,
     // private readonly nftService: NftService
+    private readonly userService: UsersService
   ) { }
 
   @ApiHeader({
@@ -77,6 +79,13 @@ export class DeploymentController {
       PRIV_KEY   ${PRIV_KEY} \n
       API_BASE_URL  ${API_BASE_URL} \n
       `)
+      // Get 
+      const get_limit = await this.userService.getUser({ wallet_address: owner_address });
+      const collection_count = await this.deploymentService.ContractCount(owner_address);
+      //  check Limit
+      if (Number(get_limit?.limit?.collection) > Number(collection_count)) {
+        return `Hello ${owner_address} you exceeded Your Limit `;
+      }
       // Get Provider
       const provider = new ethers.providers.JsonRpcProvider(
         RPC_URL,
