@@ -1,39 +1,5 @@
 export const abi = [
   {
-    inputs: [],
-    stateMutability: 'nonpayable',
-    type: 'constructor',
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: 'contractAddress',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: 'marketPlaceContractAddress',
-        type: 'address',
-      },
-      {
-        internalType: 'address',
-        name: 'ownerAddress',
-        type: 'address',
-      },
-    ],
-    name: 'approvedAll',
-    outputs: [
-      {
-        internalType: 'bool',
-        name: 'value',
-        type: 'bool',
-      },
-    ],
-    stateMutability: 'view',
-    type: 'function',
-  },
-  {
     inputs: [
       {
         internalType: 'address',
@@ -56,6 +22,11 @@ export const abi = [
         type: 'uint256',
       },
       {
+        internalType: 'uint256',
+        name: '_value',
+        type: 'uint256',
+      },
+      {
         internalType: 'address',
         name: '_currentOwnerAddress',
         type: 'address',
@@ -69,6 +40,11 @@ export const abi = [
         internalType: 'uint256',
         name: 'bidAmount',
         type: 'uint256',
+      },
+      {
+        internalType: 'bool',
+        name: '_erc1155Flag',
+        type: 'bool',
       },
     ],
     name: 'createSale',
@@ -87,6 +63,69 @@ export const abi = [
     name: 'setCommissionFees',
     outputs: [],
     stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    stateMutability: 'nonpayable',
+    type: 'constructor',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'contractAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'marketPlaceContractAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'ownerAddress',
+        type: 'address',
+      },
+    ],
+    name: 'approvedAll1155',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'value',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [
+      {
+        internalType: 'address',
+        name: 'contractAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'marketPlaceContractAddress',
+        type: 'address',
+      },
+      {
+        internalType: 'address',
+        name: 'ownerAddress',
+        type: 'address',
+      },
+    ],
+    name: 'approvedAll721',
+    outputs: [
+      {
+        internalType: 'bool',
+        name: 'value',
+        type: 'bool',
+      },
+    ],
+    stateMutability: 'view',
     type: 'function',
   },
 ];
