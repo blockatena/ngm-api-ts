@@ -19,7 +19,7 @@ import { metadata, metadataDocument } from './schema/metadata.schema';
 import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
-import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
+import { GetNft1155, GetTokensUserHold, get1155nft } from './nftitems/get-nft-1155';
 import { UpdateTokens } from './nftitems/update-tokens';
 const { log } = console;
 @Injectable()
@@ -674,6 +674,34 @@ export class NftService {
   async create1155NftOwner(arrdb: any): Promise<any> {
     try {
       return await this.Nft1155OwnerModel.create(arrdb);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+
+  async update1155Nft(data: any, update_data: any): Promise<any> {
+    try {
+      return await this.Nft11555Model.findOneAndUpdate(data, {
+        $set: update_data,
+      });
+    } catch (error) {
+      console.log(error)
+
+      return {
+        message: "something went Wrong",
+        error
+      }
+    }
+  }
+
+  async get1155NftOwner(getNft1155: get1155nft): Promise<any> {
+    const { contract_address, token_id, token_owner } = getNft1155;
+    try {
+      return await this.Nft1155OwnerModel.find({ contract_address, token_id, token_owner });
     } catch (error) {
       return {
         success: false,

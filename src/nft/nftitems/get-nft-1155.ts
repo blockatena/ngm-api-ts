@@ -15,3 +15,12 @@ export class GetTokensUserHold {
     @ApiProperty()
     token_id: number;
 }
+
+export class get1155nft {
+    @ApiProperty()
+    contract_address:string
+    @ApiProperty()
+    token_id:number
+    @ApiProperty()
+    token_owner:string
+}

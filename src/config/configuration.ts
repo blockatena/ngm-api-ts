@@ -39,7 +39,7 @@ export default () => ({
   CRON_TIME: process.env.CRON_TIME,
   ERC20_CONTRACT: {
     DEV: {
-      Goerli: '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6',
+      Goerli: '0x5c0e458b9652f5656351c80e8ab308d74343c971',
       Mumbai: '0x197a176C17eA881fa9c6cF64A0096B7F2633cA2F',
     },
     PROD: {
