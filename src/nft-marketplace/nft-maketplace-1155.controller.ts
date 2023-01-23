@@ -26,7 +26,7 @@ export class NftMarketplace1155Controller {
     private readonly activityService: ActivityService,
   ) { }
 
-/*********************[ERC1155 PART]***********************/
+  /*********************[ERC1155 PART]***********************/
 
   /*********************[CREATE SALE]***********************/
 
@@ -40,10 +40,10 @@ export class NftMarketplace1155Controller {
   async createSale1155(@Body() body: G2W3_1155Sale) {
     try {
       return await this.nftMarketplaceService.create1155sale(body);
-    } catch(e) {
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }
@@ -58,10 +58,10 @@ export class NftMarketplace1155Controller {
   async updateSale1155(@Body() body: G2W3_1155Sale) {
     try {
       return await this.nftMarketplaceService.update1155sale(body);
-    } catch(e) {
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }
@@ -75,10 +75,10 @@ export class NftMarketplace1155Controller {
   async cancelSale1155(@Body() body: G2W3_1155Sale) {
     try {
       return await this.nftMarketplaceService.cancel1155sale(body);
-    } catch(e) {
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }
@@ -92,11 +92,11 @@ export class NftMarketplace1155Controller {
   @Post('make-offer-1155')
   async makeOffer1155(@Body() body: G2W3_1155Offer) {
     try {
-        return await this.nftMarketplaceService.make1155offer(body);
-    } catch(e) {
+      return await this.nftMarketplaceService.make1155offer(body);
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }
@@ -111,10 +111,10 @@ export class NftMarketplace1155Controller {
   async acceptOffer1155(@Body() body: G2W3_1155AcceptOffer) {
     try {
       return await this.nftMarketplaceService.accept1155offer(body);
-    } catch(e) {
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }
@@ -129,10 +129,10 @@ export class NftMarketplace1155Controller {
   async cancelOffer1155(@Body() body: G2W3_1155Offer) {
     try {
       return await this.nftMarketplaceService.cancel1155offer(body);
-    } catch(e) {
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }
@@ -144,13 +144,13 @@ export class NftMarketplace1155Controller {
   })
   @ApiResponse({ status: 400, description: 'Something went wrong' })
   @Post('get-all-offer-1155')
-  async getAllOffer1155(@Body() body: {sale_id:string}) {
+  async getAllOffer1155(@Body() body: { sale_id: string }) {
     try {
       return await this.nftMarketplaceService.getAll1155offer(body);
-    } catch(e) {
+    } catch (e) {
       return {
-        success:'error',
-        message:e
+        success: 'error',
+        message: e
       }
     }
   }

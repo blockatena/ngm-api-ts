@@ -19,7 +19,7 @@ import { metadata, metadataDocument } from './schema/metadata.schema';
 import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
-import { GetNft1155, GetTokensUserHold, get1155nft } from './nftitems/get-nft-1155';
+import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './nftitems/get-nft-1155';
 import { UpdateTokens } from './nftitems/update-tokens';
 const { log } = console;
 @Injectable()
@@ -612,7 +612,8 @@ export class NftService {
     try {
       const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
       if (!check_nft_exists) {
-        return `There is no Asset with ${contract_address} and ${token_id}`
+        return `There is no Asset with ${contract_address} and ${token_id}`;
+
       }
       //  check he ownes nft or not 
       // getting all owners
@@ -624,6 +625,7 @@ export class NftService {
 
       if (!is_owner_exists) {
         return `${token_owner} doesnt hold this ${contract_address} ${token_id}`;
+
       }
       return { tokens: is_owner_exists.number_of_tokens };
     } catch (error) {
@@ -633,8 +635,27 @@ export class NftService {
       }
     }
   }
+  // 
+  async get1155AssetByOwner(getAssetByUser: GetAssetByUser): Promise<any> {
+    const { contract_address, token_id, token_owner } = getAssetByUser;
+    try {
+      const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
+      if (!check_nft_exists) {
+        return `There is no Asset with ${contract_address} and ${token_id}`;
 
-
+      }
+      //  check he ownes nft or not 
+      // getting all owners
+      return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: 'Something Went Wrong',
+        error,
+      }
+    }
+  }
   // update user Tokens
   async updateTokens(updateTokens: UpdateTokens): Promise<any> {
     const { contract_address, token_id, _tokens, token_owner, operation } = updateTokens;

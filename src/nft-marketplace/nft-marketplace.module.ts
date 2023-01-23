@@ -12,9 +12,11 @@ import { ActivityModule } from 'src/activity/activity.module';
 import { NftMarketplace1155Controller } from './nft-maketplace-1155.controller';
 import { Offer1155Schema, offer1155Schema } from 'src/schemas/offer1155.schema';
 import { Sale1155Schema, sale1155Schema } from 'src/schemas/sale1155.schema';
+import { CommonModule } from 'src/common/common.module';
 @Module({
   imports: [
     forwardRef(() => NftModule),
+    forwardRef(() => CommonModule),
     ActivityModule,
     MongooseModule.forFeature([
       { name: AuctionSchema.name, schema: auctionSchema },
