@@ -7,11 +7,17 @@ import { NftModule } from 'src/nft/nft.module';
 import { UsersModule } from 'src/users/users.module';
 import { UsersService } from 'src/users/users.service';
 
+import { CommonModule } from 'src/common/common.module';
+
+
 @Module({
   imports: [forwardRef(() => UsersModule),
   MongooseModule.forFeature([
     { name: ContractSchema.name, schema: contractSchema },
   ]),
+
+    CommonModule
+
     // NftModule
   ],
   controllers: [DeploymentController],

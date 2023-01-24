@@ -10,6 +10,8 @@ export class ContractSchema {
   owner_address: string;
   @Prop({ unique: true })
   collection_name: string;
+  @Prop()
+  total_supply: number;
   @Prop({ type: Object })
   chain: { id: number, name: string };
   @Prop()

@@ -11,11 +11,13 @@ export class Sale1155Schema {
     @Prop()
     token_id: string;
     @Prop()
+    number_of_tokens:number
+    @Prop()
     start_date: string;
     @Prop()
     end_date: string;
     @Prop()
-    min_price: string;
+    per_unit_price: number;
     @Prop()
     status: string;
     @Prop()

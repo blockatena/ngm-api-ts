@@ -25,6 +25,7 @@ import { join } from 'path';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
+import { CommonModule } from './common/common.module';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
@@ -67,7 +68,8 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
     ThrottlerModule.forRoot({
       ttl: parseInt(TTL) || 60,
       limit: parseInt(LIMIT) || 10,
-    })
+    }),
+    CommonModule
   ],
   providers: [CronjobService, AppService, {
     provide: APP_GUARD,
