@@ -543,6 +543,21 @@ export class NftController {
         return check_limit;
       }
 
+
+      log(wallet);
+      // const collection_count = await this.nftservice.countCollections({ owner_address: token_owner });
+
+      const get_limit = await this.usersService.getUser({ wallet_address: token_owner });
+      const asset_limit = get_limit?.limit?.assets
+      const check_limit = await this.nftservice.checKLimit(asset_limit, token_owner)
+      if (!check_limit.permit) {
+        return check_limit;
+      }
+      // const is_limit_exceeded = body.limit <= collection_count;
+      // log("nope");
+
+
+
       log(contract_details);
       const abiPath = path.join(
         process.cwd(),
@@ -743,6 +758,7 @@ export class NftController {
       // }
 
       // Multi Chain Integration
+
       const _chain = contract_details?.chain?.name;
       const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } = await this.commonService.getWallet(_chain);
       if (!check_environment) {
