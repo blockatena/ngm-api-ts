@@ -19,12 +19,14 @@ import { ActivityModule } from 'src/activity/activity.module';
 import { UsersModule } from 'src/users/users.module';
 import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
 import { nft1155OwnerSchema, Nft1155OwnerSchema } from 'src/schemas/user-1155.schema';
+import { CommonModule } from 'src/common/common.module';
 
 require('dotenv').config();
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     forwardRef(() => NftMarketplaceModule),
+    forwardRef(() => CommonModule),
     ActivityModule,
     DeploymentModule,
     HttpModule,
