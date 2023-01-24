@@ -359,9 +359,9 @@ export class NftController {
       });
       log(is_nft_exists);
       const nft = is_nft_exists;
-      if (!is_nft_exists.nft) {
-        return 'Nft is not present with that details';
-      }
+      if (is_nft_exists.nft) {
+        
+      
       const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
@@ -388,6 +388,16 @@ export class NftController {
         return { ...nft, token_owner_info, sale, offers };
       }
       return { ...nft, token_owner_info };
+    } else {
+      const nft1155 = await this.g2Web3_1155({contract_address,token_id:parseInt(token_id)})
+      if(nft1155.nft) {
+        return nft1155
+      } else {
+        return {
+          message: 'NFT Not Found'
+        }
+      }
+    }
     } catch (error) {
       log(error);
       return { message: 'Something went wrong' };
@@ -465,9 +475,16 @@ export class NftController {
       );
       log(collection);
       // fetching all Nfts
-      const nfts = await this.nftservice.getNftsByCollection(
+      let nfts;
+      if(collection.type === 'NGM1155') {
+        nfts = await this.nftservice.getAll1155Nfts(
+          contract.contract_address
+        );
+      } else {
+      nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
+      } 
       // fetching data for analysis
       const total_volume = nfts.length;
       const floor_price = 0;
@@ -866,6 +883,8 @@ export class NftController {
       const is_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
       if (is_nft_exists) {
         // update limit
+        
+        const updateNft = await this.nftservice.update1155Nft({contract_address, token_id},{'number_of_tokens':is_nft_exists.number_of_tokens+number_of_tokens})
         //  if it is the owner exists increment the Quantity
         const get_owners = await this.nftservice.get1155NftOwners({ contract_address, token_id });
 
@@ -966,15 +985,15 @@ export class NftController {
 
   // get number of tokens does he have
   @ApiOperation({ summary: 'Get the 1155 token details along with its stakeHolders' })
-  @Get('g2w3-1155/:contract_address/:token_id')
+  @Get('get-1155-nft/:contract_address/:token_id')
   async g2Web3_1155(@Param() getNft1155: GetNft1155): Promise<any> {
     const { contract_address, token_id } = getNft1155;
     try {
       //Check Nft is Present or Not
       //return the Nft along with owners and their stake 
       return {
-        collection: await this.nftservice.getContract(contract_address),
-        nft1155: await this.nftservice.get1155Nft({ contract_address, token_id }),
+        contract_details: await this.nftservice.getContract(contract_address),
+        nft: await this.nftservice.get1155Nft({ contract_address, token_id }),
         owners: await this.nftservice.get1155NftOwners({ contract_address, token_id })
       }
     } catch (error) {
