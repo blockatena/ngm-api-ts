@@ -967,15 +967,15 @@ export class NftController {
 
   // get number of tokens does he have
   @ApiOperation({ summary: 'Get the 1155 token details along with its stakeHolders' })
-  @Get('g2w3-1155/:contract_address/:token_id')
+  @Get('get-1155-nft/:contract_address/:token_id')
   async g2Web3_1155(@Param() getNft1155: GetNft1155): Promise<any> {
     const { contract_address, token_id } = getNft1155;
     try {
       //Check Nft is Present or Not
       //return the Nft along with owners and their stake 
       return {
-        collection: await this.nftservice.getContract(contract_address),
-        nft1155: await this.nftservice.get1155Nft({ contract_address, token_id }),
+        contract_details: await this.nftservice.getContract(contract_address),
+        nft: await this.nftservice.get1155Nft({ contract_address, token_id }),
         owners: await this.nftservice.get1155NftOwners({ contract_address, token_id })
       }
     } catch (error) {
