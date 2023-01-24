@@ -359,9 +359,9 @@ export class NftController {
       });
       log(is_nft_exists);
       const nft = is_nft_exists;
-      if (!is_nft_exists.nft) {
-        return 'Nft is not present with that details';
-      }
+      if (is_nft_exists.nft) {
+        
+      
       const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
       if (is_nft_exists.nft.is_in_auction) {
         const auction = await this.nftservice.getAuction(body);
@@ -388,6 +388,16 @@ export class NftController {
         return { ...nft, token_owner_info, sale, offers };
       }
       return { ...nft, token_owner_info };
+    } else {
+      const nft1155 = await this.g2Web3_1155({contract_address,token_id:parseInt(token_id)})
+      if(nft1155.nft) {
+        return nft1155
+      } else {
+        return {
+          message: 'NFT Not Found'
+        }
+      }
+    }
     } catch (error) {
       log(error);
       return { message: 'Something went wrong' };
