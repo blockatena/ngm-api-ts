@@ -593,6 +593,25 @@ export class NftService {
     }
   }
 
+  async getAll1155Nfts(contract_address:string): Promise<any> {
+    try {
+      const nfts = await this.Nft11555Model.find({contract_address})
+      const total_nfts = await this.Nft11555Model.find({contract_address}).countDocuments();
+      return {
+        // collection: await this.getContract(contract_address),
+        total_nfts,
+        // nfts,
+      }
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        error,
+        message: "Something Went Wrong"
+      }
+    }
+  }
+
   // get 1155 nft along with its owner
   async get1155NftOwners(getNft1155: GetNft1155): Promise<any> {
     const { contract_address, token_id } = getNft1155;

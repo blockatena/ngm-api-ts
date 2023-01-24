@@ -465,9 +465,16 @@ export class NftController {
       );
       log(collection);
       // fetching all Nfts
-      const nfts = await this.nftservice.getNftsByCollection(
+      let nfts;
+      if(collection.type === 'NGM1155') {
+        nfts = await this.nftservice.getAll1155Nfts(
+          contract.contract_address
+        );
+      } else {
+      nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
+      } 
       // fetching data for analysis
       const total_volume = nfts.length;
       const floor_price = 0;
@@ -858,6 +865,8 @@ export class NftController {
       const is_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
       if (is_nft_exists) {
         // update limit
+        
+        const updateNft = await this.nftservice.update1155Nft({contract_address, token_id},{'number_of_tokens':is_nft_exists.number_of_tokens+number_of_tokens})
         //  if it is the owner exists increment the Quantity
         const get_owners = await this.nftservice.get1155NftOwners({ contract_address, token_id });
 

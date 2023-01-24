@@ -13,8 +13,12 @@ export class Nft1155Schema {
     chain: { id: number, name: string };
     @Prop()
     token_id: number;
-    @Prop({ default: '0' })
-    price: string;
+    @Prop()
+    number_of_tokens:number
+    @Prop()
+    listed_tokens:number
+    @Prop()
+    price:number
     @Prop()
     highest_price: number;
     @Prop()

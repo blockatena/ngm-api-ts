@@ -31,7 +31,7 @@ import { ActivityService } from 'src/activity/activity.service';
 import { TradeVolume } from './dtos/trade-volume.dto';
 import { Offer1155Schema, Offer1155Document } from 'src/schemas/offer1155.schema';
 import { Sale1155Schema, Sale1155Document } from 'src/schemas/sale1155.schema';
-import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer } from './dtos/auctiondto/create-1155-auction.dto'
+import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer,G2W3_1155CancelSale, G2W3_1155CancelOffer } from './dtos/auctiondto/create-1155-auction.dto'
 import { check } from 'prettier';
 import { CommonService } from 'src/common/common.service';
 import { Console } from 'console';
@@ -971,9 +971,10 @@ export class NftMarketplaceService {
       // save in DB
       const save_in_db = await this.Sale1155Model.create(sale);
       //update in nft is in sale is true
+      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
       const update_nft = await this.nftService.update1155Nft(
         { contract_address, token_id },
-        { is_in_sale: true },
+        { 'listed_tokens':get1155nft.listed_tokens+number_of_tokens,is_in_sale: true },
       );
       // creating Activity
       const activity = {
@@ -1019,13 +1020,17 @@ export class NftMarketplaceService {
           message: 'No any sales found'
         }
       }
+      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
+
       // save in DB
       const save_in_db = await this.Sale1155Model.findOneAndUpdate(data, { $set: sale });
 
+      const updatedQty = (get1155nft.listed_tokens)-(checkActiveSale[0].number_of_tokens)+(number_of_tokens)
+      console.log(checkActiveSale)
       //update in nft is in sale is true
       const update_nft = await this.nftService.update1155Nft(
         { contract_address, token_id },
-        { is_in_sale: true },
+        {'listed_tokens':updatedQty, is_in_sale: true },
       );
       // creating Activity
       const activity = {
@@ -1050,8 +1055,8 @@ export class NftMarketplaceService {
     }
   }
 
-  async cancel1155sale(sale: G2W3_1155Sale): Promise<any> {
-    const { token_owner, contract_address, token_id, number_of_tokens, per_unit_price } = sale;
+  async cancel1155sale(sale: G2W3_1155CancelSale): Promise<any> {
+    const { token_owner, contract_address, token_id } = sale;
     const data = { token_owner, contract_address, token_id, status: 'started' }
     try {
       const nft = await this.nftService.get1155Nft({ contract_address, token_id });
@@ -1070,14 +1075,21 @@ export class NftMarketplaceService {
           message: 'No sales found'
         }
       }
+      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
+      const updatedQty = (get1155nft.listed_tokens)-(check_users_sales[0].number_of_tokens)
       // save in DB
       const save_in_db = await this.Sale1155Model.findOneAndUpdate(data, { $set: { status: 'cancelled' } });
 
       const check_sales = await this.Sale1155Model.find({ contract_address, token_id, status: 'started' });
       //update in nft is in sale is true
+      if(updatedQty===0) {
+        await this.Offer1155Model.updateMany({contract_address, token_id, status:'started'},{status:'cancelled'})
+      } else {
+        await this.Offer1155Model.updateMany({contract_address, token_id, status:'started',number_of_tokens:{$gte:updatedQty}},{number_of_tokens:updatedQty})
+      }
       const update_nft = await this.nftService.update1155Nft(
         { contract_address, token_id },
-        { is_in_sale: check_sales.length > 0 ? true : false },
+        {'listed_tokens':updatedQty, is_in_sale: check_sales.length > 0 ? true : false },
       );
       // creating Activity
       const activity = {
@@ -1088,7 +1100,7 @@ export class NftMarketplaceService {
           token_id,
           image: update_nft.meta_data.image,
         },
-        price: per_unit_price,
+        price: save_in_db.per_unit_price,
         quantity: 1,
         from: token_owner,
         to: '----',
@@ -1109,6 +1121,10 @@ export class NftMarketplaceService {
         return {
           message: 'Sale inactive'
         }
+      }
+      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
+      if(get1155nft.listed_tokens<number_of_tokens){
+        sale['number_of_tokens'] = get1155nft.listed_tokens
       }
       // save in DB
       const save_in_db = await this.Offer1155Model.create(sale);
@@ -1156,6 +1172,10 @@ export class NftMarketplaceService {
       if (!check_offer) {
         return { message: 'Offer Not Found' }
       }
+      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
+      if(get1155nft.listed_tokens<number_of_tokens){
+        sale['number_of_tokens'] = get1155nft.listed_tokens
+      }
       // save in DB
       const save_in_db = await this.Offer1155Model.findOneAndUpdate(data, { $set: sale });
       //update in nft is in sale is true
@@ -1186,8 +1206,8 @@ export class NftMarketplaceService {
     }
   }
 
-  async cancel1155offer(sale: G2W3_1155Offer): Promise<any> {
-    const { offer_user_address, contract_address, token_id, number_of_tokens, per_unit_price } = sale;
+  async cancel1155offer(sale: G2W3_1155CancelOffer): Promise<any> {
+    const { offer_user_address, contract_address, token_id } = sale;
     const data = {
       offer_user_address, contract_address, token_id, status: 'started'
     }
@@ -1219,7 +1239,7 @@ export class NftMarketplaceService {
           token_id,
           image: update_nft.meta_data.image,
         },
-        price: per_unit_price,
+        price: save_in_db.per_unit_price,
         quantity: 1,
         from: offer_user_address,
         to: '----',
@@ -1236,9 +1256,9 @@ export class NftMarketplaceService {
   async getAll1155offer(body: any): Promise<any> {
     try {
       const all_offers = await this.Offer1155Model.find(body);
-      if (!all_offers) {
+      if (all_offers.length===0) {
         return {
-          message: 'No Offers Found'
+          message: 'No Active Offers Found'
         }
       }
       return all_offers;
@@ -1376,7 +1396,11 @@ export class NftMarketplaceService {
       // if receiver already exists
 
       /******************[TRANSACTION]*****************/
-
+      await this.nftService.update1155Nft({
+        contract_address, token_id
+      },{
+        'listed_tokens':nft_data.listed_tokens-number_of_tokens
+      })
       //  decrese tokens of sender 
       await this.nftService.updateTokens({
         contract_address,
