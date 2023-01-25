@@ -66,6 +66,7 @@ import { GetBal1155 } from './nftitems/getbal';
 import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
 import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
 import { CommonService } from 'src/common/common.service';
+import { stringify } from 'querystring';
 const { log } = console;
 // require('dotenv').config();
 
@@ -526,7 +527,7 @@ export class NftController {
       image_uri,
       description,
       external_uri,
-      attributes } = body;
+      attributes , wallet_address} = body;
     try {
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
@@ -553,11 +554,14 @@ export class NftController {
 
       log("completed \n");
       log("CHECKING THE LIMIT \n")
-      const get_limit = await this.usersService.getUser({ wallet_address: token_owner });
+            // check limit
+      const get_limit = await this.usersService.getUser({ wallet_address: wallet_address });
       const asset_limit = get_limit?.limit?.assets
-      const check_limit = await this.nftservice.checKLimit(asset_limit, token_owner)
-      if (!check_limit.permit) {
-        return check_limit;
+      // const check_limit = await this.nftservice.checKLimit(asset_limit, body.your_address)
+      if (!asset_limit || asset_limit===0) {
+        return {
+          message:'Your Maximum Minting Limit Reached'
+        };
       }
 
       log(contract_details);
@@ -573,7 +577,7 @@ export class NftController {
         abi,
         wallet,
       );
-      log("CONTRACT CONNECTED \n");
+      log("CONTRACT CONNECTED \n ");
       const feeData = await provider.getFeeData();
       log("FEE DATA ", feeData);
       const mintToken = await nftCntr.mint(
@@ -645,6 +649,7 @@ export class NftController {
         to: ethers.utils.getAddress(body.token_owner),
         read: false,
       });
+      const updateUser = await this.usersService.updateUser(wallet_address,{"limit.assets":asset_limit-1})
       const data = await this.nftservice.createNft(arrdb);
       log(data);
       const metadata = await this.nftservice.pushTokenUriToDocArray(
@@ -739,7 +744,8 @@ export class NftController {
       image_uri,
       attributes,
       description,
-      external_uri
+      external_uri,
+      wallet_address
     } = body
     try {
       // GET CONTRACT
@@ -767,11 +773,13 @@ export class NftController {
       }
 
       // check limit
-      const get_limit = await this.usersService.getUser({ wallet_address: token_owner });
+      const get_limit = await this.usersService.getUser({ wallet_address: wallet_address });
       const asset_limit = get_limit?.limit?.assets
-      const check_limit = await this.nftservice.checKLimit(asset_limit, token_owner)
-      if (!check_limit.permit) {
-        return check_limit;
+      // const check_limit = await this.nftservice.checKLimit(asset_limit, body.your_address)
+      if (!asset_limit || asset_limit===0) {
+        return {
+          message:'Your Maximum Minting Limit Reached'
+        };
       }
 
       log(contract_details);
@@ -822,7 +830,7 @@ export class NftController {
       console.log("chain id ", mintToken.chainId);
       const chain = { id: mintToken.chainId || 5, name: _chain };
       const collection = await this.nftservice.getNftsByCollection(
-        body.contract_address,
+        contract_address,
       );
       // log(collection);
       // log('here', collection.length);
@@ -894,6 +902,7 @@ export class NftController {
           });
           return update_Tokens;
         }
+        const updateUser = await this.usersService.updateUser(wallet_address,{"limit.assets":asset_limit-1})
         const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
         log(user_1155);
         return user_1155;

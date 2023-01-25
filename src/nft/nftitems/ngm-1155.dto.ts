@@ -5,6 +5,8 @@ class Attributes {
     value: string;
 }
 export class G2Web3_1155 {
+    @ApiProperty({default:"Api Holder Address"})
+    wallet_address: string
     @ApiProperty({ default: "0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72" })
     token_owner: string;
     @ApiProperty()
