@@ -389,7 +389,7 @@ export class NftController {
       }
       return { ...nft, token_owner_info };
     } else {
-      const nft1155 = await this.g2Web3_1155({contract_address,token_id:parseInt(token_id)})
+      const nft1155 = await this.g2Web3_1155({contract_address,token_id:token_id})
       if(nft1155.nft) {
         return nft1155
       } else {
