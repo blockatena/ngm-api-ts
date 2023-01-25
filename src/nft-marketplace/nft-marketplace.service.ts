@@ -31,10 +31,10 @@ import { ActivityService } from 'src/activity/activity.service';
 import { TradeVolume } from './dtos/trade-volume.dto';
 import { Offer1155Schema, Offer1155Document } from 'src/schemas/offer1155.schema';
 import { Sale1155Schema, Sale1155Document } from 'src/schemas/sale1155.schema';
-import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer,G2W3_1155CancelSale, G2W3_1155CancelOffer } from './dtos/auctiondto/create-1155-auction.dto'
+import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer, G2W3_1155CancelSale, G2W3_1155CancelOffer } from './dtos/auctiondto/create-1155-auction.dto'
 import { check } from 'prettier';
 import { CommonService } from 'src/common/common.service';
-import { Console } from 'console';
+import { log } from 'console';
 @Injectable()
 export class NftMarketplaceService {
   constructor(
@@ -424,7 +424,7 @@ export class NftMarketplaceService {
         contract_address,
         offer_person_address,
         parseInt(token_id),
-        " ",
+        0,
         token_owner,
         nftCntr.owner_address,
         price,
@@ -701,7 +701,7 @@ export class NftMarketplaceService {
           contract_address,
           bidder_address,
           parseInt(token_id),
-          " ",
+          0,
           token_owner,
           nftCntr.owner_address,
           bid_amount,
@@ -955,42 +955,56 @@ export class NftMarketplaceService {
   async create1155sale(sale: G2W3_1155Sale): Promise<any> {
     const { token_owner, contract_address, token_id, number_of_tokens, per_unit_price } = sale;
     try {
+      // Check nft is Present or not
       const nft = await this.nftService.get1155Nft({ contract_address, token_id });
       if (!nft) {
         return { message: 'nft not found' }
       }
+      // Check if owner has that nft or not 
       const checkOwner = await this.nftService.get1155NftOwner({ contract_address, token_id, token_owner })
       if (!checkOwner) {
         return {
           message: 'Owner dont have any nft from the collection'
         }
       }
-
-      const checkActiveSale = await this.Sale1155Model.find({ token_owner, token_id, contract_address, status: 'started' })
-      if (checkActiveSale.length > 0) {
+      log(checkOwner);
+      //  Check he owns that much amount of Quantity or not 
+      // 200             200
+      log(checkOwner.number_of_tokens, " >=", number_of_tokens)
+      log(checkOwner.number_of_tokens >= number_of_tokens)
+      const check_quantity = checkOwner.number_of_tokens >= number_of_tokens;
+      if (!check_quantity) {
         return {
-          message: 'Sale Already Exists'
+          message: `Owner dont have enough tokens to put in sale `,
+          tokens_hold: checkOwner.number_of_tokens
         }
       }
+
+      //  if other owner of this asset 
+      const checkActiveSale = await this.Sale1155Model.find({ token_owner, token_id, contract_address, status: 'started' })
+      if (checkActiveSale.length > 0) {
+        const update_nft = await this.nftService.update1155Nft(
+          { contract_address, token_id },
+          { 'listed_tokens': nft.listed_tokens + number_of_tokens, is_in_sale: true },
+        );
+      }
+
       // save in DB
       const save_in_db = await this.Sale1155Model.create(sale);
       //update in nft is in sale is true
-      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
-      const update_nft = await this.nftService.update1155Nft(
-        { contract_address, token_id },
-        { 'listed_tokens':get1155nft.listed_tokens+number_of_tokens,is_in_sale: true },
-      );
+      // const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
+
       // creating Activity
       const activity = {
         event: 'Sale',
         item: {
-          name: update_nft.meta_data.name,
+          name: nft.meta_data.name,
           contract_address,
           token_id,
-          image: update_nft.meta_data.image,
+          image: nft.meta_data.image,
         },
         price: per_unit_price,
-        quantity: 1,
+        quantity: number_of_tokens,
         from: token_owner,
         to: '----',
         read: false,
@@ -1024,17 +1038,17 @@ export class NftMarketplaceService {
           message: 'No any sales found'
         }
       }
-      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
+      const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
 
       // save in DB
       const save_in_db = await this.Sale1155Model.findOneAndUpdate(data, { $set: sale });
 
-      const updatedQty = (get1155nft.listed_tokens)-(checkActiveSale[0].number_of_tokens)+(number_of_tokens)
+      const updatedQty = (get1155nft.listed_tokens) - (checkActiveSale[0].number_of_tokens) + (number_of_tokens)
       console.log(checkActiveSale)
       //update in nft is in sale is true
       const update_nft = await this.nftService.update1155Nft(
         { contract_address, token_id },
-        {'listed_tokens':updatedQty, is_in_sale: true },
+        { 'listed_tokens': updatedQty, is_in_sale: true },
       );
       // creating Activity
       const activity = {
@@ -1079,21 +1093,21 @@ export class NftMarketplaceService {
           message: 'No sales found'
         }
       }
-      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
-      const updatedQty = (get1155nft.listed_tokens)-(check_users_sales[0].number_of_tokens)
+      const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
+      const updatedQty = (get1155nft.listed_tokens) - (check_users_sales[0].number_of_tokens)
       // save in DB
       const save_in_db = await this.Sale1155Model.findOneAndUpdate(data, { $set: { status: 'cancelled' } });
 
       const check_sales = await this.Sale1155Model.find({ contract_address, token_id, status: 'started' });
       //update in nft is in sale is true
-      if(updatedQty===0) {
-        await this.Offer1155Model.updateMany({contract_address, token_id, status:'started'},{status:'cancelled'})
+      if (updatedQty === 0) {
+        await this.Offer1155Model.updateMany({ contract_address, token_id, status: 'started' }, { status: 'cancelled' })
       } else {
-        await this.Offer1155Model.updateMany({contract_address, token_id, status:'started',number_of_tokens:{$gte:updatedQty}},{number_of_tokens:updatedQty})
+        await this.Offer1155Model.updateMany({ contract_address, token_id, status: 'started', number_of_tokens: { $gte: updatedQty } }, { number_of_tokens: updatedQty })
       }
       const update_nft = await this.nftService.update1155Nft(
         { contract_address, token_id },
-        {'listed_tokens':updatedQty, is_in_sale: check_sales.length > 0 ? true : false },
+        { 'listed_tokens': updatedQty, is_in_sale: check_sales.length > 0 ? true : false },
       );
       // creating Activity
       const activity = {
@@ -1126,8 +1140,8 @@ export class NftMarketplaceService {
           message: 'Sale inactive'
         }
       }
-      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
-      if(get1155nft.listed_tokens<number_of_tokens){
+      const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
+      if (get1155nft.listed_tokens < number_of_tokens) {
         sale['number_of_tokens'] = get1155nft.listed_tokens
       }
       // save in DB
@@ -1176,8 +1190,8 @@ export class NftMarketplaceService {
       if (!check_offer) {
         return { message: 'Offer Not Found' }
       }
-      const get1155nft = await this.nftService.get1155Nft({contract_address,token_id})
-      if(get1155nft.listed_tokens<number_of_tokens){
+      const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
+      if (get1155nft.listed_tokens < number_of_tokens) {
         sale['number_of_tokens'] = get1155nft.listed_tokens
       }
       // save in DB
@@ -1260,7 +1274,7 @@ export class NftMarketplaceService {
   async getAll1155offer(body: any): Promise<any> {
     try {
       const all_offers = await this.Offer1155Model.find(body);
-      if (all_offers.length===0) {
+      if (all_offers.length === 0) {
         return {
           message: 'No Active Offers Found'
         }
@@ -1402,8 +1416,8 @@ export class NftMarketplaceService {
       /******************[TRANSACTION]*****************/
       await this.nftService.update1155Nft({
         contract_address, token_id
-      },{
-        'listed_tokens':nft_data.listed_tokens-number_of_tokens
+      }, {
+        'listed_tokens': nft_data.listed_tokens - number_of_tokens
       })
       //  decrese tokens of sender 
       await this.nftService.updateTokens({
