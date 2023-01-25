@@ -593,10 +593,10 @@ export class NftService {
     }
   }
 
-  async getAll1155Nfts(contract_address:string): Promise<any> {
+  async getAll1155Nfts(contract_address: string): Promise<any> {
     try {
-      const nfts = await this.Nft11555Model.find({contract_address})
-      const total_nfts = await this.Nft11555Model.find({contract_address}).countDocuments();
+      const nfts = await this.Nft11555Model.find({ contract_address })
+      const total_nfts = await this.Nft11555Model.find({ contract_address }).countDocuments();
       return {
         // collection: await this.getContract(contract_address),
         total_nfts,
@@ -741,7 +741,7 @@ export class NftService {
   async get1155NftOwner(getNft1155: get1155nft): Promise<any> {
     const { contract_address, token_id, token_owner } = getNft1155;
     try {
-      return await this.Nft1155OwnerModel.find({ contract_address, token_id, token_owner });
+      return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
     } catch (error) {
       return {
         success: false,
