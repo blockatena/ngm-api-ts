@@ -28,7 +28,7 @@ export class APIGuard implements CanActivate {
       return false;
     }
     // for deployment owner_addresss , for minting token_owner
-    const token_owner = request?.body?.token_owner || request?.body?.owner_address;
+    const token_owner = request?.body?.wallet_address || request?.body?.owner_address;
     log(request?.body);
     // check api key if that api key matches the requrirements
     const owner_info = await this.userService.getUser({ wallet_address: token_owner });

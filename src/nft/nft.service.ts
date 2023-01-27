@@ -21,6 +21,7 @@ import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
 import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './nftitems/get-nft-1155';
 import { UpdateTokens } from './nftitems/update-tokens';
+import { UpdateOwner } from './nftitems/address.dto';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -61,12 +62,42 @@ export class NftService {
   }
   async createNft(data: any): Promise<any> {
     try {
+      // 
       return await this.NftModel.create(data);
     } catch (error) {
 
     }
 
   }
+  // ADDING OWNER
+  async addOwner(updateOwner: UpdateOwner): Promise<any> {
+    const { contract_address, token_owner } = updateOwner;
+    try {
+      return await this.ContractModel.updateOne({ contract_address }, { $addToSet: { unique_owners: token_owner } });
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: "Something went wrong in add Owner Service",
+        error
+      }
+    }
+  }
+  // REMOVING OWNER
+  async removeOwner(updateOwner: UpdateOwner): Promise<any> {
+    const { contract_address, token_owner } = updateOwner;
+    try {
+      return await this.ContractModel.updateOne({ contract_address }, { $unset: { unique_owners: token_owner } });
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: "Something went wrong in add Owner Service",
+        error
+      }
+    }
+  }
+
   // To get all Nfts
   async getAllNfts(page_details: Paginate): Promise<any> {
     const { page_number, items_per_page } = page_details;
@@ -592,7 +623,16 @@ export class NftService {
       }
     }
   }
-
+  //**********************[UNIQUE_OWNERS_1155]**********************/
+  async uniqueOwners1155(contract_address: string): Promise<any> {
+    try {
+      return await this.Nft1155OwnerModel.distinct('token_owner', {
+        contract_address,
+      });
+    } catch (error) {
+      log(error);
+    }
+  }
   async getAll1155Nfts(contract_address: string): Promise<any> {
     try {
       const nfts = await this.Nft11555Model.find({ contract_address })
@@ -613,7 +653,7 @@ export class NftService {
   }
 
   // get 1155 nft along with its owner
-  async get1155NftOwners(getNft1155: GetNft1155): Promise<any> {
+  async get1155NftOwnersforSingleNft(getNft1155: GetNft1155): Promise<any> {
     const { contract_address, token_id } = getNft1155;
     try {
       return await this.Nft1155OwnerModel.find({ contract_address, token_id });
@@ -636,7 +676,7 @@ export class NftService {
       }
       //  check he ownes nft or not 
       // getting all owners
-      const get_owners = await this.get1155NftOwners({ contract_address, token_id });
+      const get_owners = await this.get1155NftOwnersforSingleNft({ contract_address, token_id });
 
       // check owner exists or not
       const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
@@ -699,7 +739,12 @@ export class NftService {
     const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
     try {
       log(getUserOwnedAssets);
-      return await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page);
+      return {
+        total_pages: await this.Nft1155OwnerModel.countDocuments({ token_owner: owner_address }),
+        current_page: page_number,
+        items_per_page,
+        nfts: await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page)
+      };
 
     } catch (error) {
       return {
@@ -738,7 +783,7 @@ export class NftService {
     }
   }
 
-  async get1155NftOwner(getNft1155: get1155nft): Promise<any> {
+  async getSingle1155NftByOwner(getNft1155: get1155nft): Promise<any> {
     const { contract_address, token_id, token_owner } = getNft1155;
     try {
       return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
