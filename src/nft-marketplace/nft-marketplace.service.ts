@@ -957,7 +957,7 @@ export class NftMarketplaceService {
         return { message: 'nft not found' }
       }
       // Check if owner has that nft or not 
-      const checkOwner = await this.nftService.get1155NftOwner({ contract_address, token_id, token_owner })
+      const checkOwner = await this.nftService.getSingle1155NftByOwner({ contract_address, token_id, token_owner })
       if (!checkOwner) {
         return {
           message: 'Owner dont have any nft from the collection'
@@ -979,18 +979,17 @@ export class NftMarketplaceService {
       //  if other owner of this asset 
       const checkActiveSale = await this.Sale1155Model.find({ token_owner, token_id, contract_address, status: 'started' })
       if (checkActiveSale.length > 0) {
-        // const update_nft = await this.nftService.update1155Nft(
-        //   { contract_address, token_id },
-        //   { 'listed_tokens': nft.listed_tokens + number_of_tokens, is_in_sale: true },
-        // );
+
         return await this.update1155sale(sale)
       }
 
       // save in DB
       const save_in_db = await this.Sale1155Model.create(sale);
       //update in nft is in sale is true
-      // const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
-
+      const update_nft = await this.nftService.update1155Nft(
+        { contract_address, token_id },
+        { 'listed_tokens': nft.listed_tokens + number_of_tokens, is_in_sale: true },
+      );
       // creating Activity
       const activity = {
         event: 'Sale',
@@ -1022,7 +1021,7 @@ export class NftMarketplaceService {
       if (!nft) {
         return { message: 'nft not found' }
       }
-      const checkOwner = await this.nftService.get1155NftOwner({ contract_address, token_id, token_owner })
+      const checkOwner = await this.nftService.getSingle1155NftByOwner({ contract_address, token_id, token_owner })
       if (!checkOwner) {
         return {
           message: 'Owner dont have any nft from the collection'
@@ -1078,7 +1077,7 @@ export class NftMarketplaceService {
       if (!nft) {
         return { message: 'nft not found' }
       }
-      const checkOwner = await this.nftService.get1155NftOwner({ contract_address, token_id, token_owner })
+      const checkOwner = await this.nftService.getSingle1155NftByOwner({ contract_address, token_id, token_owner })
       if (!checkOwner) {
         return {
           message: 'Owner dont have any nft from the collection'
@@ -1370,7 +1369,20 @@ export class NftMarketplaceService {
       }
       console.log('CREATE SALE STARTED \n', createSale);
       console.log('RESPONSE FROM BLOCK CHAIN \n', res);
-      //  get nft 
+
+
+      /*  1155 Token Transfer Steps
+       (1)get qunatity of tokens he hold 
+       (2)debit form token_owner credit to offer_person_address
+       (3)thinking to check balance of the offer_person_address 
+       (4)front end is already checking i guess , 
+       (5)we can trust front end na , so  pls tell 
+       (6)if(token_owner holds zero tokens of that nft 
+       (7)shall we remove that owner document )
+       (8)update token volume
+       */
+
+
       // const nft = await this.nftService.getSingleNft({ contract_address, token_id });
       //Make changes in our Db
       // if (Number(offer_details.offer_price) > Number(nft.price)) {

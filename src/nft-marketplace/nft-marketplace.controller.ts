@@ -121,66 +121,6 @@ export class NftMarketplaceController {
       return 'something wrong in the system';
     }
   }
-  //  Create 1155-
-  @Post('create-1155-nft-sale')
-  async createG2W3_1155_Sale(@Body() g2W3_1155Sale: G2W3_1155Sale) {
-    const { token_owner, contract_address, token_id, number_of_tokens, start_date, end_date,
-      per_unit_price } = g2W3_1155Sale;
-    try {
-      //  create Auction or sale
-
-      //  check nft exists or not 
-      const check_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
-      if (!check_nft_exists) {
-        return `There is no Asset with ${contract_address} and ${token_id}`
-      }
-      //  check he ownes nft or not 
-      // getting all owners
-      const get_owners = await this.nftservice.get1155NftOwners({ contract_address, token_id });
-
-      // check owner exists or not
-      const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
-      console.log(is_owner_exists);
-
-      if (!is_owner_exists) {
-        return `${token_owner} doesnt hold this ${contract_address} ${token_id}`;
-      }
-      //  put it on auction 
-      //
-
-      //  check he has Quatity or not
-      console.log(`${is_owner_exists.number_of_tokens} > ${number_of_tokens}`);
-      if (is_owner_exists.number_of_tokens < number_of_tokens) {
-        return `You dont have Sufficient Tokens ${is_owner_exists.number_of_tokens}`;
-      }
-
-      // un comment this once auction schema is over for 1155
-      // const activity_data = {
-      //   event: 'List',
-      //   item: {
-      //     name: check_nft_exists.meta_data.name,
-      //     contract_address,
-      //     token_id,
-      //     image: check_nft_exists.meta_data.image
-      //   },
-      //   'price': min_price,
-      //   'quantity': 1,
-      //   'from': ethers.utils.getAddress(token_owner),
-      //   'to': '----',
-      //   'read': false
-      // }
-      // await this.activityService.createActivity(activity_data);
-      // return await this.nftMarketplaceService.createAuction(g2W3_1155Auction);
-
-    } catch (error) {
-      console.log(error)
-      return {
-        success: false,
-        message: 'Something Went Wrong',
-        error,
-      }
-    }
-  }
 
   // 
   /*********************[CANCEL-AUCTION]*******************/
@@ -683,8 +623,8 @@ export class NftMarketplaceController {
       "offer_person_address":"${offer_person_address}",
       "token_owner":"${token_owner}"
   }`
-    let hashMessage = await ethers.utils.hashMessage(rawMsg)
-    let signedAddress = await ethers.utils.verifyMessage(`Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    let hashMessage = ethers.utils.hashMessage(rawMsg)
+    let signedAddress = ethers.utils.verifyMessage(`Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
     console.log("signed Message : ", signedAddress)
     const checkCredentials = { "contract_address": body.contract_address, "token_id": body.token_id };
     if (signedAddress !== token_owner) {
