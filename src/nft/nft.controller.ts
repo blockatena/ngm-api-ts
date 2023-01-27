@@ -639,7 +639,7 @@ export class NftController {
         item: {
           name: jsonData.name,
           contract_address: arrdb.contract_address,
-          token_id: `${arrdb.token_id}`,
+          token_id: arrdb.token_id,
           image: jsonData.image,
         },
         price: 0,
@@ -1003,7 +1003,9 @@ export class NftController {
       return {
         contract_details: await this.nftservice.getContract(contract_address),
         nft: await this.nftservice.get1155Nft({ contract_address, token_id }),
-        owners: await this.nftservice.get1155NftOwnersforSingleNft({ contract_address, token_id })
+        owners: await this.nftservice.get1155NftOwnersforSingleNft({ contract_address, token_id }),
+        offers: await this.nftMarketPlaceService.getAll1155offer({ contract_address, token_id, status: 'started' }),
+        sales: await this.nftMarketPlaceService.getAll1155sale({ contract_address, token_id, status: 'started' })
       }
     } catch (error) {
       return {
