@@ -31,7 +31,7 @@ export class G2W3_1155CancelSale {
 }
 export class G2W3_1155Offer {
     @ApiProperty({default:"0x81CcBB87535864eD9F511f5196fc22deEd77a272"})
-    offer_user_address: string;
+    offer_person_address: string;
     @ApiProperty({default:"0x68e24E30348cACcB8dF3d62Fa2891B4864ff0879"})
     contract_address: string;
     @ApiProperty()
@@ -40,17 +40,17 @@ export class G2W3_1155Offer {
     number_of_tokens: number;
     @ApiProperty()
     per_unit_price: number;
-    @ApiProperty()
-    start_date: Date;
-    @ApiProperty()
-    end_date: Date;
+    // @ApiProperty()
+    // start_date: Date;
+    // @ApiProperty()
+    // end_date: Date;
     // @ApiProperty()
     // sign
 }
 
 export class G2W3_1155AcceptOffer {
     @ApiProperty({default:"0x81CcBB87535864eD9F511f5196fc22deEd77a272"})
-    offer_user_address: string;
+    offer_person_address: string;
     @ApiProperty()
     token_owner:string;
     @ApiProperty({default:"0x68e24E30348cACcB8dF3d62Fa2891B4864ff0879"})
@@ -59,12 +59,12 @@ export class G2W3_1155AcceptOffer {
     token_id: number;
     @ApiProperty()
     number_of_tokens: number;
-    @ApiProperty()
-    per_unit_price: number;
+    // @ApiProperty()
+    // per_unit_price: number;
 }
 export class G2W3_1155CancelOffer {
     @ApiProperty({default:"0x81CcBB87535864eD9F511f5196fc22deEd77a272"})
-    offer_user_address: string;
+    offer_person_address: string;
     @ApiProperty({default:"0x68e24E30348cACcB8dF3d62Fa2891B4864ff0879"})
     contract_address: string;
     @ApiProperty()
