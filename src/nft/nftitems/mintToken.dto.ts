@@ -1,6 +1,7 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 export class MintToken {
-
+  @ApiProperty({default:"Api Holder Address"})
+  wallet_address: string
   @ApiProperty({
     description: 'Contract Address of the deployed contract (Battle Field)',
     example: '0x2F9792620f776d5f5231F5f24b5194Ad36967B8a',
@@ -52,8 +53,6 @@ export class MintToken {
     example: 'https://google.com',
   })
   readonly external_uri: string;
-
-  readonly limit?: number;
 }
 
 @ApiExtraModels()
