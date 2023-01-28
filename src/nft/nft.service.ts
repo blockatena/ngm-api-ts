@@ -22,6 +22,7 @@ import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.
 import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './nftitems/get-nft-1155';
 import { UpdateTokens } from './nftitems/update-tokens';
 import { UpdateOwner } from './nftitems/address.dto';
+import { pipeline } from 'stream';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -418,7 +419,6 @@ export class NftService {
     return { permit: true }
   }
 
-
   async count721Assets(wallet_address: string): Promise<any> {
     try {
       return await this.NftModel.countDocuments({ token_owner: wallet_address });
@@ -432,8 +432,6 @@ export class NftService {
     }
   }
 
-
-  // 
   // Push Images to token 
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
@@ -459,7 +457,7 @@ export class NftService {
       };
     }
   }
-  //
+
   async getBids(auction_id: string): Promise<any> {
     try {
       console.log('From Get All bids', auction_id);
@@ -474,10 +472,7 @@ export class NftService {
       };
     }
   }
-  async getSale(): Promise<any> {
-    try {
-    } catch (error) { }
-  }
+
   async pushTokenUriToDocArray(
     contract_address: string,
     tokenUri: string,
@@ -674,7 +669,7 @@ export class NftService {
         return `There is no Asset with ${contract_address} and ${token_id}`;
 
       }
-      //  check he ownes nft or not 
+      // check he ownes nft or not 
       // getting all owners
       const get_owners = await this.get1155NftOwnersforSingleNft({ contract_address, token_id });
 
@@ -739,14 +734,60 @@ export class NftService {
     const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
     try {
       log(getUserOwnedAssets);
+      // const nfts = await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page);
+      // 
+      const nfts = await this.Nft1155OwnerModel.aggregate([
+        { $match: { token_owner: owner_address } },
+        {
+          $lookup: {
+            from: 'nft1155schemas',
+            let: {
+              contract_address: '$contract_address',
+              token_id: '$token_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$contract_address', '$contract_address'],
+                      },
+                      {
+                        $eq: ['$$token_id', '$token_id'],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: `auction1`,
+          },
+        }, {
+          $project: {
+            contract_address: 1,
+            token_id: 1,
+            chain: 1,
+            token_owner: 1,
+            number_of_tokens: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            meta_data: "$auction1.meta_data"
+          }
+        },
+      ])
+        .sort({ createdAt: -1 })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page);
+      // 
       return {
         total_pages: await this.Nft1155OwnerModel.countDocuments({ token_owner: owner_address }),
         current_page: page_number,
         items_per_page,
-        nfts: await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page)
-      };
-
-    } catch (error) {
+        nfts
+      }
+    }
+    catch (error) {
       return {
         success: false,
         message: 'Something went wrong in  Service',
