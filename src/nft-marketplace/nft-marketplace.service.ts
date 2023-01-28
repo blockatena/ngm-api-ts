@@ -1078,8 +1078,8 @@ export class NftMarketplaceService {
     const data = { token_owner, contract_address, token_id, status: 'started' }
     try {
 
-      const nft = await this.nftService.get1155Nft({ contract_address, token_id });
-      if (!nft) {
+      const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id });
+      if (!get1155nft) {
         return { message: 'nft not found' }
       }
       const checkOwner = await this.nftService.getSingle1155NftByOwner({ contract_address, token_id, token_owner })
@@ -1094,8 +1094,8 @@ export class NftMarketplaceService {
           message: 'No sales found'
         }
       }
-      const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
-      const updatedQty = (get1155nft.listed_tokens) - (check_users_sales[0].number_of_tokens)
+      // const get1155nft = await this.nftService.get1155Nft({ contract_address, token_id })
+      const updatedQty = (get1155nft.listed_tokens) - (check_users_sales[0].number_of_tokens);
       // save in DB
       const save_in_db = await this.Sale1155Model.findOneAndUpdate(data, { $set: { status: 'cancelled' } });
 
