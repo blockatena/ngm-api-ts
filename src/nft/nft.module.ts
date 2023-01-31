@@ -1,5 +1,8 @@
 import { HttpModule } from '@nestjs/axios';
 import { NftController } from './nft.controller';
+import { MintController } from './mint.controller';
+import { Erc721CollectionsController } from './erc721-cl.controller';
+import { ERC1155NftController } from './erc1155.controller';
 import { NftService } from './nft.service';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, forwardRef, Module } from '@nestjs/common';
@@ -56,7 +59,7 @@ require('dotenv').config();
     //   db: process.env.REDIS_DB,
     // }),
   ],
-  controllers: [NftController],
+  controllers: [NftController,MintController,Erc721CollectionsController,ERC1155NftController],
   providers: [NftService],
   //  add to  RedisCliService
   exports: [NftService],

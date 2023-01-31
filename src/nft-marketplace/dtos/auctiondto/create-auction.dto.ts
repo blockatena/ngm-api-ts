@@ -35,18 +35,18 @@ export class GetAllBids {
   auction_id: string;
 }
 export class GetAuction {
-  @ApiProperty()
+  @ApiProperty({default:'0x5Eb7D2414e19E730A61aBB897793F0E8406f0F05'})
   contract_address: string;
-  @ApiProperty()
+  @ApiProperty({default:1, minimum:1})
   token_id: string;
-  @ApiProperty()
+  @ApiProperty({default:5})
   end_date: string;
 }
 export class GetUserNfts {
-  @ApiProperty()
+  @ApiProperty({default:'0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72'})
   token_owner: string;
-  @ApiProperty()
+  @ApiProperty({default:1, minimum:1})
   page_number: number;
-  @ApiProperty()
+  @ApiProperty({default:5})
   items_per_page: number;
 }

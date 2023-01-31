@@ -20,15 +20,17 @@ import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
-import { CreateUserDto, GetUser, UpdateUser, UserPic } from './dto/create-user.dto';
+import { CreateUserDto, GetUser, UpdateUser, UserPic, User,deleteUser, uploadUserFile } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags,ApiResponse } from '@nestjs/swagger';
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
-import { GetNotification } from './dto/get-notifiction.dto';
+import { GetNotification,notifications } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/email/email.service';
 import { UserEntity } from './dto/user.dto';
+
 import { updateAllBidsBody } from 'src/nft-marketplace/dtos/create_bid.dto';
+
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
@@ -44,8 +46,16 @@ export class UsersController {
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
   // 
-  @ApiOperation({ summary: 'This Api will create a User' })
-  @Post('create-user')
+  // @ApiOperation({ summary: 'Create User' })
+  // @ApiResponse({
+  //   status: 201,
+  //   type: User
+  // })
+  // @ApiResponse({
+  //   status: 500,
+  //   type: ErrorHandler
+  // })
+  // @Post('create-user')
   async create(@Body() createUserDto: CreateUserDto) {
     const { wallet_address, username, email } = createUserDto;
     try {
@@ -78,11 +88,19 @@ export class UsersController {
     }
   }
 
-  @Get()
-  async findAll() {
-    return await this.usersService.findAll();
-  }
-  @ApiOperation({ summary: 'This API gets you user details' })
+  // @Get()
+  // async findAll() {
+  //   return await this.usersService.findAll();
+  // }
+  @ApiOperation({ summary: 'Get user' })
+  @ApiResponse({
+    status: 201,
+    type: User
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('/get-user/:wallet_address')
   async findOne(@Param() getUser: GetUser): Promise<any> {
     const { wallet_address } = getUser;
@@ -115,8 +133,16 @@ export class UsersController {
     }
   }
 
-  @ApiOperation({ summary: 'This Api will updates username' })
-  @Patch('update-user')
+  @ApiOperation({ summary: 'Update username' })
+  @ApiResponse({
+    status: 201,
+    type: User
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
+  // @Patch('update-user')
   async updateUser(@Body() updateUser: UpdateUser): Promise<any> {
     const { wallet_address, username } = updateUser;
     try {
@@ -135,13 +161,24 @@ export class UsersController {
       }
     }
   }
-  @Delete(':id')
+  @ApiOperation({
+    summary: 'Delete User',
+  })
+  // @Delete(':id')
+  @ApiResponse({
+    status: 201,
+    type: deleteUser
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }
   // File Upload
   @ApiOperation({
-    summary: 'This Api will upload your profile pic or banner gets you URI of that Profile pic or banner',
+    summary: 'Upload profile picture & banner',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -157,7 +194,15 @@ export class UsersController {
   @UseInterceptors(
     FileInterceptor('file'),
   )
-  @Post('uploadFile')
+  @ApiResponse({
+    status: 201,
+    type: uploadUserFile
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
+  // @Post('uploadFile')
   async uploadFile(@Body() body: UserPic,
     @UploadedFile(
       new ParseFilePipe({
@@ -199,6 +244,16 @@ export class UsersController {
     }
   }
   // 
+
+  @ApiOperation({ summary: 'Get Notifications' })
+  @ApiResponse({
+    status: 201,
+    type: [notifications]
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Get('get-user-notification/:wallet_address/:page_number/:items_per_page/')
   async getUserNotification(@Param() getNotification: GetNotification): Promise<any> {
     const { log } = console;

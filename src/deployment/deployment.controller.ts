@@ -8,15 +8,17 @@ import {
 } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
-import { CreateDeploymentDto } from './dto/create-deployment.dto';
+import { CreateDeploymentDto, getContractInfo, getCollection } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 import { APIGuard } from 'src/guards/roles.guard';
 import { log } from 'console';
+
 import { UsersService } from 'src/users/users.service';
 import { CommonService } from 'src/common/common.service';
+
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
@@ -31,7 +33,15 @@ export class DeploymentController {
     description: 'API Key is needed to deploy the collection'
   })
   @UseGuards(APIGuard)
-  @ApiOperation({ summary: 'This Api will create a collection' })
+  @ApiOperation({ summary: 'Create Collection' })
+  @ApiResponse({
+    status: 201,
+    type: getCollection
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
     log(deploymentBody);
@@ -116,6 +126,8 @@ export class DeploymentController {
       }
     }
   }
+
+
   // @Get('GetAll-contracts/:owneraddr')
   // async getContractsOfUser(@Param('owneraddr') owneraddr: string) {
   //   return this.deploymentService.getContractByOwnerAddr(owneraddr);
@@ -146,12 +158,20 @@ export class DeploymentController {
   //   const uri = await nftCntr.baseURI(0);
   //   log('uri', uri);
   // }
-
-  @Get('contract-Details/:cntraddr')
-  async getContractdetails(@Param('cntraddr') cntraddr: string) {
+@ApiOperation({ summary: 'Get a Collection' })
+ @ApiResponse({
+    status: 201,
+    type: getCollection
+  })
+  @ApiResponse({
+    status: 500,
+    type: ErrorHandler
+  })
+  @Get('contract-Details/:contract_address')
+  async getContractdetails(@Param() getContractInfo: getContractInfo) {
     try {
-      log(cntraddr);
-      return await this.deploymentService.getContractDetailsByContractAddress(cntraddr);
+      log(getContractInfo);
+      return await this.deploymentService.getContractDetailsByContractAddress(getContractInfo.contract_address);
     }
     catch (error) {
       log(error);

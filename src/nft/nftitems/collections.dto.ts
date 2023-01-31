@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { APIGuard } from "src/guards/roles.guard";
 export class GetCollectionBody {
-    @ApiProperty({ default: 1 })
+    @ApiProperty({ default: 1 , minimum: 1 })
     page_number: number;
     @ApiProperty({ default: 5 })
     items_per_page: number;
