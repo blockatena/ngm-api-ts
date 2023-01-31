@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
@@ -16,8 +16,13 @@ import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
-import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
+import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
+import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './nftitems/get-nft-1155';
+import { UpdateTokens } from './nftitems/update-tokens';
+import { UpdateOwner } from './nftitems/address.dto';
+import { pipeline } from 'stream';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -30,7 +35,8 @@ export class NftService {
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
-    @InjectModel(Nft1155Schema.name) private Nft11555Model: Model<Nft1155Document>
+    @InjectModel(Nft1155Schema.name) private Nft11555Model: Model<Nft1155Document>,
+    @InjectModel(Nft1155OwnerSchema.name) private Nft1155OwnerModel: Model<Nft1155OwnerDocument>
   ) {
     NftModel;
     BidModel;
@@ -38,6 +44,7 @@ export class NftService {
     MetadataModel;
     ContractModel;
     Nft11555Model;
+    Nft1155OwnerModel;
   }
   async getMetadata(cid: string, ipfsFlag: boolean): Promise<any> {
     return await this.httpService.axiosRef.get(
@@ -56,12 +63,42 @@ export class NftService {
   }
   async createNft(data: any): Promise<any> {
     try {
+      // 
       return await this.NftModel.create(data);
     } catch (error) {
 
     }
 
   }
+  // ADDING OWNER
+  async addOwner(updateOwner: UpdateOwner): Promise<any> {
+    const { contract_address, token_owner } = updateOwner;
+    try {
+      return await this.ContractModel.updateOne({ contract_address }, { $addToSet: { unique_owners: token_owner } });
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: "Something went wrong in add Owner Service",
+        error
+      }
+    }
+  }
+  // REMOVING OWNER
+  async removeOwner(updateOwner: UpdateOwner): Promise<any> {
+    const { contract_address, token_owner } = updateOwner;
+    try {
+      return await this.ContractModel.updateOne({ contract_address }, { $unset: { unique_owners: token_owner } });
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: "Something went wrong in add Owner Service",
+        error
+      }
+    }
+  }
+
   // To get all Nfts
   async getAllNfts(page_details: Paginate): Promise<any> {
     const { page_number, items_per_page } = page_details;
@@ -172,6 +209,7 @@ export class NftService {
     }
 
   }
+  // Get Nfts By Collection
   async getNftsByCollection(contract_address: string): Promise<any> {
     try {
       return await this.NftModel.aggregate([
@@ -204,9 +242,11 @@ export class NftService {
           },
         },
       ]);
-    } catch (error) { }
+    } catch (error) {
+      return { success: false, message: "Something went Wrong", error }
+    }
   }
-
+  /****[GET_NFTS_LISTED]*/
   async getNftssListed(data: GetListedCollections): Promise<any> {
     const {
       contract_address,
@@ -231,11 +271,20 @@ export class NftService {
       const recent = order == 'NewToOld' ? -1 : 1;
       console.log(recent, alpha_order);
       const condition = {};
+
+      if (!listed_in && !contract_address && !token_owner) {
+        return {
+          success: false,
+          message: 'Required Fields need to be Provided',
+        }
+      }
       if (listed_in) {
-        condition[`filter`] =
-          listed_in == 'auction'
-            ? { is_in_auction: true }
-            : { is_in_sale: true };
+        if (listed_in === 'auction') {
+          condition[`is_in_auction`] = true;
+        }
+        if (listed_in === 'sale') {
+          condition[`is_in_sale`] = true;
+        }
       }
       if (contract_address) {
         condition[`contract_address`] = contract_address;
@@ -285,7 +334,10 @@ export class NftService {
     try {
       return await this.NftModel.find({ contract_address });
     } catch (error) {
-
+      return {
+        message: 'something went wrong',
+        error
+      }
     }
   }
 
@@ -294,7 +346,7 @@ export class NftService {
     console.log(contract_address, 'From Service');
     return await this.ContractModel.findOne({ contract_address });
   }
-  async getCollectionsOwned(user: GetUserOwnedCollections): Promise<any> {
+  async getCollectionsOwned(user: GetUserOwnedAssets): Promise<any> {
     const { owner_address, items_per_page, page_number } = user;
     try {
       const collections = await this.ContractModel.find({ owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1)
@@ -322,10 +374,65 @@ export class NftService {
     } catch (error) {
       log(error)
       return {
+        message: 'something went wrong',
         error
       }
     }
   }
+  // Count Assets by User
+  async count1155Assets(wallet_address: string): Promise<any> {
+    try {
+      return await this.Nft1155OwnerModel.countDocuments({ token_owner: wallet_address });
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: "Something Went Wrong",
+        error
+      }
+    }
+  }
+  // Get Limits
+  async checKLimit(asset_limit: number, token_owner: string): Promise<any> {
+
+    //  Only the Contract-Owner should Mint
+    // Limit
+    const get_721_count = await this.count721Assets(token_owner)
+    const get_1155_count = await this.count1155Assets(token_owner);
+    const total_count = Number(get_721_count) + Number(get_1155_count);
+
+    log(`1155 Count: ${get_1155_count}  \n 
+   721 Count  ${get_721_count} \n 
+     total=  ${total_count}  \n
+     ${asset_limit}  `)
+
+    const condition = Number(total_count) > Number(asset_limit)
+    console.log(condition);
+    if (condition) {
+      log('exceeded');
+      return {
+        permit: false,
+        message: `Hello ${token_owner} you have Exceeded you Limit Your current_limit for Assets :  ${asset_limit}
+       Your current Nfts ${total_count}`
+      };
+    }
+    return { permit: true }
+  }
+
+  async count721Assets(wallet_address: string): Promise<any> {
+    try {
+      return await this.NftModel.countDocuments({ token_owner: wallet_address });
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: "Something Went Wrong",
+        error
+      }
+    }
+  }
+
+  // Push Images to token 
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
       {
@@ -346,10 +453,11 @@ export class NftService {
       console.log(error);
       return {
         message: 'Something went wrong in service',
+        error
       };
     }
   }
-  //
+
   async getBids(auction_id: string): Promise<any> {
     try {
       console.log('From Get All bids', auction_id);
@@ -357,12 +465,14 @@ export class NftService {
         auction_id,
         status: 'started',
       }).sort({ bid_amount: -1 });
-    } catch (error) { }
+    } catch (error) {
+      return {
+        message: 'Something went wrong in service',
+        error
+      };
+    }
   }
-  async getSale(): Promise<any> {
-    try {
-    } catch (error) { }
-  }
+
   async pushTokenUriToDocArray(
     contract_address: string,
     tokenUri: string,
@@ -441,7 +551,287 @@ export class NftService {
     } catch (error) {
       return {
         success: false,
-        message: 'Something went wrong in getSingleNft Service',
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  //Get 1155
+  async get1155Nft(getNft1155: GetNft1155): Promise<any> {
+    const { contract_address, token_id } = getNft1155;
+    try {
+      return await this.Nft11555Model.findOne({ contract_address, token_id });
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+
+  /********[GET 1155 NFTS]*********/
+  async get1155Nfts(getListedCollections: GetAssets): Promise<any> {
+    const { contract_address, page_number, items_per_page, order, listed_in, alphabetical_order } = getListedCollections;
+    try {
+      const alpha_order = alphabetical_order == 'ZtoA' ? -1 : 1;
+      const recent = order == 'NewToOld' ? -1 : 1;
+      console.log(recent, alpha_order);
+      const condition = {};
+      if (listed_in) {
+        condition[`filter`] =
+          listed_in == 'auction'
+            ? { is_in_auction: true }
+            : { is_in_sale: true };
+      }
+      if (contract_address) {
+        condition[`contract_address`] = contract_address;
+      }
+      const sort_order = {};
+      if (order) {
+        sort_order['createdAt'] = recent;
+      }
+      if (alphabetical_order) {
+        sort_order['meta_data.name'] = alpha_order;
+      }
+      console.log(sort_order);
+      console.log('condition', condition);
+      const nfts = await this.Nft11555Model.find(condition)
+        .sort({ ...sort_order })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
+      const total_nfts = await this.Nft11555Model.find(condition).countDocuments();
+      return {
+        collection: await this.getContract(contract_address),
+        total_nfts,
+        total_pages: Math.ceil(total_nfts / items_per_page),
+        currentPage: page_number,
+        nfts,
+      }
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        error,
+        message: "Something Went Wrong"
+      }
+    }
+  }
+  //**********************[UNIQUE_OWNERS_1155]**********************/
+  async uniqueOwners1155(contract_address: string): Promise<any> {
+    try {
+      return await this.Nft1155OwnerModel.distinct('token_owner', {
+        contract_address,
+      });
+    } catch (error) {
+      log(error);
+    }
+  }
+  async getAll1155Nfts(contract_address: string): Promise<any> {
+    try {
+      const nfts = await this.Nft11555Model.find({ contract_address })
+      const total_nfts = await this.Nft11555Model.find({ contract_address }).countDocuments();
+      return {
+        // collection: await this.getContract(contract_address),
+        total_nfts,
+        // nfts,
+      }
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        error,
+        message: "Something Went Wrong"
+      }
+    }
+  }
+
+  // get 1155 nft along with its owner
+  async get1155NftOwnersforSingleNft(getNft1155: GetNft1155): Promise<any> {
+    const { contract_address, token_id } = getNft1155;
+    try {
+      return await this.Nft1155OwnerModel.find({ contract_address, token_id });
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  // get number of tokens does user hold
+  async getTokensUserHold(getTokensUserHold: GetTokensUserHold): Promise<any> {
+    const { contract_address, token_id, token_owner } = getTokensUserHold;
+    try {
+      const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
+      if (!check_nft_exists) {
+        return `There is no Asset with ${contract_address} and ${token_id}`;
+
+      }
+      // check he ownes nft or not 
+      // getting all owners
+      const get_owners = await this.get1155NftOwnersforSingleNft({ contract_address, token_id });
+
+      // check owner exists or not
+      const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
+      console.log(is_owner_exists);
+
+      if (!is_owner_exists) {
+        return `${token_owner} doesnt hold this ${contract_address} ${token_id}`;
+
+      }
+      return { tokens: is_owner_exists.number_of_tokens };
+    } catch (error) {
+      log(error)
+      return {
+        message: `something went wrong`,
+      }
+    }
+  }
+  // 
+  async get1155AssetByOwner(getAssetByUser: GetAssetByUser): Promise<any> {
+    const { contract_address, token_id, token_owner } = getAssetByUser;
+    try {
+      const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
+      if (!check_nft_exists) {
+        return `There is no Asset with ${contract_address} and ${token_id}`;
+
+      }
+      //  check he ownes nft or not 
+      // getting all owners
+      return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: 'Something Went Wrong',
+        error,
+      }
+    }
+  }
+  // update user Tokens
+  async updateTokens(updateTokens: UpdateTokens): Promise<any> {
+    const { contract_address, token_id, _tokens, token_owner, operation } = updateTokens;
+    try {
+      if (operation === "INCREMENT")
+        return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $inc: { number_of_tokens: _tokens } })
+      else
+        return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $dec: { number_of_tokens: _tokens } });
+
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: `Something went Wrong`,
+        error
+      }
+    }
+  }
+
+  // 
+  async get1155NftByOwner(getUserOwnedAssets: GetUserOwnedAssets): Promise<any> {
+    const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
+    try {
+      log(getUserOwnedAssets);
+      // const nfts = await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page);
+      // 
+      const nfts = await this.Nft1155OwnerModel.aggregate([
+        { $match: { token_owner: owner_address } },
+        {
+          $lookup: {
+            from: 'nft1155schemas',
+            let: {
+              contract_address: '$contract_address',
+              token_id: '$token_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$contract_address', '$contract_address'],
+                      },
+                      {
+                        $eq: ['$$token_id', '$token_id'],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: `auction1`,
+          },
+        }, {
+          $project: {
+            contract_address: 1,
+            token_id: 1,
+            chain: 1,
+            token_owner: 1,
+            number_of_tokens: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            meta_data: "$auction1.meta_data"
+          }
+        },
+      ])
+        .sort({ createdAt: -1 })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page);
+      // 
+      return {
+        total_pages: await this.Nft1155OwnerModel.countDocuments({ token_owner: owner_address }),
+        current_page: page_number,
+        items_per_page,
+        nfts
+      }
+    }
+    catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+  // 
+
+  async create1155NftOwner(arrdb: any): Promise<any> {
+    try {
+      return await this.Nft1155OwnerModel.create(arrdb);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
+        error,
+      }
+    }
+  }
+
+  async update1155Nft(data: any, update_data: any): Promise<any> {
+    try {
+      return await this.Nft11555Model.findOneAndUpdate(data, {
+        $set: update_data,
+      });
+    } catch (error) {
+      console.log(error)
+
+      return {
+        message: "something went Wrong",
+        error
+      }
+    }
+  }
+
+  async getSingle1155NftByOwner(getNft1155: get1155nft): Promise<any> {
+    const { contract_address, token_id, token_owner } = getNft1155;
+    try {
+      return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Something went wrong in  Service',
         error,
       }
     }

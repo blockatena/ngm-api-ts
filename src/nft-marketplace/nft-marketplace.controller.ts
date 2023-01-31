@@ -27,7 +27,9 @@ import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { off } from 'process';
-// @ApiTags('MarketPlace')
+import { brotliDecompress } from 'zlib';
+import { G2W3_1155Sale } from './dtos/auctiondto/create-1155-auction.dto';
+@ApiTags('MarketPlace')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
   constructor(
@@ -121,6 +123,8 @@ export class NftMarketplaceController {
       return 'something wrong in the system';
     }
   }
+
+  // 
   /*********************[CANCEL-AUCTION]*******************/
   // @ApiOperation({
   //   summary: 'Cancel the Auction',
@@ -621,8 +625,8 @@ export class NftMarketplaceController {
       "offer_person_address":"${offer_person_address}",
       "token_owner":"${token_owner}"
   }`
-    let hashMessage = await ethers.utils.hashMessage(rawMsg)
-    let signedAddress = await ethers.utils.verifyMessage(`Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
+    let hashMessage = ethers.utils.hashMessage(rawMsg)
+    let signedAddress = ethers.utils.verifyMessage(`Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
     console.log("signed Message : ", signedAddress)
     const checkCredentials = { "contract_address": body.contract_address, "token_id": body.token_id };
     if (signedAddress !== token_owner) {
@@ -682,18 +686,19 @@ export class NftMarketplaceController {
   // async changeBidPrice() {}
   // @ApiOperation({ summary: ' will return all the bids of the auction' })
   // @Post('get-bid-list-by-auction')
-  async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
-    try {
-      //Auction
-      return;
-    } catch (error) {
-      console.log(error);
-    }
-  }
+[
+  // async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
+  //   try {
+  //     //Auction
+  //     return ``;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
+[
   // @Get('test')
   // async test(): Promise<any> {
   //   return await this.nftMarketplaceService.addvolume();
   // }
-
 
 }

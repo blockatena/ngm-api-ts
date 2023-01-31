@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, StringExpressionOperatorReturningBoolean } from 'mongoose';
+import { Document, set, StringExpressionOperatorReturningBoolean } from 'mongoose';
 export type ContractDocument = ContractSchema & Document;
 
 @Schema({ timestamps: true })
@@ -10,13 +10,15 @@ export class ContractSchema {
   owner_address: string;
   @Prop({ unique: true })
   collection_name: string;
+  @Prop()
+  total_supply: number;
   @Prop({ type: Object })
   chain: { id: number, name: string };
   @Prop()
   type: string;
   @Prop()
   transactionhash: string;
-  @Prop({ unique: true })
+  @Prop()
   contract_address: string;
   @Prop()
   description: string;

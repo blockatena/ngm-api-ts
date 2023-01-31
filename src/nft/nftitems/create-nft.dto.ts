@@ -25,8 +25,8 @@ export class GetCollectionsBody {
 export class GetNftBody {
   @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
   readonly contract_address: string;
-  @ApiProperty({ default: '1' })
-  readonly token_id: string;
+  @ApiProperty({ example: '1' })
+  readonly token_id: number;
 }
 export class Paginate {
   @ApiProperty({ default: 1 })

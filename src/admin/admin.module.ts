@@ -10,7 +10,8 @@ import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
 import { CronjobService } from 'src/cronjob/cronjob.service';
 import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
 import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
-
+import { Offer1155Schema, offer1155Schema } from 'src/schemas/offer1155.schema';
+import { Sale1155Schema, sale1155Schema } from 'src/schemas/sale1155.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -20,6 +21,8 @@ import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
       { name: ContractSchema.name, schema: contractSchema },
       { name: SalesSchema.name, schema: salesSchema },
       { name: OfferSchema.name, schema: offerSchema },
+      { name: Sale1155Schema.name, schema: sale1155Schema },
+      { name: Offer1155Schema.name, schema: offer1155Schema },
     ]),
   ],
   controllers: [AdminController],

@@ -10,7 +10,9 @@ import { NftSchema, NftDocument } from 'src/nft/schema/nft.schema';
 import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
 import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
 import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
-
+import { Offer1155Schema, Offer1155Document } from 'src/schemas/offer1155.schema';
+import { Sale1155Schema, Sale1155Document } from 'src/schemas/sale1155.schema';
+import { Mode } from 'fs';
 @Injectable()
 export class AdminService {
   constructor(
@@ -23,6 +25,8 @@ export class AdminService {
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
     @InjectModel(SalesSchema.name) private SalesModel: Model<SalesDocument>,
     @InjectModel(OfferSchema.name) private OfferModel: Model<OfferDocument>,
+    @InjectModel(Offer1155Schema.name) private Offer1155Model: Model<Offer1155Document>,
+    @InjectModel(Sale1155Schema.name) private Sale1155Model: Model<Sale1155Document>
   ) {
     AuctionModel;
     BidModel;

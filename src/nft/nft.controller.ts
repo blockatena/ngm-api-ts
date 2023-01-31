@@ -47,7 +47,7 @@ import {
   Paginate,
   NftContractUser,
 } from './nftitems/create-nft.dto';
-import { GetCollectionBody, GetUserOwnedCollections } from './nftitems/collections.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
@@ -57,15 +57,16 @@ import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
-import { getEnvironment } from 'src/utils/common';
-import { getWallet } from '../utils/common';
 import { UploadAsset, UploadAssetError } from './schemas/upload-asset.schema';
 import { GetAllNfts, getListedNFts, GetAllCollections,GetSingleNft, getAsset,getAllCollections,getAllNfts, GetSingleCollection,getTokenBalance} from './schemas/get-all-nfts.schema';
 import { ErrorHandler } from './utils/errorhandlers';
 import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
 import { blockParams } from 'handlebars';
 import { GetBal1155 } from './nftitems/getbal';
-import { formatEther } from 'ethers/lib/utils';
+import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
+import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
+import { CommonService } from 'src/common/common.service';
+import { stringify } from 'querystring';
 const { log } = console;
 // require('dotenv').config();
 
@@ -88,7 +89,8 @@ export class NftController {
     // private RedisService: RedisCliService,
     private deploymentService: DeploymentService,
     private activityService: ActivityService,
-    private usersService: UsersService
+    private usersService: UsersService,
+    private readonly commonService: CommonService,
   ) { }
   private MATIC_MUMBAI_RPC_URL = this.configService.get<string>(
     'MUMBAI_RPC_URL',
@@ -277,7 +279,7 @@ export class NftController {
   // }
 
 
-  /****************[GET ALL NFTS WITH PAGINATION]*****************/
+  /****************[GET_ALL_NFTS_WITH_PAGINATION]*****************/
   @ApiResponse({
     status: 201,
     type: GetAllNfts
@@ -320,7 +322,7 @@ export class NftController {
     type: ErrorHandler
   })
   @Get('collections-owned/:owner_address/:page_number/:items_per_page')
-  async getCollectionsOwned(@Param() params: GetUserOwnedCollections): Promise<any> {
+  async getCollectionsOwned(@Param() params: GetUserOwnedAssets): Promise<any> {
     const { owner_address, page_number, items_per_page } = params;
     try {
       return (await this.nftservice.getCollectionsOwned({ owner_address, page_number, items_per_page }));
@@ -390,35 +392,45 @@ export class NftController {
       });
       log(is_nft_exists);
       const nft = is_nft_exists;
-      if (!is_nft_exists.nft) {
-        return 'Nft is not present with that details';
+      if (is_nft_exists.nft) {
+
+
+        const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
+        if (is_nft_exists.nft.is_in_auction) {
+          const auction = await this.nftservice.getAuction(body);
+          log(auction._id);
+          const bids = await this.nftservice.getBids(auction._id);
+          log(bids);
+          return {
+            ...nft,
+            token_owner_info,
+            auction,
+            bids,
+          };
+        }
+        if (is_nft_exists.nft.is_in_sale) {
+          log(' is in sale');
+          const sale = await this.nftMarketPlaceService.getSale({
+            contract_address,
+            token_id,
+            status: 'started',
+          });
+          const offers = await this.nftMarketPlaceService.getAllOffers({
+            sale_id: sale._id,
+          });
+          return { ...nft, token_owner_info, sale, offers };
+        }
+        return { ...nft, token_owner_info };
+      } else {
+        const nft1155 = await this.g2Web3_1155({ contract_address, token_id: token_id })
+        if (nft1155.nft) {
+          return nft1155
+        } else {
+          return {
+            message: 'NFT Not Found'
+          }
+        }
       }
-      const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
-      if (is_nft_exists.nft.is_in_auction) {
-        const auction = await this.nftservice.getAuction(body);
-        log(auction._id);
-        const bids = await this.nftservice.getBids(auction._id);
-        log(bids);
-        return {
-          ...nft,
-          token_owner_info,
-          auction,
-          bids,
-        };
-      }
-      if (is_nft_exists.nft.is_in_sale) {
-        log(' is in sale');
-        const sale = await this.nftMarketPlaceService.getSale({
-          contract_address,
-          token_id,
-          status: 'started',
-        });
-        const offers = await this.nftMarketPlaceService.getAllOffers({
-          sale_id: sale._id,
-        });
-        return { ...nft, token_owner_info, sale, offers };
-      }
-      return { ...nft, token_owner_info };
     } catch (error) {
       log(error);
       return { message: 'Something went wrong' };
@@ -536,10 +548,16 @@ export class NftController {
       );
       log(collection);
       // fetching all Nfts
-      const nfts = await this.nftservice.getNftsByCollection(
-        contract.contract_address,
-      );
-
+      let nfts;
+      if (collection.type === 'NGM1155') {
+        nfts = await this.nftservice.getAll1155Nfts(
+          contract.contract_address
+        );
+      } else {
+        nfts = await this.nftservice.getNftsByCollection(
+          contract.contract_address,
+        );
+      }
       // fetching data for analysis
       const total_volume = nfts.length;
       const floor_price = 0;
@@ -589,73 +607,43 @@ export class NftController {
       image_uri,
       description,
       external_uri,
-      attributes } = body;
+      attributes, wallet_address } = body;
     try {
-      const ENVIRONMENT = getEnvironment();
-      const check_environment = ENVIRONMENT === 'DEV' || ENVIRONMENT === 'PROD';
-      if (!check_environment) {
-        return `Invalid Environment check env  current Environment is ${ENVIRONMENT}`;
-      }
-      // log(`Current Environment is ${ENVIRONMENT}`);
-      const chain_typee = this.configService.get<any>(
-        ENVIRONMENT,
-      );
-
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           contract_address,
         );
+      // check contract is present ot not
+      if (!contract_details) {
+        return `Collection address is Incorrect or Collection Doesnt exist`;
+      }
       const type = contract_details.type;
-      // if (type === "NGM1155") {
-      //   return `You can\'t mint 1155 here`;
+      log("CONTRACT_DETAILS \n", contract_details);
+
+      //  ONLY COLLECTION OWNER CAN MINT
+      // if (!(token_owner === contract_details.owner_address)) {
+      //   return `Only the Contract Owner should Mint the NFT`
       // }
-      if (!(token_owner === contract_details.owner_address)) {
-        return `Only the Contract Owner should Mint the NFT`
-      }
-      log(contract_details);
-      const current_chain = contract_details?.chain?.name;
-      log(`current_chain ${current_chain}`,)
-      const chains = Object.keys(chain_typee);
-      log(`  chains ${chains}`,)
-      const chain_available = chains.find(chain => chain === current_chain);
-      log(`chain_available    ${chain_available}  `);
-      if (!chain_available) {
-        return {
-          message: `you are on ${ENVIRONMENT}  your collection ${contract_details.collection_name} is not deployed here `,
-          chains
-        }
-      }
-      // log(`Requested Chain ${chain_typee}`);
-      const chain_type = chain_typee[`${current_chain}`];
-      log(`RPC is ${chain_type}`);
+
       // Multi Chain Integration
-      const RPC_URL = chain_type;
-      const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
-      log(`RPC_URL   ${RPC_URL} \n
-      PRIV_KEY   ${PRIV_KEY} \n
-      `)
-      // 
-      log("completed");
-      const { provider,
-        wallet } = getWallet({
-          RPC_URL,
-          PRIV_KEY
-        })
-      // log(provider, wallet);
+      const _chain = contract_details?.chain?.name;
+      const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } = await this.commonService.getWallet(_chain);
+      if (!check_environment) {
+        return `Invalid Environment`;
+      }
 
-      // Get Provider
-      // const provider = new ethers.providers.JsonRpcProvider(
-      //   RPC_URL,
-      // );
-      // // add limit
-      // log(RPC_URL, provider);
-      // const wallet = new ethers.Wallet(PRIV_KEY, provider);
-      // only the contract owner should be the minter 
+      log("completed \n");
+      log("CHECKING THE LIMIT \n")
+      // check limit
+      const get_limit = await this.usersService.getUser({ wallet_address: wallet_address });
+      const asset_limit = get_limit?.limit?.assets
+      // const check_limit = await this.nftservice.checKLimit(asset_limit, body.your_address)
+      if (!asset_limit || asset_limit === 0) {
+        return {
+          message: 'Your Maximum Minting Limit Reached'
+        };
+      }
 
-      log(wallet);
-      const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
-      // const is_limit_exceeded = body.limit <= collection_count;
-      // log("nope");
       log(contract_details);
       const abiPath = path.join(
         process.cwd(),
@@ -668,22 +656,19 @@ export class NftController {
         contract_address,
         abi,
         wallet,
-      ); // abi and provider to be declared
-      log('nftContract: ', nftCntr);
+      );
+      log("CONTRACT CONNECTED \n ");
       const feeData = await provider.getFeeData();
-
-      // here
+      log("FEE DATA ", feeData);
       const mintToken = await nftCntr.mint(
         ethers.utils.getAddress(token_owner),
         1,
         { gasPrice: feeData.gasPrice }
       );
-      // here
+      log("\n MINTING TOKEN \n", mintToken);
+      const res = await mintToken.wait();
 
-      log('minttoken', mintToken);
-      const res = await mintToken.wait(1);
-
-      log('response', res);
+      log('RESPONSE FROM BLOCK CHAIN \n', res);
 
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
@@ -697,13 +682,13 @@ export class NftController {
       const jsonBlob = new Blob([JSON.stringify(jsonData)]);
       const cid = await this.storage.storeBlob(jsonBlob);
       const nftStorageUri = `https://nftstorage.link/ipfs`;
-      const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
+      const baseApiUri = API_BASE_URL || 'http://localhost:8080';
       log(baseApiUri, 'baseApiUri');
       const meta_data_url = `${baseApiUri}/metadata/${contract_address}/${tokenId}`;
       const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
 
       log('ipfsMetadataUri', ipfsMetadataUri);
-      const chain = { id: res.chainId || 5, name: current_chain };
+      const chain = { id: res.chainId, name: _chain };
       const collection = await this.nftservice.getNftsByCollection(
         body.contract_address,
       );
@@ -721,7 +706,7 @@ export class NftController {
         contract_address,
         contract_type: type,
         token_id: tokenId,
-        chain: { id: mintToken.chainId, name: current_chain },
+        chain: { id: mintToken.chainId, name: _chain },
         meta_data_url,
         is_in_auction: false,
         token_owner: ethers.utils.getAddress(body.token_owner),
@@ -729,13 +714,12 @@ export class NftController {
       };
       log(arrdb);
       //add to Activity
-
       await this.activityService.createActivity({
         event: 'Minted',
         item: {
           name: jsonData.name,
           contract_address: arrdb.contract_address,
-          token_id: `${arrdb.token_id}`,
+          token_id: arrdb.token_id,
           image: jsonData.image,
         },
         price: 0,
@@ -745,6 +729,9 @@ export class NftController {
         to: ethers.utils.getAddress(body.token_owner),
         read: false,
       });
+      const updateUser = await this.usersService.updateUser(wallet_address, { "limit.assets": asset_limit - 1 })
+      //  ADD OWNER TO COLLECTION
+      await this.nftservice.addOwner({ contract_address, token_owner });
       const data = await this.nftservice.createNft(arrdb);
       log(data);
       const metadata = await this.nftservice.pushTokenUriToDocArray(
@@ -764,7 +751,75 @@ export class NftController {
       }
     }
   }
+  // get number of tokens does user holder
+  @ApiOperation({ summary: "Number of Tokens does user hold" })
+  @Get('g2w3-1155/get-tokens/:token_owner/:contract_address/:token_id')
+  async getTokensUsrHold(@Param() getTokensUserHold: GetTokensUserHold): Promise<any> {
+    const { contract_address, token_id, token_owner } = getTokensUserHold;
+    try {
+      //get nft
+      log(getTokensUserHold);
+      return await this.nftservice.getTokensUserHold(getTokensUserHold);
+    } catch (error) {
+      log(error);
+      return {
+        message: 'Something Went Wrong',
+        error
+      }
+    }
+  }
+  /*********[GET_1155_NFTS_BY_COLLECTION]***********/
+  @ApiOperation({ summary: 'Get Assets by collection' })
+  @Post('get-nfts-1155-collection')
+  async getNfts1155Collection(
+    @Body() Collections_listed: GetAssets,
+  ): Promise<any> {
+    const { contract_address } = Collections_listed;
+    try {
+      log(Collections_listed);
+      const unique_owners = await this.nftservice.uniqueOwners1155(contract_address);
+      log({ unique_owners });
+      const get_nfts = await this.nftservice.get1155Nfts({
+        ...Collections_listed,
+      });
+      return {
+        unique_owners: unique_owners.length,
+        get_nfts
+      };
+    } catch (error) {
+      log(error);
+      return { message: 'something went wrong in controller', error };
+    }
+  }
+  // get type of nft 1155 or 721
+  @ApiOperation({ summary: "Get the type of Collection" })
+  @Get('get-type-of-nft/:contract_address')
+  async getNftType(@Param('contract_address') contract_address: string): Promise<any> {
+    try {
+      log(contract_address);
+
+      const collection = await this.nftservice.getContract(contract_address);
+      log(collection);
+      return { type: collection.type };
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: `Something Went Wrong`,
+        error
+
+      }
+    }
+  }
+
+
   //  Minting Helpers
+  // Guard
+  @ApiHeader({
+    name: 'X-API-HEADER',
+    description: 'API key needed for mint'
+  })
+  @UseGuards(APIGuard)
   @ApiOperation({ summary: "Mint GTW3 1155 Tokens" })
   // @Post('mint-1155')
   async g2Web31155(@Body() body: G2Web3_1155): Promise<any> {
@@ -777,76 +832,44 @@ export class NftController {
       image_uri,
       attributes,
       description,
-      external_uri
+      external_uri,
+      wallet_address
     } = body
     try {
-      // 
-      log(body);
-      const ENVIRONMENT = getEnvironment();
-      const check_environment = ENVIRONMENT === 'DEV' || ENVIRONMENT === 'PROD';
-      if (!check_environment) {
-        return `Invalid Environment check env  current Environment is ${ENVIRONMENT}`;
-      }
-      // log(`Current Environment is ${ENVIRONMENT}`);
-      const chain_typee = this.configService.get<any>(
-        ENVIRONMENT,
-      );
-
+      // GET CONTRACT
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           contract_address,
         );
+      // check contract is present ot not
+      if (!contract_details) {
+        return `Collection address is Incorrect or Collection Doesnt exist`;
+      }
       const type = contract_details.type;
-      if (!(type === "NGM1155")) {
-        return `You can only mint 1155 Here`;
-      }
-      if (!(token_owner === contract_details.owner_address)) {
-        return `Only the Contract Owner should Mint the NFT`
-      }
-      log(contract_details);
-      const current_chain = contract_details?.chain?.name;
-      log(`current_chain ${current_chain}`,)
-      const chains = Object.keys(chain_typee);
-      log(`  chains ${chains}`,)
-      const chain_available = chains.find(chain => chain === current_chain);
-      log(`chain_available    ${chain_available}  `);
-      if (!chain_available) {
-        return {
-          message: `you are on ${ENVIRONMENT}  your collection ${contract_details.collection_name} is not deployed here `,
-          chains
-        }
-      }
-      // log(`Requested Chain ${chain_typee}`);
-      const chain_type = chain_typee[`${current_chain}`];
-      log(`RPC is ${chain_type}`);
+      log("CONTRACT_DETAILS \n", contract_details);
+
+      //  ONLY COLLECTION OWNER CAN MINT
+      // if (!(token_owner === contract_details.owner_address)) {
+      //   return `Only the Contract Owner should Mint the NFT`
+      // }
+
       // Multi Chain Integration
-      const RPC_URL = chain_type;
-      const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
-      log(`RPC_URL   ${RPC_URL} \n
-       PRIV_KEY   ${PRIV_KEY} \n
-       `)
-      // 
-      log("completed");
-      const { provider,
-        wallet } = getWallet({
-          RPC_URL,
-          PRIV_KEY
-        })
-      // log(provider, wallet);
+      const _chain = contract_details?.chain?.name;
+      const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } = await this.commonService.getWallet(_chain);
+      if (!check_environment) {
+        return `Invalid Environment`;
+      }
 
-      // Get Provider
-      // const provider = new ethers.providers.JsonRpcProvider(
-      //   RPC_URL,
-      // );
-      // // add limit
-      // log(RPC_URL, provider);
-      // const wallet = new ethers.Wallet(PRIV_KEY, provider);
-      // only the contract owner should be the minter 
+      // check limit
+      const get_limit = await this.usersService.getUser({ wallet_address: wallet_address });
+      const asset_limit = get_limit?.limit?.assets
+      // const check_limit = await this.nftservice.checKLimit(asset_limit, body.your_address)
+      if (!asset_limit || asset_limit === 0) {
+        return {
+          message: 'Your Maximum Minting Limit Reached'
+        };
+      }
 
-      // log(wallet);
-      // const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
-      // const is_limit_exceeded = body.limit <= collection_count;
-      // log("nope");
       log(contract_details);
       const abiPath = path.join(
         process.cwd(),
@@ -860,7 +883,7 @@ export class NftController {
         abi,
         wallet,
       ); // abi and provider to be declared
-      log('nftContract:::::: ', nftCntr);
+      log('nftContract::::::', nftCntr);
       const feeData = await provider.getFeeData();
 
       //  Minting Part
@@ -871,12 +894,9 @@ export class NftController {
         "0x00",
       );
       // here
-
-      log('minttoken::::', mintToken);
+      log('MINTING TOKEN \n', mintToken);
       const res = await mintToken.wait(1);
-
-      log('response', res);
-
+      log('BLOCK CHAIN RESPONSE \n', res);
       // const tokenId = parseInt(res?.events[0]?.args?.tokenId?._hex || '0');
       // const tokenURI = await nftCntr.tokenURI(parseInt(tokenId));
       const jsonData = {
@@ -889,16 +909,16 @@ export class NftController {
       const jsonBlob = new Blob([JSON.stringify(jsonData)]);
       const cid = await this.storage.storeBlob(jsonBlob);
       const nftStorageUri = `https://nftstorage.link/ipfs`;
-      const baseApiUri = process.env.API_BASE_URL || 'http://localhost:8080';
+      const baseApiUri = API_BASE_URL || 'http://localhost:8080';
       log(baseApiUri, 'baseApiUri');
       const meta_data_url = `${baseApiUri}/metadata/${contract_address}/${token_id}`;
       const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
 
       log('ipfsMetadataUri', ipfsMetadataUri);
       console.log("chain id ", mintToken.chainId);
-      const chain = { id: mintToken.chainId || 5, name: current_chain };
+      const chain = { id: mintToken.chainId || 5, name: _chain };
       const collection = await this.nftservice.getNftsByCollection(
-        body.contract_address,
+        contract_address,
       );
       // log(collection);
       // log('here', collection.length);
@@ -910,20 +930,28 @@ export class NftController {
       }
       //
       log('metadata');
+
       const arrdb = {
         contract_address,
         contract_type: type,
         token_id,
         number_of_tokens,
-        chain: { id: mintToken.chainId, name: current_chain },
+        chain: { id: mintToken.chainId, name: _chain },
         meta_data_url,
         is_in_auction: false,
         token_owner: ethers.utils.getAddress(body.token_owner),
         meta_data: jsonData,
       };
+
       log(arrdb);
       //add to Activity
-
+      const user_stake = {
+        contract_address,
+        token_id,
+        chain,
+        token_owner,
+        number_of_tokens,
+      }
       await this.activityService.createActivity({
         event: 'Minted',
         item: {
@@ -939,8 +967,39 @@ export class NftController {
         to: ethers.utils.getAddress(body.token_owner),
         read: false,
       });
+
+      const is_nft_exists = await this.nftservice.get1155Nft({ contract_address, token_id });
+      if (is_nft_exists) {
+        // update limit
+
+        const updateNft = await this.nftservice.update1155Nft({ contract_address, token_id }, { 'number_of_tokens': is_nft_exists.number_of_tokens + number_of_tokens })
+        //  if it is the owner exists increment the Quantity
+        const get_owners = await this.nftservice.get1155NftOwnersforSingleNft({ contract_address, token_id });
+
+        // check owner exists or not
+        const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
+        console.log(is_owner_exists);
+
+        if (is_owner_exists) {
+          const update_Tokens = await this.nftservice.updateTokens({
+            contract_address,
+            token_id,
+            token_owner,
+            _tokens: number_of_tokens,
+            operation: 'INCREMENT'
+          });
+          return update_Tokens;
+        }
+        const updateUser = await this.usersService.updateUser(wallet_address, { "limit.assets": asset_limit - 1 })
+        const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
+        log(user_1155);
+        return user_1155;
+      }
+      // if nft is already present update the nft or skip it 
       const data = await this.nftservice.create1155Nft(arrdb);
-      log(data);
+      // log(data); 
+      const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
+      log(user_1155);
       const metadata = await this.nftservice.pushTokenUriToDocArray(
         contract_address,
         ipfsMetadataUri,
@@ -948,8 +1007,7 @@ export class NftController {
         type,
         chain
       );
-      return data;
-
+      return { data, user_1155 };
     } catch (error) {
       log(error);
       return {
@@ -959,90 +1017,36 @@ export class NftController {
       }
     }
   }
-
   // @Post('mint-batch-nft/:ERC_TOKEN')
   // async mintBatchNFT(@Param('ERC_TOKEN') ERC_TOKEN: string) {}
   // @Post('blacklist-nft/:tokenid/:cntraddr')
   // async blacklistNFT(@Param() blacklist: transactions) {}
 
+  @ApiOperation({ summary: "Fetch Balance of Tokens from Block Chain" })
+  @Get('get-balance-of-token/:contract_address/:token_id/:owner_address')
 
-  @ApiOperation({ summary: 'Get ERC1155 token quantity' })
-  @ApiResponse({
-    status: 201,
-    type: getTokenBalance
-  })
-  @ApiResponse({
-    status: 500,
-    type: ErrorHandler
-  })
-  @Get('Get-Balance-of-Token/:contract_address/:token_id')
   async getBalanceOf1155Token(@Param() getBal: GetBal1155): Promise<any> {
-    const { contract_address, token_id } = getBal;
+    const { contract_address, token_id, owner_address } = getBal;
     try {
       // 
-      const ENVIRONMENT = getEnvironment();
-      const check_environment = ENVIRONMENT === 'DEV' || ENVIRONMENT === 'PROD';
-      if (!check_environment) {
-        return `Invalid Environment check env  current Environment is ${ENVIRONMENT}`;
-      }
-      // log(`Current Environment is ${ENVIRONMENT}`);
-      const chain_typee = this.configService.get<any>(
-        ENVIRONMENT,
-      );
-
       const contract_details =
         await this.deploymentService.getContractDetailsByContractAddress(
           contract_address,
         );
+      // check contract is present ot not
+      if (!contract_details) {
+        return `Collection address is Incorrect or Collection Doesnt exist`;
+      }
       const type = contract_details.type;
-      if (!(type === "NGM1155")) {
-        return `You can only mint 1155 Here`;
-      }
+      log("CONTRACT_DETAILS \n", contract_details);
 
-      log(contract_details);
-      const current_chain = contract_details?.chain?.name;
-      log(`current_chain ${current_chain}`,)
-      const chains = Object.keys(chain_typee);
-      log(`  chains ${chains}`,)
-      const chain_available = chains.find(chain => chain === current_chain);
-      log(`chain_available    ${chain_available}  `);
-      if (!chain_available) {
-        return {
-          message: `you are on ${ENVIRONMENT}  your collection ${contract_details.collection_name} is not deployed here `,
-          chains
-        }
-      }
-      // log(`Requested Chain ${chain_typee}`);
-      const chain_type = chain_typee[`${current_chain}`];
-      log(`RPC is ${chain_type}`);
       // Multi Chain Integration
-      const RPC_URL = chain_type;
-      const PRIV_KEY = this.configService.get<string>('PRIV_KEY');
-      log(`RPC_URL   ${RPC_URL} \n
-      PRIV_KEY   ${PRIV_KEY} \n
-      `)
-      // 
-      log("completed");
-      const { provider,
-        wallet } = getWallet({
-          RPC_URL,
-          PRIV_KEY
-        })
-      // log(provider, wallet);
+      const _chain = contract_details?.chain?.name;
+      const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } = await this.commonService.getWallet(_chain);
+      if (!check_environment) {
+        return `Invalid Environment`;
+      }
 
-      // Get Provider
-      // const provider = new ethers.providers.JsonRpcProvider(
-      //   RPC_URL,
-      // );
-      // // add limit
-      // log(RPC_URL, provider);
-      // const wallet = new ethers.Wallet(PRIV_KEY, provider);
-      // only the contract owner should be the minter 
-
-      log(wallet);
-      const collection_count = await this.nftservice.countCollections({ owner_address: contract_details.owner_address })
-      // const is_limit_exceeded = body.limit <= collection_count;
-      // log("nope");
       log(contract_details);
       const abiPath = path.join(
         process.cwd(),
@@ -1050,21 +1054,62 @@ export class NftController {
       );
       log(process.cwd());
       const abi = fs.readFileSync(abiPath, 'utf-8');
-      // mint token using ethersjs
+
       const nftCntr = new ethers.Contract(
         contract_address,
         abi,
         wallet,
       ); // abi and provider to be declared
       console.log(nftCntr);
-      const bal = await nftCntr.balanceOf(ethers.utils.getAddress("0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72"), 0);
+      const bal = await nftCntr.balanceOf(ethers.utils.getAddress(owner_address), token_id);
       const fmt = parseInt(bal._hex);
-
       log("balu", fmt)
-
       return fmt;
     } catch (error) {
+      return {
+        message: "Something Went Wrong",
+        error,
+      }
+    }
+  }
+  // get type of nft  
 
+  // get number of tokens does he have
+  @ApiOperation({ summary: 'Get the 1155 token details along with its stakeHolders' })
+  @Get('get-1155-nft/:contract_address/:token_id')
+  async g2Web3_1155(@Param() getNft1155: GetNft1155): Promise<any> {
+    const { contract_address, token_id } = getNft1155;
+    try {
+      //Check Nft is Present or Not
+      //return the Nft along with owners and their stake 
+      return {
+        contract_details: await this.nftservice.getContract(contract_address),
+        nft: await this.nftservice.get1155Nft({ contract_address, token_id }),
+        owners: await this.nftservice.get1155NftOwnersforSingleNft({ contract_address, token_id }),
+        offers: await this.nftMarketPlaceService.getAll1155offer({ contract_address, token_id, status: 'started' }),
+        sales: await this.nftMarketPlaceService.getAll1155sale({ contract_address, token_id, status: 'started' })
+      }
+    } catch (error) {
+      return {
+        message: `Something went Wrong`,
+        error,
+      }
+    }
+  }
+  // Get 1155 nft by owner 
+  @Get('g2w3-1155/:owner_address/:page_number/:items_per_page')
+  async g2Web3User1155(@Param() getUserOwnedAssets: GetUserOwnedAssets):
+    Promise<any> {
+    const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
+    try {
+      return await this.nftservice.get1155NftByOwner(getUserOwnedAssets);
+    } catch (error) {
+      error
+      return {
+        success: false,
+        message: "something Went Wrong",
+        error
+      }
     }
   }
 }

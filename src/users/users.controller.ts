@@ -14,6 +14,7 @@ import {
   UploadedFiles,
   ClassSerializerInterceptor,
   SerializeOptions,
+  Put,
 } from '@nestjs/common';
 import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { NFTStorage, File, Blob } from 'nft.storage';
@@ -27,7 +28,8 @@ import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification,notifications } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/email/email.service';
 import { UserEntity } from './dto/user.dto';
-import { ErrorHandler } from './utils/errorhandler';
+
+import { updateAllBidsBody } from 'src/nft-marketplace/dtos/create_bid.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -106,7 +108,8 @@ export class UsersController {
       console.log(wallet_address);
       const data = await this.usersService.getUser({ wallet_address });
       console.log(data);
-      const { username,
+      const {
+        username,
         email,
         createdAt,
         updatedAt,
@@ -263,4 +266,15 @@ export class UsersController {
       }
     }
   }
+
+  // @Put('test-fix')
+  // async testFix(): Promise<any> {
+  //   try {
+  //     return await this.usersService.testFix();
+  //   } catch (error) {
+
+  //   }
+  // }
+
+
 }

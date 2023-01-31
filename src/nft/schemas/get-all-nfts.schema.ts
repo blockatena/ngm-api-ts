@@ -1,5 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
-import { getSystemErrorMap } from "util";
+
+import { type } from "os";
+
 
 class Attributes {
     @ApiProperty({ default: "score" })
@@ -8,7 +10,9 @@ class Attributes {
     value: string
 }
 class MetaData {
-    @ApiProperty({default:'game Nft'})
+
+    @ApiProperty()
+
     name: string;
     @ApiProperty({default:'imageuri'})
     image: string;
@@ -16,7 +20,7 @@ class MetaData {
     description: string;
     @ApiProperty({ default: "https://www.google.com" })
     external_uri: string;
-    @ApiProperty()
+    @ApiProperty({})
     attributes: [];
 }
 
