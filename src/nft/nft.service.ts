@@ -714,11 +714,8 @@ export class NftService {
   async updateTokens(updateTokens: UpdateTokens): Promise<any> {
     const { contract_address, token_id, _tokens, token_owner, operation } = updateTokens;
     try {
-      if (operation === "INCREMENT")
-        return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $inc: { number_of_tokens: _tokens } })
-      else
-        return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $dec: { number_of_tokens: _tokens } });
-
+      if (operation === "INCREMENT") return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $inc: { number_of_tokens: _tokens } })
+      else return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, {$inc: { number_of_tokens: -(_tokens) }});
     } catch (error) {
       log(error);
       return {
@@ -833,6 +830,19 @@ export class NftService {
         success: false,
         message: 'Something went wrong in  Service',
         error,
+      }
+    }
+  }
+
+  async update1155_nft(data,updateData) {
+    try {
+      return await this.Nft11555Model.findOneAndUpdate(data,updateData);
+    } catch (error) {
+      console.log(error)
+
+      return {
+        message: "something went Wrong",
+        error
       }
     }
   }
