@@ -38,7 +38,7 @@ export class MetadataService {
 
   async getMetadata(
     contract_address: string,
-    token_id: string,
+    token_id: number,
     // chain = 'Polygon',
   ): Promise<any> {
     const metadataDoc = await this.MetadataModel.findOne({
@@ -47,7 +47,7 @@ export class MetadataService {
     });
     console.log(metadataDoc);
     if (metadataDoc) {
-      const uri = metadataDoc.tokenUri[parseInt(token_id)]?.uri || null;
+      const uri = metadataDoc.tokenUri[token_id]?.uri || null;
       if (!uri) {
         return `Token ID doesnt Exists`
       }
@@ -129,7 +129,7 @@ export class MetadataService {
 
   async updateTokenData(
     contract_address: string,
-    token_id: string,
+    token_id: number,
     contract_type: string,
     tokenUri: string,
   ) {

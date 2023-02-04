@@ -3,7 +3,7 @@ export class MakeOfferBody {
   @ApiProperty()
   contract_address: string;
   @ApiProperty()
-  token_id: string;
+  token_id: number;
   @ApiProperty()
   offer_price: string;
   @ApiProperty()
@@ -15,13 +15,13 @@ export class AcceptOfferBody {
   @ApiProperty()
   contract_address: string;
   @ApiProperty()
-  token_id: string;
+  token_id: number;
   @ApiProperty()
   offer_person_address: string;
   @ApiProperty()
   token_owner: string;
   @ApiProperty()
-  sign:string
+  sign: string
 }
 
 export class GetAllOffersBody {
@@ -33,11 +33,11 @@ export class CancelOffer {
   @ApiProperty()
   contract_address: string;
   @ApiProperty()
-  token_id: string;
+  token_id: number;
   @ApiProperty()
   offer_person_address: string;
   @ApiProperty()
   caller: string;
   @ApiProperty()
-  sign:string
+  sign: string
 }

@@ -4,9 +4,8 @@ import { Model } from 'mongoose';
 import { GetItemActivity } from './dtos/itemdto/item-activity.dto';
 import { ReadNotification } from './dtos/read-notification.dto';
 import { UserActivity } from './dtos/userdto/user-activity.dto';
-
 import { ActivityDocument, ActivitySchema } from './schema/activity.schema';
-
+import { log } from 'console';
 @Injectable()
 export class ActivityService {
     constructor(@InjectModel(ActivitySchema.name)
@@ -74,7 +73,7 @@ export class ActivityService {
         const { contract_address, token_id, items_per_page, page_number } = data;
         try {
             console.log(data);
-            const activity_data = await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": parseInt(token_id) }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+            const activity_data = await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": token_id }).sort({ createdAt: -1 }).limit(items_per_page * 1)
                 .skip((page_number - 1) * items_per_page)
                 .exec();
 
@@ -88,4 +87,7 @@ export class ActivityService {
             }
         }
     }
+    // activty fix 
+
+
 }

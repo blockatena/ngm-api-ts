@@ -82,7 +82,7 @@ export class UsersController {
   async findAll() {
     return await this.usersService.findAll();
   }
-  @ApiOperation({ summary: 'This API gets you user details' })
+  @ApiOperation({ summary: 'Get registered user details' })
   @Get('/get-user/:wallet_address')
   async findOne(@Param() getUser: GetUser): Promise<any> {
     const { wallet_address } = getUser;

@@ -11,7 +11,7 @@ export class BidSchema {
   @Prop()
   contract_address: string;
   @Prop()
-  token_id: string;
+  token_id: number;
   @Prop()
   bid_amount: string;
   // @Prop()

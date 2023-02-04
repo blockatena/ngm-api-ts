@@ -141,7 +141,7 @@ export class NftController {
       // });
       // log("sss", blkid);
       log(contract_instance);
-      const token_idd = parseInt(token_id);
+      const token_idd = token_id;
       const blkid = await contract_instance.ownerOf(token_idd);
       return blkid;
     } catch (error) {
@@ -1034,14 +1034,14 @@ export class NftController {
   @ApiOperation({ summary: 'Get the 1155 User token Quantities' })
   @Get('get-1155-usertokens/:contract_address/:token_id/:token_owner')
   async get_1155_userTokens(@Param() getNft1155: GetTokensUserHold): Promise<any> {
-    const {token_owner, contract_address, token_id } = getNft1155;
+    const { token_owner, contract_address, token_id } = getNft1155;
     try {
       //Check Nft is Present or Not
       //return the Nft along with owners and their stake 
       let getOwner = await this.nftservice.getSingle1155NftByOwner(getNft1155)
-      if(!getOwner) {
+      if (!getOwner) {
         return {
-          message:"User don't have the nft"
+          message: "User don't have the nft"
         }
       }
       return getOwner

@@ -6,7 +6,7 @@ import {
   Param,
   UseGuards,
 } from '@nestjs/common';
-import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
 import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
@@ -17,6 +17,8 @@ import { APIGuard } from 'src/guards/roles.guard';
 import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { CommonService } from 'src/common/common.service';
+import { collection } from './responses/deployment.response';
+import { ErrorHandler } from 'src/nft/utils/errorhandlers';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
@@ -25,13 +27,22 @@ export class DeploymentController {
     private readonly userService: UsersService,
     private readonly commonService: CommonService
   ) { }
-
+  @ApiResponse({
+    status: 201,
+    description: "Successfully Created the Collection",
+    type: collection
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Something went Wrong",
+    type: ErrorHandler
+  })
   @ApiHeader({
     name: 'X-API-HEADER',
     description: 'API Key is needed to deploy the collection'
   })
   @UseGuards(APIGuard)
-  @ApiOperation({ summary: 'This Api will create a collection' })
+  @ApiOperation({ summary: 'Deploy a collection' })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
     log(deploymentBody);
@@ -146,7 +157,17 @@ export class DeploymentController {
   //   const uri = await nftCntr.baseURI(0);
   //   log('uri', uri);
   // }
-
+  @ApiResponse({
+    status: 201,
+    description: "Successfully Fetched the Collection",
+    type: collection
+  })
+  @ApiResponse({
+    status: 500,
+    description: "Something went Wrong",
+    type: ErrorHandler
+  })
+  @ApiOperation({ summary: 'Fetch the Details of the Collection' })
   @Get('contract-Details/:cntraddr')
   async getContractdetails(@Param('cntraddr') cntraddr: string) {
     try {
