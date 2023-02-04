@@ -5,6 +5,7 @@ import {
   GetItemActivity
 } from "./dtos/itemdto/item-activity.dto";
 import { UserActivity } from './dtos/userdto/user-activity.dto';
+import { log } from 'console';
 @ApiTags('Activity')
 @Controller('activity')
 export class ActivityController {
@@ -37,4 +38,8 @@ export class ActivityController {
       }
     }
   }
+
+
+
+
 }

@@ -7,13 +7,13 @@ export class Offer1155Schema {
     @Prop()
     contract_address: string;
     @Prop()
-    token_id: string;
+    token_id: number;
     @Prop()
     offer_person_address: string;
     @Prop()
-    number_of_tokens:number
+    number_of_tokens: number
     @Prop()
-    per_unit_price:number
+    per_unit_price: number
     @Prop()
     status: string;
 }

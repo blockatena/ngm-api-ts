@@ -4,9 +4,8 @@ import { Model } from 'mongoose';
 import { GetItemActivity } from './dtos/itemdto/item-activity.dto';
 import { ReadNotification } from './dtos/read-notification.dto';
 import { UserActivity } from './dtos/userdto/user-activity.dto';
-
 import { ActivityDocument, ActivitySchema } from './schema/activity.schema';
-
+import { log } from 'console';
 @Injectable()
 export class ActivityService {
     constructor(@InjectModel(ActivitySchema.name)
@@ -71,14 +70,15 @@ export class ActivityService {
     }
     // 
     async getItemActivity(data: GetItemActivity): Promise<any> {
-        const { contract_address, token_id, items_per_page, page_number } = data;
+        const { contract_address,token_id, items_per_page, page_number } = data;
         try {
+            let tokenId:any = token_id
             console.log(data);
-            const activity_data = await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": parseInt(token_id) }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+            const activity_data = await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": parseInt(tokenId) }).sort({ createdAt: -1 }).limit(items_per_page * 1)
                 .skip((page_number - 1) * items_per_page)
                 .exec();
 
-            const total_pages = await this.activityModel.countDocuments({ "item.contract_address": contract_address, "item.token_id": token_id });
+            const total_pages = await this.activityModel.countDocuments({ "item.contract_address": contract_address, "item.token_id": parseInt(tokenId) });
             return { total_pages: Math.ceil(total_pages / items_per_page), current_page: page_number, activity_data }
         } catch (error) {
             console.log(error);
@@ -88,4 +88,7 @@ export class ActivityService {
             }
         }
     }
+    // activty fix 
+
+
 }

@@ -9,7 +9,7 @@ export class SalesSchema {
   @Prop()
   contract_address: string;
   @Prop()
-  token_id: string;
+  token_id: number;
   @Prop()
   price: string;
   @Prop()

@@ -15,7 +15,7 @@ export class GetUserOwnedAssets {
     items_per_page: number;
 }
 export class GetAssets {
-    @ApiProperty()
+    @ApiProperty({ default: "0x68e24E30348cACcB8dF3d62Fa2891B4864ff0879" })
     contract_address?: string;
     @ApiProperty()
     listed_in?: string;
