@@ -12,7 +12,7 @@ export class NftSchema {
   @Prop({ type: Object })
   chain: { id: number, name: string };
   @Prop()
-  token_id: string;
+  token_id: number;
   @Prop({ default: '0' })
   price: string;
   @Prop()
@@ -21,23 +21,16 @@ export class NftSchema {
   meta_data_url: string;
   @Prop({ default: false })
   is_in_auction: boolean;
-
   @Prop({ default: false })
   is_in_sale: boolean;
-
   @Prop()
   token_owner: string;
-
   @Prop({ type: Object })
   meta_data: {
     name: string;
-
     image: string;
-
     description: string;
-
     external_uri: string;
-
     attributes: [object];
   };
 }

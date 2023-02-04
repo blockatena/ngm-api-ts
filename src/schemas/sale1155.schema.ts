@@ -9,9 +9,9 @@ export class Sale1155Schema {
     @Prop()
     contract_address: string;
     @Prop()
-    token_id: string;
+    token_id: number;
     @Prop()
-    number_of_tokens:number
+    number_of_tokens: number
     @Prop()
     start_date: string;
     @Prop()

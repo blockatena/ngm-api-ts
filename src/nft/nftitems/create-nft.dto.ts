@@ -6,7 +6,7 @@ export class CreateNFT {
   @ApiProperty()
   readonly contract_type: ['NGM721PSI', 'NGM1155', 'NGMTINY721'];
   @ApiProperty()
-  readonly token_id: string;
+  readonly token_id: number;
   @ApiProperty()
   readonly description: string;
   @ApiProperty()
@@ -16,7 +16,7 @@ export class CreateNFT {
 }
 export class GetNft {
   readonly owner_address: string;
-  readonly token_id: string;
+  readonly token_id: number;
 }
 export class GetCollectionsBody {
   @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
@@ -25,7 +25,7 @@ export class GetCollectionsBody {
 export class GetNftBody {
   @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
   readonly contract_address: string;
-  @ApiProperty({ example: '1' })
+  @ApiProperty({ default: 1 })
   readonly token_id: number;
 }
 export class Paginate {
@@ -36,18 +36,18 @@ export class Paginate {
 }
 
 export class NftContractUser {
-  @ApiProperty({ default: '0xc5195CDa9ED7dC18AFA7b69Da90Bbaf427C1ca3F' })
+  @ApiProperty({ default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C', description: 'contract address of the Collection' })
   readonly contract_address: string;
-  @ApiProperty()
+  @ApiProperty({ default: '0x952450E079AFBb4f75b1F0Ed94120e6573623bC1', description: 'wallet address of the user' })
   readonly user_address: string;
 }
 
 export class GetListedCollections {
-  @ApiProperty()
+  @ApiProperty({ default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C' },)
   contract_address?: string;
-  @ApiProperty()
+  @ApiProperty({ default: '0x952450E079AFBb4f75b1F0Ed94120e6573623bC1' })
   token_owner?: string;
-  @ApiProperty()
+  @ApiProperty({ enum: ['auction', 'sale'], default: 'auction' })
   listed_in?: string;
   @ApiProperty({ default: 1 })
   page_number?: number;
@@ -70,7 +70,7 @@ export type GetSingleNftResponse = {
 
   contract_type: string;
 
-  token_id: string;
+  token_id: number;
 
   meta_data_url: string;
 

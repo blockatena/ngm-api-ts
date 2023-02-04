@@ -9,7 +9,7 @@ export class AuctionSchema {
   @Prop()
   contract_address: string;
   @Prop()
-  token_id: string;
+  token_id: number;
   @Prop()
   start_date: string;
   @Prop()

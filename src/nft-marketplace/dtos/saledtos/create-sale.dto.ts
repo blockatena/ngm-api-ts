@@ -6,7 +6,7 @@ export class CreateSaleBody {
   @ApiProperty()
   contract_address: string;
   @ApiProperty()
-  token_id: string;
+  token_id: number;
   @ApiProperty()
   price: string;
   @ApiProperty()
@@ -14,13 +14,13 @@ export class CreateSaleBody {
   @ApiProperty()
   end_date: string;
   @ApiProperty()
-  sign:string
+  sign: string
 }
 export class CancelSaleBody {
   @ApiProperty()
   contract_address: string;
   @ApiProperty()
-  token_id: string;
+  token_id: number;
   @ApiProperty()
-  sign:string
+  sign: string
 }
