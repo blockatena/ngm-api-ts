@@ -15,6 +15,7 @@ import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
 import { APIGuard } from 'src/guards/roles.guard';
 import { log } from 'console';
+
 import { UsersService } from 'src/users/users.service';
 import { CommonService } from 'src/common/common.service';
 import { collection } from './responses/deployment.response';
@@ -24,8 +25,11 @@ import { ErrorHandler } from 'src/nft/utils/errorhandlers';
 export class DeploymentController {
   constructor(
     private readonly deploymentService: DeploymentService,
+
     private readonly userService: UsersService,
     private readonly commonService: CommonService
+
+
   ) { }
   @ApiResponse({
     status: 201,
@@ -49,9 +53,11 @@ export class DeploymentController {
     const { symbol, owner_address, roles, collection_name, chain, type, imageuri,
       description } = deploymentBody;
     try {
+
       log("CHECKING THE ENVIRONMENT \n");
       const { RPC_URL, API_BASE_URL, provider, wallet } = await this.commonService.getWallet(chain);
       console.log("ENVIRONMENT  DETAILS \n ", { RPC_URL, API_BASE_URL, provider, wallet });
+
 
       log("CHECKING THE LIMIT \n")
       const get_limit = await this.userService.getUser({ wallet_address: owner_address });

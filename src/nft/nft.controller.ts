@@ -564,6 +564,13 @@ export class NftController {
         };
       }
 
+
+      log(wallet);
+      // const collection_count = await this.nftservice.countCollections({ owner_address: token_owner });
+
+      // const is_limit_exceeded = body.limit <= collection_count;
+      // log("nope");
+
       log(contract_details);
       const abiPath = path.join(
         process.cwd(),
@@ -774,6 +781,7 @@ export class NftController {
       // }
 
       // Multi Chain Integration
+
       const _chain = contract_details?.chain?.name;
       const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } = await this.commonService.getWallet(_chain);
       if (!check_environment) {
