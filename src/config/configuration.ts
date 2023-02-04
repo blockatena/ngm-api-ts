@@ -49,7 +49,7 @@ export default () => ({
   },
   MARKETPLACE_CONTRACT: {
     DEV: {
-      GOERLI: '0x393d5645CF11aeD51Cd8BcFDE7e7D82100d0f2f3',//updated usdt done
+      GOERLI: '0x393d5645CF11aeD51Cd8BcFDE7e7D82100d0f2f3',//updated  done
       MUMBAI: '0x70C9c656453cFB577522dDE9A9780562C986EB63',//updated done
     },
     PROD: {

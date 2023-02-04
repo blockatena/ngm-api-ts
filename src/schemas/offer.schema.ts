@@ -9,7 +9,7 @@ export class OfferSchema {
   @Prop()
   contract_address: string;
   @Prop()
-  token_id: string;
+  token_id: number;
   @Prop()
   offer_price: string;
   @Prop()

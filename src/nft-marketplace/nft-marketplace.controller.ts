@@ -696,4 +696,24 @@ export class NftMarketplaceController {
   // async test(): Promise<any> {
   //   return await this.nftMarketplaceService.addvolume();
   // }
+
+
+  //fix
+
+  // activityfix
+  @Post('fix')
+  async activityfix(): Promise<any> {
+    try {
+      await this.nftMarketplaceService.activityfix();
+    } catch (error) {
+      console.log(error);
+      return {
+        succcess: false,
+        message: 'something went wrong',
+        error
+      }
+    }
+  }
+
+
 }

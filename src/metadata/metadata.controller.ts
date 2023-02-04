@@ -8,7 +8,7 @@ export class MetadataController {
   constructor(private readonly metadataservice: MetadataService) { }
   // Swagger UI Options
   @ApiOperation({
-    summary: 'This api is used to get the metadata of a token',
+    summary: 'Fetch the Metadata of the Token',
   })
   @ApiResponse({
     status: 201,
@@ -23,7 +23,7 @@ export class MetadataController {
   @Get('/:contract_address/:token_id')
   async getMetadata(
     @Param('contract_address') contract_address: string,
-    @Param('token_id') token_id: string,
+    @Param('token_id') token_id: number,
   ): Promise<string> {
     try {
       const res = await this.metadataservice.getMetadata(

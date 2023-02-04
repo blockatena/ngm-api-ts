@@ -16,7 +16,7 @@ class MetaData {
     description: string;
     @ApiProperty({ default: "" })
     external_uri: string;
-    @ApiProperty({})
+    @ApiProperty({ type: Attributes })
     attributes: [];
 }
 
