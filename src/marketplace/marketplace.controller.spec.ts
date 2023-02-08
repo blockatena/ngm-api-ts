@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { NftMarketplaceController } from './nft-marketplace.controller';
-import { NftMarketplaceService } from './nft-marketplace.service';
+import { NftMarketplaceController } from './marketplace.controller';
+import { NftMarketplaceService } from './marketplace.service';
 
 describe('NftMarketplaceController', () => {
   let controller: NftMarketplaceController;

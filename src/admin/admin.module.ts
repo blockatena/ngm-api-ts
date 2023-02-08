@@ -2,16 +2,15 @@ import { Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
-import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
-import { ContractSchema, contractSchema } from 'src/schemas/contract.schema';
+import { AuctionSchema, auctionSchema } from 'src/marketplace/schema/auction.schema';
 import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
-
 import { CronjobService } from 'src/cronjob/cronjob.service';
-import { OfferSchema, offerSchema } from 'src/schemas/offer.schema';
-import { SalesSchema, salesSchema } from 'src/schemas/sales.schema';
-import { Offer1155Schema, offer1155Schema } from 'src/schemas/offer1155.schema';
-import { Sale1155Schema, sale1155Schema } from 'src/schemas/sale1155.schema';
+import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
+import { OfferSchema, offerSchema } from 'src/marketplace/schema/offer.schema';
+import { SalesSchema, salesSchema } from 'src/marketplace/schema/sales.schema';
+import { Offer1155Schema, offer1155Schema } from 'src/nft/schema/offer1155.schema';
+import { Sale1155Schema, sale1155Schema } from 'src/nft/schema/sale1155.schema';
+import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([

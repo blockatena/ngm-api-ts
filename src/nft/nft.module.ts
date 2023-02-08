@@ -1,6 +1,6 @@
 import { HttpModule } from '@nestjs/axios';
-import { NftController721 } from './g2w3721.controller';
-import { NftController1155 } from './g2w31155.controller';
+import { NftController721 } from './nft721.controller';
+import { NftController1155 } from './nft1155.controller';
 import { NftService } from './nft.service';
 import * as redisStore from 'cache-manager-redis-store';
 import { CacheModule, forwardRef, Module } from '@nestjs/common';
@@ -8,20 +8,20 @@ import { CacheModule, forwardRef, Module } from '@nestjs/common';
 // import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 // import { JwtModule } from '@nestjs/jwt';
 import { DeploymentService } from 'src/deployment/deployment.service';
-import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
-import { NftMarketplaceModule } from 'src/nft-marketplace/nft-marketplace.module';
+import { NftMarketplaceModule } from 'src/marketplace/marketplace.module';
 import { DeploymentModule } from 'src/deployment/deployment.module';
 import { metadata, metadataSchema } from 'src/metadata/schema/metadata.schema';
-import { AuctionSchema, auctionSchema } from 'src/schemas/auction.schema';
-import { BidSchema, bidSchema } from 'src/schemas/bid.schema';
+import { AuctionSchema, auctionSchema } from 'src/marketplace/schema/auction.schema';
+import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
 import { ActivityModule } from 'src/activity/activity.module';
 import { UsersModule } from 'src/users/users.module';
 import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
-import { nft1155OwnerSchema, Nft1155OwnerSchema } from 'src/schemas/user-1155.schema';
 import { CommonModule } from 'src/common/common.module';
-import { NftMintController } from './mint.controller';
+import { NftMintController } from './nft.mint.controller';
+import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
+import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/schemas/user1155.schema';
 
 require('dotenv').config();
 @Module({

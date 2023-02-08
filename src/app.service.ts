@@ -1,7 +1,7 @@
 import { OnModuleInit } from '@nestjs/common';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
+import { NftMarketplaceService } from './marketplace/marketplace.service';
 require('dotenv').config();
 const cron_time = process.env.CRON_TIME || '*/30 * * * * *';
 @Injectable()

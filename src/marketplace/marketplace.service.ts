@@ -8,7 +8,6 @@ import {
   GetBids,
   updateAllBidsBody,
 } from './dtos/create_bid.dto';
-import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import {
   CancelSaleBody,
   CreateSaleBody,
@@ -23,18 +22,19 @@ import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketpla
 import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ConfigService } from '@nestjs/config';
-import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
-import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
-import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
-import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
+import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
 import { ActivityService } from 'src/activity/activity.service';
 import { TradeVolume } from './dtos/trade-volume.dto';
-import { Offer1155Schema, Offer1155Document } from 'src/schemas/offer1155.schema';
-import { Sale1155Schema, Sale1155Document } from 'src/schemas/sale1155.schema';
 import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer, G2W3_1155CancelSale, G2W3_1155CancelOffer } from './dtos/auctiondto/create-1155-auction.dto'
 import { check } from 'prettier';
 import { CommonService } from 'src/common/common.service';
 import { log } from 'console';
+import { BidSchema, BidDocument } from './schema/bid.schema';
+import { OfferSchema, OfferDocument } from './schema/offer.schema';
+import { SalesSchema, SalesDocument } from './schema/sales.schema';
+import { ContractDocument, ContractSchema } from 'src/deployment/schema/contract.schema';
+import { Offer1155Schema, Offer1155Document } from 'src/nft/schema/offer1155.schema';
+import { Sale1155Schema, Sale1155Document } from 'src/nft/schema/sale1155.schema';
 @Injectable()
 export class NftMarketplaceService {
   constructor(
