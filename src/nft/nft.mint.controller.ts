@@ -138,20 +138,11 @@ export class NftMintController {
         } catch (error) {
             return {
                 success: false,
-                message: `Something went Wrong Please Raise a Ticket or contact Support :<b>vinay@blocktena.com</b>`,
+                message: `Something went Wrong Please Raise a Ticket or contact Support :<b>gamestoweb3@gmail.com</b>`,
                 error
             };
         }
     }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -175,7 +166,7 @@ export class NftMintController {
     @UseGuards(APIGuard)
     @Post('mint-nft')
     async mintNft(@Body() body: MintToken) {
-        const { contract_address, token_owner, number_of_tokens, name,
+        const { contract_address, token_owner, name,
             image_uri,
             description,
             external_uri,

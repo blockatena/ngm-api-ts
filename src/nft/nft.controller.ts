@@ -523,7 +523,7 @@ export class NftController {
   @UseGuards(APIGuard)
   @Post('mint-nft')
   async mintNft(@Body() body: MintToken) {
-    const { contract_address, token_owner, number_of_tokens, name,
+    const { contract_address, token_owner, name,
       image_uri,
       description,
       external_uri,

@@ -9,16 +9,16 @@ export class CreateDeploymentDto {
     default: '0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72',
   })
   readonly owner_address: string;
-  @ApiProperty({ description: 'Role of the player', enum: ['admin', 'user'] })
+  @ApiProperty({ description: 'Role of the player', enum: ['ADMIN', 'PLAYER'] })
   readonly roles: any[];
   @ApiProperty({ default: 'Avengers' })
   readonly collection_name: string;
-  @ApiProperty({ enum: ["ethereum", "polygon"], default: "ethereum" })
+  @ApiProperty({ enum: ["ETHEREUM", "POLYGON", "MUMBAI", "GOERLI"], default: "ETHEREUM" })
   readonly chain: string;
   @ApiProperty({
     description:
-      'Type of contract you want to deploy.We provide 3 options Erc721Psi TinyErc721 Erc1155-D',
-    enum: ['Erc721Psi', 'TinyErc721', 'Erc1155-D'],
+      'Type of contract you want to deploy.We provide 3 options ',
+    enum: ['NGM721PSI', 'NGMTINY721', 'NGM1155'],
     default: 'NGM721PSI',
   })
   readonly type: string;

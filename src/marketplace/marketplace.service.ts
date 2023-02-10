@@ -1176,7 +1176,7 @@ export class NftMarketplaceService {
           image: update_nft.meta_data.image,
         },
         price: save_in_db.per_unit_price,
-        quantity: 1,
+        quantity: check_users_sales[0]?.number_of_tokens || 1,
         from: token_owner,
         to: '----',
         read: false,
