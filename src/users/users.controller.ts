@@ -89,20 +89,28 @@ export class UsersController {
     try {
       console.log(wallet_address);
       const data = await this.usersService.getUser({ wallet_address });
+      if (!data) {
+        return {
+          message: 'You are registered with us',
+          success: false,
+        }
+      }
       console.log(data);
       const {
         username,
         email,
         createdAt,
         updatedAt,
-        limit, } = data
+        limit, profile_image, banner_image } = data
       return {
         username,
         wallet_address,
         email,
         createdAt,
         updatedAt,
-        limit
+        limit,
+        profile_image,
+        banner_image
       }
 
     } catch (error) {
