@@ -48,10 +48,10 @@ import {
   NftContractUser,
 } from './nftitems/create-nft.dto';
 import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
-import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
+import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
-import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
+import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
 import { GetOwner } from './nftitems/get-owner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
@@ -523,7 +523,7 @@ export class NftController {
   @UseGuards(APIGuard)
   @Post('mint-nft')
   async mintNft(@Body() body: MintToken) {
-    const { contract_address, token_owner, number_of_tokens, name,
+    const { contract_address, token_owner, name,
       image_uri,
       description,
       external_uri,

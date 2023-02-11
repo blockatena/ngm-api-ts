@@ -6,7 +6,7 @@ import { TextileModule } from './textile/textile.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
-import { NftMarketplaceModule } from './nft-marketplace/nft-marketplace.module';
+import { NftMarketplaceModule } from './marketplace/marketplace.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 import { CronjobService } from './cronjob/cronjob.service';
@@ -15,7 +15,7 @@ import { AdminModule } from './admin/admin.module';
 
 import { MetadataModule } from './metadata/metadata.module';
 import { AppService } from './app.service';
-import { NftMarketplaceService } from './nft-marketplace/nft-marketplace.service';
+import { NftMarketplaceService } from './marketplace/marketplace.service';
 import { ActivityModule } from './activity/activity.module';
 import { EmailModule } from './email/email.module';
 import configuration from './config/configuration';

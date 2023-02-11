@@ -5,15 +5,11 @@ import { ethers } from 'ethers';
 import { Model } from 'mongoose';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import {
-  ContractDocument,
-  ContractSchema,
-  contractSchema,
-} from 'src/schemas/contract.schema';
 import { NftDocument, NftSchema } from 'src/nft/schema/nft.schema';
 import { NFTStorage, Blob } from 'nft.storage';
 import { NftService } from 'src/nft/nft.service';
 import { metadata, metadataDocument } from './schema/metadata.schema';
+import { ContractSchema, ContractDocument } from 'src/deployment/schema/contract.schema';
 require('dotenv').config();
 
 const provider = new ethers.providers.JsonRpcProvider(

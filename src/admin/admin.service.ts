@@ -2,17 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CronjobService } from 'src/cronjob/cronjob.service';
-import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
-import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
-import { ContractSchema, ContractDocument } from 'src/schemas/contract.schema';
+import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
 import { NftSchema, NftDocument } from 'src/nft/schema/nft.schema';
 
 import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
-import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
-import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
-import { Offer1155Schema, Offer1155Document } from 'src/schemas/offer1155.schema';
-import { Sale1155Schema, Sale1155Document } from 'src/schemas/sale1155.schema';
 import { Mode } from 'fs';
+import { BidSchema, BidDocument } from 'src/marketplace/schema/bid.schema';
+import { OfferSchema, OfferDocument } from 'src/marketplace/schema/offer.schema';
+import { SalesSchema, SalesDocument } from 'src/marketplace/schema/sales.schema';
+import { Offer1155Schema, Offer1155Document } from 'src/nft/schema/offer1155.schema';
+import { Sale1155Schema, Sale1155Document } from 'src/nft/schema/sale1155.schema';
+import { ContractSchema, ContractDocument } from 'src/deployment/schema/contract.schema';
 @Injectable()
 export class AdminService {
   constructor(

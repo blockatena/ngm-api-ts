@@ -42,10 +42,10 @@ import {
     NftContractUser,
 } from './nftitems/create-nft.dto';
 import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
-import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
+import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
-import { NftMarketplaceService } from 'src/nft-marketplace/nft-marketplace.service';
+import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
 import { GetOwner } from './nftitems/get-owner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';

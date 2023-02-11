@@ -2,15 +2,15 @@ import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NftService } from 'src/nft/nft.service';
-import { auctionSchema, AuctionSchema } from 'src/schemas/auction.schema';
-import { bidSchema, BidSchema } from 'src/schemas/bid.schema';
-import { contractSchema, ContractSchema } from 'src/schemas/contract.schema';
+import { auctionSchema, AuctionSchema } from 'src/marketplace/schema/auction.schema';
 import { nftSchema, NftSchema } from 'src/nft/schema/nft.schema';
 import { MetadataController } from './metadata.controller';
 import { MetadataService } from './metadata.service';
 import { metadata, metadataSchema } from './schema/metadata.schema';
 import { nft1155Schema, Nft1155Schema } from 'src/nft/schema/nft.1155.schema';
-import { nft1155OwnerSchema, Nft1155OwnerSchema } from 'src/schemas/user-1155.schema';
+import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
+import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
+import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/schemas/user1155.schema';
 
 @Module({
   imports: [
