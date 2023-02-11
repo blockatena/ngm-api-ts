@@ -5,7 +5,7 @@ class Attributes {
     value: string;
 }
 export class G2Web3_1155 {
-    @ApiProperty({default:"Api Holder Address"})
+    @ApiProperty({ default: "Api Holder Address" })
     wallet_address: string
     @ApiProperty({ default: "0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72" })
     token_owner: string;
@@ -19,8 +19,8 @@ export class G2Web3_1155 {
     name: string
     @ApiProperty()
     image_uri: string;
-    @ApiProperty({ default: [{ "name": "energy", "value": 2000 }] })
-    attributes: Attributes[];
+    @ApiProperty({ default: [{ "name": "energy", "value": "2000" }], type: Attributes })
+    attributes: [];
     @ApiProperty({ default: "Deep Under the Blue Sea There lives a Ocean Gaint" })
     description: string
     @ApiProperty({ default: "www.google.com" })

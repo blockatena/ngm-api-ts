@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, set, StringExpressionOperatorReturningBoolean } from 'mongoose';
+import { Document } from 'mongoose';
 export type ContractDocument = ContractSchema & Document;
 
 @Schema({ timestamps: true })
