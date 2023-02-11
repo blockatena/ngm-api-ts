@@ -18,7 +18,7 @@ import {
   CreateBidBody,
   GetBids,
 } from './dtos/create_bid.dto';
-import { NftMarketplaceService } from './nft-marketplace.service';
+import { NftMarketplaceService } from './marketplace.service';
 import {
   CancelSaleBody,
   CreateSaleBody,

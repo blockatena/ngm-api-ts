@@ -2,7 +2,6 @@ import { HttpService } from '@nestjs/axios';
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { ContractDocument, ContractSchema } from 'src/schemas/contract.schema';
 import { NftDocument, NftSchema } from 'src/nft/schema/nft.schema';
 
 import {
@@ -11,18 +10,19 @@ import {
   GetSingleNftResponse,
   Paginate,
 } from './nftitems/create-nft.dto';
-import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
-import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
-import { GetUserNfts } from 'src/nft-marketplace/dtos/auctiondto/create-auction.dto';
+import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
+import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ErrorHandler } from './utils/errorhandlers';
 import { metadata, metadataDocument } from './schema/metadata.schema';
 import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
-import { Nft1155OwnerSchema, Nft1155OwnerDocument } from 'src/schemas/user-1155.schema';
 import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './nftitems/get-nft-1155';
 import { UpdateTokens } from './nftitems/update-tokens';
 import { UpdateOwner } from './nftitems/address.dto';
 import { pipeline } from 'stream';
+import { BidDocument, BidSchema } from 'src/marketplace/schema/bid.schema';
+import { Nft1155OwnerDocument, Nft1155OwnerSchema } from 'src/schemas/user1155.schema';
+import { ContractSchema, ContractDocument } from 'src/deployment/schema/contract.schema';
 const { log } = console;
 @Injectable()
 export class NftService {

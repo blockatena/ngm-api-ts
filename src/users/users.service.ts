@@ -4,8 +4,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 // import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserDocument, UserSchema } from 'src/schemas/user.schema';
 import { FixedNumber } from 'ethers';
+import { UserDocument, UserSchema } from './schema/user.schema';
 const { log } = console;
 @Injectable()
 export class UsersService {
