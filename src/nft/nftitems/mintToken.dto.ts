@@ -1,9 +1,9 @@
 import { ApiExtraModels, ApiProperty } from '@nestjs/swagger';
 import { type } from 'os';
 class Attributes {
-
+  @ApiProperty()
   name: string;
-
+  @ApiProperty()
   value: string;
 }
 
@@ -42,8 +42,8 @@ export class MintToken {
   })
   readonly description: string;
 
-  @ApiProperty({ default: [{ "name": "energy", "value": "2000" }], type: Attributes })
-  attributes: [];
+  @ApiProperty({ isArray: true, type: Attributes })
+  attributes: [Attributes];
 
   @ApiProperty({
     description:
