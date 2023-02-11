@@ -1,9 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { type } from "os";
 
 class Attributes {
+    @ApiProperty()
     name: string;
+    @ApiProperty()
     value: string;
 }
+
 export class G2Web3_1155 {
     @ApiProperty({ default: "Api Holder Address" })
     wallet_address: string
@@ -19,8 +23,8 @@ export class G2Web3_1155 {
     name: string
     @ApiProperty()
     image_uri: string;
-    @ApiProperty({ default: [{ "name": "energy", "value": "2000" }], type: Attributes })
-    attributes: [];
+    @ApiProperty({ isArray: true, type: Attributes })
+    attributes: [Attributes];
     @ApiProperty({ default: "Deep Under the Blue Sea There lives a Ocean Gaint" })
     description: string
     @ApiProperty({ default: "www.google.com" })
