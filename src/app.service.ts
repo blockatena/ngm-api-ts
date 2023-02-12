@@ -42,8 +42,9 @@ export class AppService implements OnModuleInit {
     // take reference from the above code.
 
   }
-  onModuleInit() {
+  async onModuleInit() {
     console.log(`Initialization...`);
-    this.checkAuction721();
+    await this.checkAuction721();
+    await this.checkSale1155();
   }
 }
