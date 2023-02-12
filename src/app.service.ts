@@ -9,7 +9,7 @@ export class AppService implements OnModuleInit {
   private readonly logger = new Logger(AppService.name);
   constructor(private nftmrktservice: NftMarketplaceService) { }
   @Cron(cron_time)
-  async handleCron() {
+  async checkAuction721() {
     //need to check end date for auction if the end date is less we nned to call the winner
     const all_auctions = await this.nftmrktservice.getAllAuctions();
     // console.log('****************************');
@@ -35,8 +35,15 @@ export class AppService implements OnModuleInit {
       }
     });
   }
+  @Cron(cron_time)
+  async checkSale1155() {
+
+    //check 1155
+    // take reference from the above code.
+
+  }
   onModuleInit() {
     console.log(`Initialization...`);
-    this.handleCron();
+    this.checkAuction721();
   }
 }
