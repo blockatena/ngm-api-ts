@@ -20,6 +20,8 @@ export class Nft1155Schema {
     @Prop()
     price:number
     @Prop()
+    end_date:string
+    @Prop()
     highest_price: number;
     @Prop()
     meta_data_url: string;
