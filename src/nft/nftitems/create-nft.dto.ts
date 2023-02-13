@@ -30,9 +30,13 @@ export class GetNftBody {
 }
 export class Paginate {
   @ApiProperty({ default: 1 })
-  readonly page_number: number;
+  page_number: number;
   @ApiProperty({ default: 10 })
-  readonly items_per_page: number;
+  items_per_page: number;
+  @ApiProperty({ enum: ["NOTREQUIRED", "NEWTOOLD", "OLDTONEW"], required: false })
+  sort_by_date: string;
+  @ApiProperty({ enum: ["NOTREQUIRED", "ATOZ", "ZTOA"], required: false })
+  sort_by_names: string;
 }
 
 export class NftContractUser {

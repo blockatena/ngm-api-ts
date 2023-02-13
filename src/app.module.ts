@@ -81,6 +81,6 @@ export class AppModule implements OnModuleInit {
   constructor(private appService: AppService) { }
 
   onModuleInit() {
-    this.appService.handleCron();
+    this.appService.onModuleInit();
   }
 }

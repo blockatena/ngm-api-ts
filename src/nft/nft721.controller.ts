@@ -166,13 +166,15 @@ export class NftController721 {
   @ApiOperation({
     summary: 'Get all the Assets',
   })
-  @Get('get-all-nfts/:page_number/:items_per_page')
+  @Get('get-all-nfts/:page_number/:items_per_page/:sort_by_date/:sort_by_names')
   async getAllNfts(@Param() pagination: Paginate): Promise<any> {
-    const { page_number, items_per_page } = pagination;
+    const { page_number, items_per_page, sort_by_date, sort_by_names } = pagination;
     try {
       const data = await this.nftservice.getAllNfts({
         page_number,
         items_per_page,
+        sort_by_date,
+        sort_by_names
       });
       if (!data) {
         return {

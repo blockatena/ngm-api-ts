@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Inject, Injectable } from '@nestjs/common';
+import { ConsoleLogger, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { NftDocument, NftSchema } from 'src/nft/schema/nft.schema';
@@ -101,9 +101,28 @@ export class NftService {
 
   // To get all Nfts
   async getAllNfts(page_details: Paginate): Promise<any> {
-    const { page_number, items_per_page } = page_details;
+    const { page_number, items_per_page, sort_by_date, sort_by_names } = page_details;
     try {
+      //createdAt
+      //meta_data.name
+      const filter = {}
+
+      console.log({ page_number, items_per_page, sort_by_date, sort_by_names });
+      if (!(sort_by_date === "NOTREQUIRED")) {
+        filter[`createdAt`] = sort_by_date === "NEWTOOLD" ? -1 : 1;
+        //filter[`createdAt`] = sort_by_date;
+        console.log("ONLY DATE SORT \n", sort_by_date);
+
+      }
+      if (!(sort_by_names === "NOTREQUIRED")) {
+        filter["meta_data.name"] = sort_by_names === "ATOZ" ? 1 : -1
+        // filter["meta_data.name"] = sort_by_names;
+        console.log("ONLY ALPHA SORT \n", sort_by_names);
+      }
+      console.log("FILTER \n", filter);
+
       const nfts = await this.NftModel.find({})
+        .sort(filter)
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
