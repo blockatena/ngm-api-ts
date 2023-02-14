@@ -101,32 +101,51 @@ export class NftService {
 
   // To get all Nfts
   async getAllNfts(page_details: Paginate): Promise<any> {
-    const { page_number, items_per_page, sort_by_date, sort_by_names } = page_details;
+    // const { page_number, items_per_page, sort_by_date, sort_by_names } = page_details;
+    const { page_number, items_per_page, sort_by, listed_in } = page_details;
     try {
       //createdAt
       //meta_data.name
       const filter = {}
+      const body = {}
 
-      console.log({ page_number, items_per_page, sort_by_date, sort_by_names });
-      if (!(sort_by_date === "NOTREQUIRED")) {
-        filter[`createdAt`] = sort_by_date === "NEWTOOLD" ? -1 : 1;
-        //filter[`createdAt`] = sort_by_date;
-        console.log("ONLY DATE SORT \n", sort_by_date);
+      console.log({ page_number, items_per_page, sort_by});
+      if (sort_by !== "NA") {
+        if(sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
+        filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
+        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
+          filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
+        }
+      } 
 
+      if(listed_in !== "NA") {
+        if(listed_in == "AUCTION") {
+          body["is_in_auction"] = true;
+        } else if(listed_in == "SALE") {
+          body["is_in_sale"] = true;
+        }
       }
-      if (!(sort_by_names === "NOTREQUIRED")) {
-        filter["meta_data.name"] = sort_by_names === "ATOZ" ? 1 : -1
-        // filter["meta_data.name"] = sort_by_names;
-        console.log("ONLY ALPHA SORT \n", sort_by_names);
-      }
+      // console.log({ page_number, items_per_page, sort_by_date, sort_by_names });
+      // if (!(sort_by_date === "NOTREQUIRED")) {
+      //   filter[`createdAt`] = sort_by_date === "NEWTOOLD" ? -1 : 1;
+      //   //filter[`createdAt`] = sort_by_date;
+      //   console.log("ONLY DATE SORT \n", sort_by_date);
+
+      // }
+      // if (!(sort_by_names === "NOTREQUIRED")) {
+      //   filter["meta_data.name"] = sort_by_names === "ATOZ" ? 1 : -1
+      //   // filter["meta_data.name"] = sort_by_names;
+      //   console.log("ONLY ALPHA SORT \n", sort_by_names);
+      // }
       console.log("FILTER \n", filter);
+      console.log("BODY \n", body);
 
-      const nfts = await this.NftModel.find({})
+      const nfts = await this.NftModel.find(body)
         .sort(filter)
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
-      const count = await this.NftModel.countDocuments();
+      const count = await this.NftModel.countDocuments(body);
       return {
         totalpages: Math.ceil(count / items_per_page),
         currentPage: page_number,
@@ -207,18 +226,33 @@ export class NftService {
     }
   }
   async getCollections(body: GetCollectionBody) {
-    const { page_number, items_per_page } = body;
+    const { page_number, items_per_page, sort_by } = body;
     try {
-      const collections = await this.ContractModel.find({}).limit(items_per_page * 1).skip((page_number - 1) * items_per_page)
+
+
+      const filter = {}
+
+      console.log({ page_number, items_per_page, sort_by});
+      if (sort_by !== "NA") {
+        if(sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
+        filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
+        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
+          filter["collection_name"] = sort_by === "ATOZ" ? 1 : -1
+        }
+      } 
+
+      const collections = await this.ContractModel.find({})
+        .sort(filter)
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
         .exec();
       const total_collections = await this.ContractModel.countDocuments();
-      console.log(total_collections);
       return {
         total_collections,
-        total_pages: Math.ceil(total_collections / items_per_page),
+        totalpages: Math.ceil(total_collections / items_per_page),
         currentPage: page_number,
-        collections
-      }
+        collections,
+      };
     } catch (error) {
       console.log(error);
       return {
@@ -876,8 +910,9 @@ export class NftService {
       for (let i = 0; i < totalcount; i++) {
 
         let tokenId: any = activities[i].token_id;
+        let price: any = activities[i].price;
         console.log(tokenId, i);
-        await this.NftModel.updateOne({ _id: activities[i]._id }, { $set: { token_id: parseInt(tokenId) } })
+        await this.NftModel.updateOne({ _id: activities[i]._id }, { $set: { price: parseInt(price) } })
       }
     } catch (error) {
       log(error);

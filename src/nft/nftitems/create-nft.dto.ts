@@ -33,10 +33,14 @@ export class Paginate {
   page_number: number;
   @ApiProperty({ default: 10 })
   items_per_page: number;
-  @ApiProperty({ enum: ["NOTREQUIRED", "NEWTOOLD", "OLDTONEW"], required: false })
-  sort_by_date: string;
-  @ApiProperty({ enum: ["NOTREQUIRED", "ATOZ", "ZTOA"], required: false })
-  sort_by_names: string;
+  // @ApiProperty({ enum: ["NOTREQUIRED", "NEWTOOLD", "OLDTONEW"], required: false })
+  // sort_by_date: string;
+  // @ApiProperty({ enum: ["NOTREQUIRED", "ATOZ", "ZTOA"], required: false })
+  // sort_by_names: string;
+  @ApiProperty({ enum: ["NA", "NEWTOOLD", "OLDTONEW", "ATOZ", "ZTOA"], default: "NA" })
+  sort_by:string;
+  @ApiProperty({enum:["NA","AUCTION", "SALE"], default:"NA"})
+  listed_in:string
 }
 
 export class NftContractUser {
