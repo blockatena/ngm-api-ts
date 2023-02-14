@@ -283,13 +283,15 @@ export class NftController {
   @ApiOperation({
     summary: 'Get all Assets',
   })
-  @Get('get-all-nfts/:page_number/:items_per_page')
+  @Get('get-all-nfts/:page_number/:items_per_page/:sort_by_date/:sort_by_names')
   async getAllNfts(@Param() pagination: Paginate): Promise<any> {
-    const { page_number, items_per_page } = pagination;
+    const { page_number, items_per_page, sort_by, listed_in } = pagination;
     try {
       const data = await this.nftservice.getAllNfts({
         page_number,
         items_per_page,
+        sort_by,
+        listed_in
       });
       if (!data) {
         return {
@@ -420,7 +422,7 @@ export class NftController {
 
   //******************[GET_ALL_COLLECTIONS]************************/
   @ApiOperation({ summary: 'Get User Collections' })
-  @Get('get-collections/:page_number/:items_per_page')
+  @Get('get-collections/:page_number/:items_per_page/:sort_by')
   async getCollections(@Param() body: GetCollectionBody): Promise<any> {
     try {
       log(body);

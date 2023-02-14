@@ -37,7 +37,6 @@ export class AppService implements OnModuleInit {
   }
   @Cron(cron_time)
   async checkSale1155() {
-    console.log('running 1155 cron')
     const all_sales = await this.nftmrktservice.getAll1155sale({status:'started'});
     all_sales.forEach(async (sale) => {
       if(new Date(sale.end_date) <= new Date()) {
