@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { log } from 'console';
-import { retry } from 'rxjs';
-import configuration from 'src/config/configuration';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
-import { triggerAsyncId } from 'async_hooks';
 @Injectable()
 export class CommonService {
 
     constructor(private readonly configService: ConfigService) {
 
     }
-
+    // FETCHING THE CORRECT ENVIRONMENT EX:DEV AND PROD
     async getEnvironmentVar(variable: string): Promise<string> {
         try {
             return this.configService.get<any>(`${variable}`);
@@ -20,7 +17,7 @@ export class CommonService {
             return error;
         }
     }
-
+    // INITIALIZING  THE WALLET BASED ON ENVIRONMENT EX: FOR DEV MUMBAI AND GOERLI
     async getWallet(chain: string): Promise<any> {
         try {
             // Get Environment

@@ -8,6 +8,13 @@ function names should start with small letters and follows relavant caps
 
 --------------------------------------------------------
 Folder Strucure
+Each module should have
+dto
+types
+schema or entity if any
+controllers 
+module
+service
 
 
 File name convention

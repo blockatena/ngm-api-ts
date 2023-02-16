@@ -18,8 +18,8 @@ import { log } from 'console';
 
 import { UsersService } from 'src/users/users.service';
 import { CommonService } from 'src/common/common.service';
-import { collection } from './responses/deployment.response';
-import { ErrorHandler } from 'src/nft/utils/errorhandlers';
+import { collection } from './types/deployment.response';
+import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
@@ -39,7 +39,7 @@ export class DeploymentController {
   @ApiResponse({
     status: 500,
     description: "Something went Wrong",
-    type: ErrorHandler
+    type: ErrorHandlerType
   })
   @ApiHeader({
     name: 'X-API-HEADER',
@@ -171,7 +171,7 @@ export class DeploymentController {
   @ApiResponse({
     status: 500,
     description: "Something went Wrong",
-    type: ErrorHandler
+    type: ErrorHandlerType
   })
   @ApiOperation({ summary: 'Fetch the Details of the Collection' })
   @Get('contract-Details/:cntraddr')

@@ -11,7 +11,7 @@ import {
     MaxFileSizeValidator,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getcontract, transactions } from './nftitems/tokeninfo.dto';
+import { getcontract, transactions } from './dtos/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
     ApiBody,
@@ -30,7 +30,7 @@ import { extname } from 'path';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
-import { MintToken } from './nftitems/mintToken.dto';
+import { MintToken } from './dtos/mintToken.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -39,29 +39,29 @@ import {
     GetNftBody,
     Paginate,
     NftContractUser,
-} from './nftitems/create-nft.dto';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+} from './dtos/create.nft.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
-import { GetOwner } from './nftitems/get-owner.dto';
+import { GetOwner } from './dtos/getowner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
-import { UploadAsset, UploadAssetError } from './schemas/upload-asset.schema';
-import { GetAllNfts } from './schemas/get-all-nfts.schema';
-import { ErrorHandler } from './utils/errorhandlers';
-import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
+import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
+import { GetAllNfts } from './types/nft.types';
+import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
+import { G2Web3_1155 } from './dtos/nft1155.dto';
 import { blockParams } from 'handlebars';
-import { GetBal1155 } from './nftitems/getbal';
+import { GetBal1155 } from './dtos/getbal';
 import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
-import { collection, Get1155AssetOwner, Get1155NewlyMintedResponse, GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
+import { collection, Get1155AssetOwner, Get1155NewlyMintedResponse, GetNft1155, GetTokensUserHold } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
 import { stringify } from 'querystring';
 import { type } from 'os';
-import { GetCollectionResponse, GetOwnerResponse, GetSingleNft } from './nftitems/nft721.response';
+import { GetCollectionResponse, GetOwnerResponse, GetSingleNft } from './types/nft721.types';
 const { log } = console;
 
 @ApiTags('Mint')
@@ -154,7 +154,7 @@ export class NftMintController {
     @ApiResponse({
         status: 500,
         description: 'Something went Wrong',
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiOperation({
         summary: 'Mint G2W3 721 Asset',
@@ -329,7 +329,7 @@ export class NftMintController {
     @ApiResponse({
         status: 500,
         description: `Something went wrong in Server`,
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiHeader({
         name: 'X-API-HEADER',

@@ -7,7 +7,6 @@ import * as fs from 'fs';
 global.__basedir = __dirname;
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.enableCors();
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
     .setTitle('GamesToWeb3')
@@ -31,16 +30,16 @@ async function bootstrap() {
     `)
     .setVersion('1.0')
     .addTag('NGM APIs')
-    .addServer("http://[::1]:8080", "localhost")
+    .addServer("http://[::1]:8080")
     .addServer("https://www.testnets-api.gamestoweb3.com", "Development")
     .addServer("https://www.api.gamestoweb3.com", "Production")
     .setContact("Customer Care", "www.blockatena.com", "hello@blockatena.com").
     build();
-
   const document = SwaggerModule.createDocument(app, config);
   fs.writeFileSync("./swagger-spec.json", JSON.stringify(document));
   SwaggerModule.setup('ngmapi', app, document);
   const PORT = configService.get('PORT') || 3000;
+  app.enableCors();
   await app.listen(PORT);
   console.log(`Application is running on: ${await app.getUrl()}/ngmapi`);
 }

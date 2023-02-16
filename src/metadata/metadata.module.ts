@@ -10,7 +10,7 @@ import { metadata, metadataSchema } from './schema/metadata.schema';
 import { nft1155Schema, Nft1155Schema } from 'src/nft/schema/nft.1155.schema';
 import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
 import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
-import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/schemas/user1155.schema';
+import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/nft/schema/user1155.schema';
 
 @Module({
   imports: [

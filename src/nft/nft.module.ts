@@ -21,7 +21,7 @@ import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
 import { CommonModule } from 'src/common/common.module';
 import { NftMintController } from './nft.mint.controller';
 import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
-import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/schemas/user1155.schema';
+import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/nft/schema/user1155.schema';
 
 require('dotenv').config();
 @Module({

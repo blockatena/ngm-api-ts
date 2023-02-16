@@ -15,7 +15,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getcontract, transactions } from './nftitems/tokeninfo.dto';
+import { getcontract, transactions } from './dtos/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
   ApiAcceptedResponse,
@@ -37,7 +37,7 @@ import { extname } from 'path';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
-import { MintToken } from './nftitems/mintToken.dto';
+import { MintToken } from './dtos/mintToken.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -46,25 +46,24 @@ import {
   GetNftBody,
   Paginate,
   NftContractUser,
-} from './nftitems/create-nft.dto';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+} from './dtos/create.nft.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
-import { GetOwner } from './nftitems/get-owner.dto';
+import { GetOwner } from './dtos/getowner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
-import { UploadAsset, UploadAssetError } from './schemas/upload-asset.schema';
-import { GetAllNfts } from './schemas/get-all-nfts.schema';
-import { ErrorHandler } from './utils/errorhandlers';
-import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
+import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
+import { GetAllNfts } from './types/nft.types';
+import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
+import { G2Web3_1155 } from './dtos/nft1155.dto';
 import { blockParams } from 'handlebars';
-import { GetBal1155 } from './nftitems/getbal';
-import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
-import { GetNft1155, GetTokensUserHold } from './nftitems/get-nft-1155';
+import { GetBal1155 } from './dtos/getbal';
+import { GetNft1155, GetTokensUserHold } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
 import { stringify } from 'querystring';
 const { log } = console;
@@ -278,7 +277,7 @@ export class NftController {
   })
   @ApiResponse({
     status: 500,
-    type: ErrorHandler
+    type: ErrorHandlerType
   })
   @ApiOperation({
     summary: 'Get all Assets',
