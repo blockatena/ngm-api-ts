@@ -7,6 +7,10 @@ export class GetCollectionBody {
     items_per_page: number;
     @ApiProperty({ enum: ["NA", "NEWTOOLD", "OLDTONEW", "ATOZ", "ZTOA"], default: "NA" })
     sort_by:string;
+    @ApiProperty({ enum: ["NA", "ETHEREUM", "POLYGON", "MUMBAI", "GOERLI"], default: "NA" })
+    chain:string;
+    @ApiProperty({ enum: ["NA", "ERC721", "ERC1155",], default: "NA" })
+    type:string;
 }
 export class GetUserOwnedAssets {
     @ApiProperty({ default: '0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72' })

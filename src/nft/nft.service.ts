@@ -9,19 +9,18 @@ import {
   GetNftBody,
   GetSingleNftResponse,
   Paginate,
-} from './nftitems/create-nft.dto';
+} from './dtos/create.nft.dto';
 import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
 import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
-import { ErrorHandler } from './utils/errorhandlers';
+import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 import { metadata, metadataDocument } from './schema/metadata.schema';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
-import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './nftitems/get-nft-1155';
-import { UpdateTokens } from './nftitems/update-tokens';
-import { UpdateOwner } from './nftitems/address.dto';
-import { pipeline } from 'stream';
+import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './dtos/getnft1155.dto';
+import { UpdateTokens } from './dtos/updatetokens';
+import { UpdateOwner } from './dtos/address.dto';
 import { BidDocument, BidSchema } from 'src/marketplace/schema/bid.schema';
-import { Nft1155OwnerDocument, Nft1155OwnerSchema } from 'src/schemas/user1155.schema';
+import { Nft1155OwnerDocument, Nft1155OwnerSchema } from 'src/nft/schema/user1155.schema';
 import { ContractSchema, ContractDocument } from 'src/deployment/schema/contract.schema';
 const { log } = console;
 @Injectable()
@@ -109,19 +108,19 @@ export class NftService {
       const filter = {}
       const body = {}
 
-      console.log({ page_number, items_per_page, sort_by});
+      console.log({ page_number, items_per_page, sort_by });
       if (sort_by !== "NA") {
-        if(sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
-        filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
+        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
+          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
         } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
           filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
         }
-      } 
+      }
 
-      if(listed_in !== "NA") {
-        if(listed_in == "AUCTION") {
+      if (listed_in !== "NA") {
+        if (listed_in == "AUCTION") {
           body["is_in_auction"] = true;
-        } else if(listed_in == "SALE") {
+        } else if (listed_in == "SALE") {
           body["is_in_sale"] = true;
         }
       }
@@ -226,27 +225,54 @@ export class NftService {
     }
   }
   async getCollections(body: GetCollectionBody) {
-    const { page_number, items_per_page, sort_by } = body;
+    const { page_number, items_per_page, sort_by, chain, type } = body;
     try {
 
-
+      if(Number.isNaN(page_number)) {
+        body.page_number = 1;
+      }
       const filter = {}
+      let findData = {}
+      const ENVIRONMENT = process.env.ENVIRONMENT
 
-      console.log({ page_number, items_per_page, sort_by});
+      console.log({ page_number, items_per_page, sort_by , chain, type});
       if (sort_by !== "NA") {
-        if(sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
-        filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
+        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
+          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
         } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
           filter["collection_name"] = sort_by === "ATOZ" ? 1 : -1
         }
-      } 
+      }
 
-      const collections = await this.ContractModel.find({})
+      if (chain !== "NA") {
+        if(ENVIRONMENT == "DEV") {
+          if(chain == 'MUMBAI' || chain == 'GOERLI') {
+            findData[`chain.id`] = chain == 'MUMBAI'?80001:5;
+          } 
+        } else
+        {
+          if(chain == 'ETHEREUM' || chain == 'POLYGON') {
+            findData[`chain.id`] = chain =='POLYGON'?137:1;
+          }
+        }
+      }
+
+      if (type !== "NA") {
+          if(type == 'ERC1155') {
+            findData[`type`] = 'NGM1155';
+          }  else if(type == 'ERC721') {
+            findData['type'] = {$nin:["NGM1155"]}
+          } 
+        } 
+
+      console.log(findData)
+
+      const collections = await this.ContractModel.find(findData)
         .sort(filter)
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
-      const total_collections = await this.ContractModel.countDocuments();
+      const total_collections = await this.ContractModel.countDocuments(findData);
       return {
         total_collections,
         totalpages: Math.ceil(total_collections / items_per_page),

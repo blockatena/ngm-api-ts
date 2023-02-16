@@ -11,7 +11,7 @@ import {
     MaxFileSizeValidator,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getcontract, transactions } from './nftitems/tokeninfo.dto';
+import { getcontract, transactions } from './dtos/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
     ApiBody,
@@ -31,7 +31,7 @@ import { extname } from 'path';
 import { Roles } from 'src/guards/roles.decorator';
 import { Role } from 'src/guards/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
-import { MintToken } from './nftitems/mintToken.dto';
+import { MintToken } from './dtos/mintToken.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
@@ -40,25 +40,25 @@ import {
     GetNftBody,
     Paginate,
     NftContractUser,
-} from './nftitems/create-nft.dto';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './nftitems/collections.dto';
+} from './dtos/create.nft.dto';
+import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
-import { GetOwner } from './nftitems/get-owner.dto';
+import { GetOwner } from './dtos/getowner.dto';
 import { APIGuard } from 'src/guards/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
-import { UploadAsset, UploadAssetError } from './schemas/upload-asset.schema';
-import { GetAllNfts } from './schemas/get-all-nfts.schema';
-import { ErrorHandler } from './utils/errorhandlers';
-import { G2Web3_1155 } from './nftitems/ngm-1155.dto';
+import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
+import { GetAllNfts } from './types/nft.types';
+import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
+import { G2Web3_1155 } from './dtos/nft1155.dto';
 import { blockParams } from 'handlebars';
-import { GetBal1155 } from './nftitems/getbal';
+import { GetBal1155 } from './dtos/getbal';
 import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
-import { Get1155AssetOwner, get1155AssetsByCollectionResponse, Get1155NewlyMintedResponse, GetNft1155, GetSingle1155Nft, GetTokensUserHold, GetTokensUserHoldResponse, GetUserHoldTokensResponse, GetUserOwned1155Assets } from './nftitems/get-nft-1155';
+import { Get1155AssetOwner, get1155AssetsByCollectionResponse, Get1155NewlyMintedResponse, GetNft1155, GetSingle1155Nft, GetTokensUserHold, GetTokensUserHoldResponse, GetUserHoldTokensResponse, GetUserOwned1155Assets } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
 import { stringify } from 'querystring';
 const { log } = console;
@@ -150,7 +150,7 @@ export class NftController1155 {
     @ApiResponse({
         status: 500,
         description: `Something went wrong in Server`,
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiOperation({ summary: "Gets Number of Tokens does Owner hold" })
     @Get('g2w3-1155/get-tokens/:token_owner/:contract_address/:token_id')
@@ -182,7 +182,7 @@ export class NftController1155 {
     @ApiResponse({
         status: 500,
         description: `Something went wrong in Server`,
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiOperation({ summary: 'Get Assets by collection' })
     @Post('get-nfts-1155-collection')
@@ -241,7 +241,7 @@ export class NftController1155 {
     @ApiResponse({
         status: 500,
         description: `Something went wrong`,
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiOperation({ summary: "Fetch Balance of Tokens from Block Chain" })
     @Get('get-balance-of-token/:contract_address/:token_id/:owner_address')
@@ -306,7 +306,7 @@ export class NftController1155 {
     @ApiResponse({
         status: 500,
         description: `Something went wrong`,
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiOperation({ summary: 'Get the 1155 token details along with its stakeHolders' })
     @Get('get-1155-nft/:contract_address/:token_id')
@@ -338,7 +338,7 @@ export class NftController1155 {
     @ApiResponse({
         status: 500,
         description: `Something went wrong`,
-        type: ErrorHandler
+        type: ErrorHandlerType
     })
     @ApiOperation({ summary: 'Get 1155 Assets Owned by User' })
     @Get('g2w3-1155/:owner_address/:page_number/:items_per_page')
