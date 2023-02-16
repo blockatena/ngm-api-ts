@@ -225,13 +225,17 @@ export class NftService {
     }
   }
   async getCollections(body: GetCollectionBody) {
-    const { page_number, items_per_page, sort_by } = body;
+    const { page_number, items_per_page, sort_by, chain, type } = body;
     try {
 
-
+      if(Number.isNaN(page_number)) {
+        body.page_number = 1;
+      }
       const filter = {}
+      let findData = {}
+      const ENVIRONMENT = process.env.ENVIRONMENT
 
-      console.log({ page_number, items_per_page, sort_by });
+      console.log({ page_number, items_per_page, sort_by , chain, type});
       if (sort_by !== "NA") {
         if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
           filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
@@ -240,12 +244,35 @@ export class NftService {
         }
       }
 
-      const collections = await this.ContractModel.find({})
+      if (chain !== "NA") {
+        if(ENVIRONMENT == "DEV") {
+          if(chain == 'MUMBAI' || chain == 'GOERLI') {
+            findData[`chain.id`] = chain == 'MUMBAI'?80001:5;
+          } 
+        } else
+        {
+          if(chain == 'ETHEREUM' || chain == 'POLYGON') {
+            findData[`chain.id`] = chain =='POLYGON'?137:1;
+          }
+        }
+      }
+
+      if (type !== "NA") {
+          if(type == 'ERC1155') {
+            findData[`type`] = 'NGM1155';
+          }  else if(type == 'ERC721') {
+            findData['type'] = {$nin:["NGM1155"]}
+          } 
+        } 
+
+      console.log(findData)
+
+      const collections = await this.ContractModel.find(findData)
         .sort(filter)
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
-      const total_collections = await this.ContractModel.countDocuments();
+      const total_collections = await this.ContractModel.countDocuments(findData);
       return {
         total_collections,
         totalpages: Math.ceil(total_collections / items_per_page),

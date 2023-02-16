@@ -349,7 +349,7 @@ export class NftController721 {
     type: ErrorHandlerType
   })
   @ApiOperation({ summary: 'Get All Collections' })
-  @Get('get-collections/:page_number/:items_per_page/:sort_by')
+  @Get('get-collections/:page_number/:items_per_page/:sort_by/:chain/:type')
   async getCollections(@Param() body: GetCollectionBody): Promise<any> {
     try {
       log(body);
