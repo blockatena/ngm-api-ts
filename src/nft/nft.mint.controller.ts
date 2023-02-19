@@ -27,8 +27,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 // import { RolesGuard } from 'src/guards/roles.guard';
-import { Roles } from 'src/guards/roles.decorator';
-import { Role } from 'src/guards/roles.enum';
+import { Roles } from 'src/services/@decorators/roles.decorator';
+import { Role } from 'src/services/enum/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { MintToken } from './dtos/mintToken.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
@@ -46,7 +46,7 @@ import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
 import { GetOwner } from './dtos/getowner.dto';
-import { APIGuard } from 'src/guards/roles.guard';
+import { APIGuard } from 'src/services/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
@@ -275,7 +275,7 @@ export class NftMintController {
                 token_owner: ethers.utils.getAddress(body.token_owner),
                 meta_data: jsonData,
             };
-            log(arrdb);
+            console.table(arrdb);
             //add to Activity
             await this.activityService.createActivity({
                 event: 'Minted',

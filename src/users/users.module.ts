@@ -7,20 +7,20 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { NftModule } from 'src/nft/nft.module';
 import { ActivityService } from 'src/activity/activity.service';
 import { ActivityModule } from 'src/activity/activity.module';
-import { EmailModule } from 'src/email/email.module';
 import { UserSchema, userSchema } from './schema/user.schema';
+import { EmailService } from 'src/services/email.service';
 
 @Module({
-  imports: [EmailModule, forwardRef(() => NftModule),
-    forwardRef(() => ActivityModule),
-    // JwtModule.register({
-    //   secret: process.env.jwtSecret,
-    //   signOptions: { expiresIn: process.env.ExpiresIN },
-    // }),
-    MongooseModule.forFeature([{ name: UserSchema.name, schema: userSchema }]),
+  imports: [forwardRef(() => NftModule),
+  forwardRef(() => ActivityModule),
+  // JwtModule.register({
+  //   secret: process.env.jwtSecret,
+  //   signOptions: { expiresIn: process.env.ExpiresIN },
+  // }),
+  MongooseModule.forFeature([{ name: UserSchema.name, schema: userSchema }]),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, EmailService],
   exports: [UsersService]
 })
 export class UsersModule { }

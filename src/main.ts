@@ -1,46 +1,38 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { APP } from 'src/utils/constants/APP/swagger.description';
 import * as fs from 'fs';
+import { WHITE_LIST_CLIENTS } from './utils/constants/APP/whilelist.clients';
 
 global.__basedir = __dirname;
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const { TITLE, DESCRIPTION, VERSION, TAG, SERVERS, CONTACT } = APP;
+  const { LOCALHOST, DEVELOP, PRODUCTION, README, SWAGGER } = SERVERS;
+  const app = await NestFactory.create(AppModule, { logger: ['warn', 'error', 'debug', 'log', 'verbose'] });
   const configService = app.get(ConfigService);
   const config = new DocumentBuilder()
-    .setTitle('GamesToWeb3')
-    .setDescription(`This is Api Demonstraion for <strong>GamesToWeb3</strong> , an Nft <em>Marketplace</em> 
-    <article>
-    What is a marketplace in NFT?
-    Non-Fungible Token or NFT marketplace is a marketplace that functions as a public Blockchain platform. However, this platform is gaining traction and driving developers and businesses to construct a marketplace, despite being in its nascent stage.
-    </article>
-    <h4>We support Multi chain Environment </h4>
-    <p>In Production</p>
-    <ul>
-    <li>Ethereum</li>
-    <li>Polygon</li>
-    </ul>
-    <p>In Development</p>
-    <ul>
-    <li>Goeril</li>
-    <li>Mumbai</li>
-    </ul>
-    
-    `)
-    .setVersion('1.0')
-    .addTag('NGM APIs')
-    .addServer("http://[::1]:8080")
-    .addServer("https://www.testnets-api.gamestoweb3.com", "Development")
-    .addServer("https://www.api.gamestoweb3.com", "Production")
-    .setContact("Customer Care", "www.blockatena.com", "hello@blockatena.com").
+    .setTitle(TITLE)
+    .setDescription(DESCRIPTION)
+    .setVersion(VERSION)
+    .addServer(LOCALHOST.URL, LOCALHOST.DESCRIPTION)
+    .addServer(DEVELOP.URL, DEVELOP.DESCRIPTION)
+    .addServer(PRODUCTION.URL, PRODUCTION.DESCRIPTION)
+    .setContact(CONTACT.NAME, CONTACT.URL, CONTACT.EMAIL).
     build();
   const document = SwaggerModule.createDocument(app, config);
   fs.writeFileSync("./swagger-spec.json", JSON.stringify(document));
-  SwaggerModule.setup('ngmapi', app, document);
+  SwaggerModule.setup('gamestoweb3api', app, document);
   const PORT = configService.get('PORT') || 3000;
-  app.enableCors();
+
   await app.listen(PORT);
-  console.log(`Application is running on: ${await app.getUrl()}/ngmapi`);
+  console.log(`Application is running on: ${await app.getUrl()}/gamestoweb3api`);
+  console.table(WHITE_LIST_CLIENTS);
+  app.enableCors({
+    origin: [...WHITE_LIST_CLIENTS], methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+    preflightContinue: true,
+  });
 }
 bootstrap();
