@@ -700,20 +700,24 @@ export class NftController {
   @ApiOperation({ summary: 'Get Assets by collection' })
   @Post('get-nfts-1155-collection')
   async getNfts1155Collection(
-    @Body() Collections_listed: GetAssets,
+    @Body() Collections_listed: GetListedCollections,
   ): Promise<any> {
-    const { contract_address } = Collections_listed;
-    try {
-      log(Collections_listed);
-      const unique_owners = await this.nftservice.uniqueOwners1155(contract_address);
-      log({ unique_owners });
-      const get_nfts = await this.nftservice.get1155Nfts({
-        ...Collections_listed,
-      });
-      return {
-        unique_owners: unique_owners.length,
-        get_nfts
-      };
+    const { address_type, address } = Collections_listed;
+        try {
+            log(Collections_listed);
+            let unique_owners
+            if(address_type == 'COLLECTION') {
+                unique_owners = await this.nftservice.uniqueOwners1155(address);
+            }
+            log({ unique_owners });
+            
+            const get_nfts = await this.nftservice.get1155Nfts({
+                ...Collections_listed,
+            });
+            return {
+                unique_owners: unique_owners.length || 0,
+                get_nfts
+            };
     } catch (error) {
       log(error);
       return { message: 'something went wrong in controller', error };
