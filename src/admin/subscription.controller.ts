@@ -16,11 +16,7 @@ export class SubscriptionController {
   @ApiOperation({ summary: 'This Route will create a Api key' })
   @Post('create-api-key')
   async subscribeToPremium(@Headers('SECRET') SECRET: string, @Body() body: User): Promise<any> {
-    try {
-      return await this.subscriptionService.subscribeToPremium({ SECRET, body });
-    } catch (error) {
-
-    }
+    return await this.subscriptionService.subscribeToPremium({ SECRET, body });
   }
 
   @ApiOperation({ summary: "Increse Limit" })

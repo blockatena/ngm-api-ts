@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { APP } from 'src/utils/constants/APP/swagger.description';
 import * as fs from 'fs';
 import { WHITE_LIST_CLIENTS } from './utils/constants/APP/whilelist.clients';
+import { HttpExceptionFilter } from './filters/base-exception.fiter';
 
 global.__basedir = __dirname;
 async function bootstrap() {
@@ -25,14 +26,12 @@ async function bootstrap() {
   fs.writeFileSync("./swagger-spec.json", JSON.stringify(document));
   SwaggerModule.setup('gamestoweb3api', app, document);
   const PORT = configService.get('PORT') || 3000;
-
+  app.useGlobalFilters(new HttpExceptionFilter)
   await app.listen(PORT);
   console.log(`Application is running on: ${await app.getUrl()}/gamestoweb3api`);
   console.table(WHITE_LIST_CLIENTS);
   app.enableCors({
     origin: [...WHITE_LIST_CLIENTS], methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-    preflightContinue: true,
   });
 }
 bootstrap();

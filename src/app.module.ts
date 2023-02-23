@@ -16,9 +16,10 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CommonModule } from './common/common.module';
 import { AdminModule } from './admin/admin.module';
+import { HttpExceptionFilter } from './filters/base-exception.fiter';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
@@ -63,10 +64,15 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
     }),
     CommonModule
   ],
-  providers: [CronjobService, AppService, {
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard
-  }
+  providers: [CronjobService, AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 })
 export class AppModule implements OnModuleInit {
