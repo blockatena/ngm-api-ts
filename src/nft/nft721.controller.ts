@@ -396,7 +396,7 @@ export class NftController721 {
     type: ErrorHandlerType
   })
   @ApiOperation({ summary: 'Get Assets that are  Listed in Specific Collection' })
-  @Post('get-nfts-listed-collection')
+  @Post('get-nfts-721-collection')
   async getNftsListedCollection(
     @Body() Collections_listed: GetListedCollections,
   ): Promise<any> {

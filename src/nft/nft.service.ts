@@ -246,13 +246,13 @@ export class NftService {
 
       if (chain !== "NA") {
         if(ENVIRONMENT == "DEV") {
-          if(chain == 'MUMBAI' || chain == 'GOERLI') {
-            findData[`chain.id`] = chain == 'MUMBAI'?80001:5;
+          if(chain == 'MUMBAI' || chain == 'GOERLI' || chain == "HYPERSPACE") {
+            findData[`chain.id`] = chain == 'MUMBAI'?80001:chain=="GOERLI"?5:3141;
           } 
         } else
         {
-          if(chain == 'ETHEREUM' || chain == 'POLYGON') {
-            findData[`chain.id`] = chain =='POLYGON'?137:1;
+          if(chain == 'ETHEREUM' || chain == 'POLYGON' || chain == "FILECOIN") {
+            findData[`chain.id`] = chain =='POLYGON'?137:chain=="ETHEREUM"?1:314;
           }
         }
       }
@@ -328,65 +328,67 @@ export class NftService {
   /****[GET_NFTS_LISTED]*/
   async getNftssListed(data: GetListedCollections): Promise<any> {
     const {
-      contract_address,
-      token_owner,
+      address,
+      address_type,
       listed_in,
       page_number,
       items_per_page,
-      order,
-      alphabetical_order,
+      sort_by, search
     } = data;
     try {
       console.log(
-        contract_address, token_owner,
+        address,
+        address_type,
         listed_in,
         page_number,
         items_per_page,
-        order,
-        alphabetical_order,
+        sort_by,
+        search
       );
-      const alpha_order = alphabetical_order == 'ZtoA' ? -1 : 1;
 
-      const recent = order == 'NewToOld' ? -1 : 1;
-      console.log(recent, alpha_order);
-      const condition = {};
 
-      if (!listed_in && !contract_address && !token_owner) {
-        return {
-          success: false,
-          message: 'Required Fields need to be Provided',
+      const filter = {}
+      const body = {}
+
+      console.log({ page_number, items_per_page, sort_by, search, listed_in, address, address_type });
+      if (sort_by !== "NA") {
+        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
+          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
+        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
+          filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
         }
       }
-      if (listed_in) {
-        if (listed_in === 'auction') {
-          condition[`is_in_auction`] = true;
+      if(address_type) {
+        if(address_type =='USER') {
+          body['token_owner'] = address;
+        } else if(address_type == 'COLLECTION') {
+          body['contract_address'] = address
+        } else {
+          return {
+            message:'address and address type and required fields'
+          }
         }
-        if (listed_in === 'sale') {
-          condition[`is_in_sale`] = true;
+      }
+      if (listed_in !== "NA") {
+        if (listed_in == "AUCTION") {
+          body["is_in_auction"] = true;
+        } else if (listed_in == "SALE") {
+          body["is_in_sale"] = true;
         }
       }
-      if (contract_address) {
-        condition[`contract_address`] = contract_address;
+
+      if (search !== "NA") {
+
+        body["meta_data.name"] = {$regex:`(?i)${search}`}
       }
-      if (token_owner) {
-        condition[`token_owner`] = token_owner;
-      }
-      const sort_order = {};
-      if (order) {
-        sort_order['createdAt'] = recent;
-      }
-      if (alphabetical_order) {
-        sort_order['meta_data.name'] = alpha_order;
-      }
-      console.log(sort_order);
-      console.log('condition', condition);
-      const nfts = await this.NftModel.find(condition)
-        .sort({ ...sort_order })
+      console.log(body)
+      const nfts = await this.NftModel.find(body)
+        .sort({ ...filter })
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
 
-      const total_nfts = await this.NftModel.find(condition).countDocuments();
+      const total_nfts = await this.NftModel.find(body).countDocuments();
       return {
         total_nfts,
         total_pages: Math.ceil(total_nfts / items_per_page),
@@ -650,39 +652,59 @@ export class NftService {
   }
 
   /********[GET 1155 NFTS]*********/
-  async get1155Nfts(getListedCollections: GetAssets): Promise<any> {
-    const { contract_address, page_number, items_per_page, order, listed_in, alphabetical_order } = getListedCollections;
+  async get1155Nfts(getListedCollections: GetListedCollections): Promise<any> {
+    const {
+      address,
+      address_type,
+      listed_in,
+      page_number,
+      items_per_page,
+      sort_by,
+      search
+    }  = getListedCollections;
     try {
-      const alpha_order = alphabetical_order == 'ZtoA' ? -1 : 1;
-      const recent = order == 'NewToOld' ? -1 : 1;
-      console.log(recent, alpha_order);
-      const condition = {};
-      if (listed_in) {
-        condition[`filter`] =
-          listed_in == 'auction'
-            ? { is_in_auction: true }
-            : { is_in_sale: true };
+      const filter = {}
+      const body = {}
+
+      console.log({ page_number, items_per_page, sort_by });
+      if (sort_by !== "NA") {
+        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
+          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
+        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
+          filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
+        }
       }
-      if (contract_address) {
-        condition[`contract_address`] = contract_address;
+      if(address_type) {
+        if(address_type =='USER') {
+          body['token_owner'] = address;
+        } else if(address_type == 'COLLECTION') {
+          body['contract_address'] = address
+        } else {
+          return {
+            message:'address and address type and required fields'
+          }
+        }
       }
-      const sort_order = {};
-      if (order) {
-        sort_order['createdAt'] = recent;
+      if (listed_in !== "NA") {
+        if (listed_in == "AUCTION") {
+          body["is_in_auction"] = true;
+        } else if (listed_in == "SALE") {
+          body["is_in_sale"] = true;
+        }
       }
-      if (alphabetical_order) {
-        sort_order['meta_data.name'] = alpha_order;
+
+      if (search !== "NA") {
+        body["meta_data.name"] = { $regex: `/^${search}/i` }
       }
-      console.log(sort_order);
-      console.log('condition', condition);
-      const nfts = await this.Nft11555Model.find(condition)
-        .sort({ ...sort_order })
+
+      const nfts = await this.Nft11555Model.find(body)
+        .sort({ ...filter })
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
-      const total_nfts = await this.Nft11555Model.find(condition).countDocuments();
+      const total_nfts = await this.Nft11555Model.find(body).countDocuments();
       return {
-        collection: await this.getContract(contract_address),
+        // collection: await this.getContract(contract_address),
         total_nfts,
         total_pages: Math.ceil(total_nfts / items_per_page),
         currentPage: page_number,
