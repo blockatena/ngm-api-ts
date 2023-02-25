@@ -52,19 +52,19 @@ export class NftContractUser {
 
 export class GetListedCollections {
   @ApiProperty({ default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C' },)
-  contract_address?: string;
-  @ApiProperty({ default: '0x952450E079AFBb4f75b1F0Ed94120e6573623bC1' })
-  token_owner?: string;
-  @ApiProperty({ enum: ['auction', 'sale'], default: 'auction' })
+  address?: string;
+  @ApiProperty({enum: ['USER', 'COLLECTION'], default: 'COLLECTION' })
+  address_type?: string;
+  @ApiProperty({ enum: ['NA','AUCTION', 'SALE'], default: 'NA' })
   listed_in?: string;
   @ApiProperty({ default: 1 })
   page_number?: number;
   @ApiProperty({ default: 10 })
   items_per_page?: number;
-  @ApiProperty({ enum: ['OldToNew', 'NewToOld'], default: 'NewToOld' })
-  order?: string;
-  @ApiProperty({ enum: ['AtoZ', 'ZtoA'], default: 'AtoZ' })
-  alphabetical_order?: string;
+  @ApiProperty({ enum: ["NA", "NEWTOOLD", "OLDTONEW", "ATOZ", "ZTOA"], default: "NA" })
+  sort_by:string;
+  @ApiProperty({default:"NA"})
+  search:string
 }
 export class GetBids {
   @ApiProperty()

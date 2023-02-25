@@ -28,8 +28,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 // import { RolesGuard } from 'src/guards/roles.guard';
-import { Roles } from 'src/guards/roles.decorator';
-import { Role } from 'src/guards/roles.enum';
+import { Roles } from 'src/services/@decorators/roles.decorator';
+import { Role } from 'src/services/enum/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { MintToken } from './dtos/mintToken.dto';
 import { DeploymentService } from 'src/deployment/deployment.service';
@@ -47,7 +47,7 @@ import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
 import { GetOwner } from './dtos/getowner.dto';
-import { APIGuard } from 'src/guards/roles.guard';
+import { APIGuard } from 'src/services/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
 import { ignoreElements } from 'rxjs';
@@ -187,18 +187,22 @@ export class NftController1155 {
     @ApiOperation({ summary: 'Get Assets by collection' })
     @Post('get-nfts-1155-collection')
     async getNfts1155Collection(
-        @Body() Collections_listed: GetAssets,
+        @Body() Collections_listed: GetListedCollections,
     ): Promise<any> {
-        const { contract_address } = Collections_listed;
+        const { address_type, address } = Collections_listed;
         try {
             log(Collections_listed);
-            const unique_owners = await this.nftservice.uniqueOwners1155(contract_address);
+            let unique_owners
+            if(address_type == 'COLLECTION') {
+                unique_owners = await this.nftservice.uniqueOwners1155(address);
+            }
             log({ unique_owners });
+            
             const get_nfts = await this.nftservice.get1155Nfts({
                 ...Collections_listed,
             });
             return {
-                unique_owners: unique_owners.length,
+                unique_owners: unique_owners.length || 0,
                 get_nfts
             };
         } catch (error) {

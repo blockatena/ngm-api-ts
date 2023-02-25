@@ -1,5 +1,4 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { AuthModule } from './auth/auth.module';
 import { NftModule } from './nft/nft.module';
 import { DeploymentModule } from './deployment/deployment.module';
 import { TextileModule } from './textile/textile.module';
@@ -8,24 +7,19 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
 import { NftMarketplaceModule } from './marketplace/marketplace.module';
 import { ScheduleModule } from '@nestjs/schedule';
-
-import { CronjobService } from './cronjob/cronjob.service';
-
-import { AdminModule } from './admin/admin.module';
-
+import { CronjobService } from './services/cronjob.service';
 import { MetadataModule } from './metadata/metadata.module';
 import { AppService } from './app.service';
-import { NftMarketplaceService } from './marketplace/marketplace.service';
 import { ActivityModule } from './activity/activity.module';
-import { EmailModule } from './email/email.module';
 import configuration from './config/configuration';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
-import { SubscriptionModule } from './subscription/subscription.module';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CommonModule } from './common/common.module';
+import { AdminModule } from './admin/admin.module';
+import { HttpExceptionFilter } from './filters/base-exception.fiter';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
@@ -56,6 +50,7 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
     }),
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(configuration().ATLAS),
+    AdminModule,
     NftModule,
     DeploymentModule,
     TextileModule,
@@ -63,18 +58,21 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
     NftMarketplaceModule,
     MetadataModule,
     ActivityModule,
-    EmailModule,
-    SubscriptionModule,
     ThrottlerModule.forRoot({
       ttl: parseInt(TTL) || 60,
       limit: parseInt(LIMIT) || 10,
     }),
     CommonModule
   ],
-  providers: [CronjobService, AppService, {
-    provide: APP_GUARD,
-    useClass: ThrottlerGuard
-  }
+  providers: [CronjobService, AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 })
 export class AppModule implements OnModuleInit {

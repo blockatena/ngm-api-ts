@@ -12,10 +12,12 @@ export default () => ({
   DEV: {
     GOERLI: process.env.GOERLI_RPC_URL,
     MUMBAI: process.env.MUMBAI_RPC_URL,
+    HYPERSPACE: process.env.HYPERSPACE,
   },
   PROD: {
     ETHEREUM: process.env.ETHEREUM_RPC_URL,
     POLYGON: process.env.POLYGON_RPC_URL,
+    FILECOIN: process.env.FILECOIN,
   },
   REDIS: {
     HOST: process.env.REDIS_HOST,
@@ -41,6 +43,7 @@ export default () => ({
     DEV: {
       GOERLI: '0x5c0e458b9652f5656351c80e8ab308d74343c971',
       MUMBAI: '0x197a176C17eA881fa9c6cF64A0096B7F2633cA2F',
+      HYPERSPACE: '',
     },
     PROD: {
       ETHEREUM: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
@@ -51,10 +54,12 @@ export default () => ({
     DEV: {
       GOERLI: '0x393d5645CF11aeD51Cd8BcFDE7e7D82100d0f2f3',//updated  done
       MUMBAI: '0x70C9c656453cFB577522dDE9A9780562C986EB63',//updated done
+      HYPERSPACE: ''
     },
     PROD: {
       ETHEREUM: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', //not updated yet
       POLYGON: '0xD2183cE465320Add7E67642EfdD05f2Bd8907342',//updated
+      FILECOIN: '',
     },
   },
 });

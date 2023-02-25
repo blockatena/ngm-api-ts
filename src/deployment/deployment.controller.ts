@@ -13,7 +13,7 @@ import { ethers } from 'ethers';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { ConfigService } from '@nestjs/config';
-import { APIGuard } from 'src/guards/roles.guard';
+import { APIGuard } from 'src/services/roles.guard';
 import { log } from 'console';
 
 import { UsersService } from 'src/users/users.service';
@@ -89,6 +89,7 @@ export class DeploymentController {
       // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
       const feeData = await provider.getFeeData()
       log("FEE DATA  \n", feeData);
+
       const contract = await contractFactory.deploy(
         collection_name,
         symbol,
@@ -124,7 +125,6 @@ export class DeploymentController {
       }
       log("INSERTING INTO DB", arr);
       return await this.deploymentService.createContract(arr);
-
     } catch (error) {
       log(error);
       return {

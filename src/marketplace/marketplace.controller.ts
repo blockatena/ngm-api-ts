@@ -17,12 +17,12 @@ import {
   CancelBidBody,
   CreateBidBody,
   GetBids,
-} from './dtos/create_bid.dto';
+} from './dtos/createbid.dto';
 import { NftMarketplaceService } from './marketplace.service';
 import {
   CancelSaleBody,
   CreateSaleBody,
-} from './dtos/saledtos/create-sale.dto';
+} from './dtos/saledtos/createsale.dto';
 import { ethers } from 'ethers';
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';

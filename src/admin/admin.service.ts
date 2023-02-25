@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CronjobService } from 'src/cronjob/cronjob.service';
+import { CronjobService } from 'src/services/cronjob.service';
 import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
 import { NftSchema, NftDocument } from 'src/nft/schema/nft.schema';
 

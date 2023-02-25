@@ -26,9 +26,9 @@ import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestj
 import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
-import { EmailService } from 'src/email/email.service';
+import { EmailService } from 'src/services/email.service';
 import { UserEntity } from './dto/user.dto';
-import { updateAllBidsBody } from 'src/marketplace/dtos/create_bid.dto';
+import { updateAllBidsBody } from 'src/marketplace/dtos/createbid.dto';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
