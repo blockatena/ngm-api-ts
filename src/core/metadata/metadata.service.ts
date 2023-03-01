@@ -5,11 +5,11 @@ import { ethers } from 'ethers';
 import { Model } from 'mongoose';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { NftDocument, NftSchema } from 'src/nft/schema/nft.schema';
-import { NFTStorage, Blob } from 'nft.storage';
-import { NftService } from 'src/nft/nft.service';
-import { metadata, metadataDocument } from './schema/metadata.schema';
-import { ContractSchema, ContractDocument } from 'src/deployment/schema/contract.schema';
+import { NFTStorage } from 'nft.storage';
+import { MetadataSchema, metadataDocument } from './schema/metadata.schema';
+import { ContractSchema, ContractDocument } from '../deployment/schema/contract.schema';
+import { NftService } from '../nft/nft.service';
+import { NftSchema, NftDocument } from '../nft/schema/nft.schema';
 require('dotenv').config();
 
 const provider = new ethers.providers.JsonRpcProvider(
@@ -23,7 +23,7 @@ const storage = new NFTStorage({ token });
 export class MetadataService {
   constructor(
     private readonly httpService: HttpService,
-    @InjectModel(metadata.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(MetadataSchema.name) private MetadataModel: Model<metadataDocument>,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
     @InjectModel(ContractSchema.name)
     private ContractModel: Model<ContractDocument>,

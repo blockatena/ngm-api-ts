@@ -1,29 +1,14 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-import {
-  Acceptbid,
-  CancelBidBody,
-  CreateBidBody,
-  GetBids,
-} from './dtos/createbid.dto';
 import { NftMarketplaceService } from './marketplace.service';
-import {
-  CancelSaleBody,
-  CreateSaleBody,
-} from './dtos/saledtos/createsale.dto';
-import { ethers } from 'ethers';
-import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
-import { off } from 'process';
-import { brotliDecompress } from 'zlib';
 import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer, G2W3_1155CancelSale, G2W3_1155CancelOffer, G2W3_1155AllOffers } from './dtos/auctiondto/create-1155-auction.dto';
+import { NftService } from '../nft/nft.service';
 @ApiTags('MarketPlace 1155')
 @Controller('nft-marketplace')
 export class NftMarketplace1155Controller {
   constructor(
     private readonly nftMarketplaceService: NftMarketplaceService,
-    private readonly nftservice: NftService,
-    private readonly activityService: ActivityService,
   ) { }
 
   /*********************[ERC1155 PART]***********************/

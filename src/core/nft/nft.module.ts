@@ -7,21 +7,20 @@ import { CacheModule, forwardRef, Module } from '@nestjs/common';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
 // import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 // import { JwtModule } from '@nestjs/jwt';
-import { DeploymentService } from 'src/deployment/deployment.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
-import { NftMarketplaceModule } from 'src/marketplace/marketplace.module';
-import { DeploymentModule } from 'src/deployment/deployment.module';
-import { metadata, metadataSchema } from 'src/metadata/schema/metadata.schema';
-import { AuctionSchema, auctionSchema } from 'src/marketplace/schema/auction.schema';
-import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
 import { ActivityModule } from 'src/activity/activity.module';
-import { UsersModule } from 'src/users/users.module';
 import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
 import { CommonModule } from 'src/common/common.module';
 import { NftMintController } from './nft.mint.controller';
-import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
-import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/nft/schema/user1155.schema';
+import { UsersModule } from 'src/users/users.module';
+import { DeploymentModule } from '../deployment/deployment.module';
+import { ContractSchema, contractSchema } from '../deployment/schema/contract.schema';
+import { NftMarketplaceModule } from '../marketplace/marketplace.module';
+import { AuctionSchema, auctionSchema } from '../marketplace/schema/auction.schema';
+import { BidSchema, bidSchema } from '../marketplace/schema/bid.schema';
+import { NftSchema, nftSchema } from './schema/nft.schema';
+import { Nft1155OwnerSchema, nft1155OwnerSchema } from './schema/user1155.schema';
+import { metadataSchema, MetadataSchema } from '../metadata/schema/metadata.schema';
 
 require('dotenv').config();
 @Module({
@@ -39,7 +38,7 @@ require('dotenv').config();
         schema: contractSchema,
       },
       {
-        name: metadata.name,
+        name: MetadataSchema.name,
         schema: metadataSchema,
       },
       { name: AuctionSchema.name, schema: auctionSchema },

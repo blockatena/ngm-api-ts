@@ -1,27 +1,26 @@
 import { HttpService } from '@nestjs/axios';
-import { ConsoleLogger, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { NftDocument, NftSchema } from 'src/nft/schema/nft.schema';
 
 import {
   GetListedCollections,
   GetNftBody,
-  GetSingleNftResponse,
   Paginate,
 } from './dtos/create.nft.dto';
-import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
-import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
-import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
-import { metadata, metadataDocument } from './schema/metadata.schema';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
+import { metadataDocument } from './schema/metadata.schema';
+import { GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './dtos/getnft1155.dto';
 import { UpdateTokens } from './dtos/updatetokens';
 import { UpdateOwner } from './dtos/address.dto';
-import { BidDocument, BidSchema } from 'src/marketplace/schema/bid.schema';
-import { Nft1155OwnerDocument, Nft1155OwnerSchema } from 'src/nft/schema/user1155.schema';
-import { ContractSchema, ContractDocument } from 'src/deployment/schema/contract.schema';
+import { ContractSchema, ContractDocument } from '../deployment/schema/contract.schema';
+import { GetUserNfts } from '../marketplace/dtos/auctiondto/create-auction.dto';
+import { AuctionSchema, AuctionDocument } from '../marketplace/schema/auction.schema';
+import { BidSchema, BidDocument } from '../marketplace/schema/bid.schema';
+import { NftSchema, NftDocument } from './schema/nft.schema';
+import { Nft1155OwnerSchema, Nft1155OwnerDocument } from './schema/user1155.schema';
+import { MetadataSchema } from '../metadata/schema/metadata.schema';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -30,7 +29,7 @@ export class NftService {
     private ContractModel: Model<ContractDocument>,
     private readonly httpService: HttpService,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
-    @InjectModel(metadata.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(MetadataSchema.name) private MetadataModel: Model<metadataDocument>,
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
@@ -228,14 +227,14 @@ export class NftService {
     const { page_number, items_per_page, sort_by, chain, type } = body;
     try {
 
-      if(Number.isNaN(page_number)) {
+      if (Number.isNaN(page_number)) {
         body.page_number = 1;
       }
       const filter = {}
       let findData = {}
       const ENVIRONMENT = process.env.ENVIRONMENT
 
-      console.log({ page_number, items_per_page, sort_by , chain, type});
+      console.log({ page_number, items_per_page, sort_by, chain, type });
       if (sort_by !== "NA") {
         if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
           filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
@@ -245,25 +244,24 @@ export class NftService {
       }
 
       if (chain !== "NA") {
-        if(ENVIRONMENT == "DEV") {
-          if(chain == 'MUMBAI' || chain == 'GOERLI' || chain == "HYPERSPACE") {
-            findData[`chain.id`] = chain == 'MUMBAI'?80001:chain=="GOERLI"?5:3141;
-          } 
-        } else
-        {
-          if(chain == 'ETHEREUM' || chain == 'POLYGON' || chain == "FILECOIN") {
-            findData[`chain.id`] = chain =='POLYGON'?137:chain=="ETHEREUM"?1:314;
+        if (ENVIRONMENT == "DEV") {
+          if (chain == 'MUMBAI' || chain == 'GOERLI' || chain == "HYPERSPACE") {
+            findData[`chain.id`] = chain == 'MUMBAI' ? 80001 : chain == "GOERLI" ? 5 : 3141;
+          }
+        } else {
+          if (chain == 'ETHEREUM' || chain == 'POLYGON' || chain == "FILECOIN") {
+            findData[`chain.id`] = chain == 'POLYGON' ? 137 : chain == "ETHEREUM" ? 1 : 314;
           }
         }
       }
 
       if (type !== "NA") {
-          if(type == 'ERC1155') {
-            findData[`type`] = 'NGM1155';
-          }  else if(type == 'ERC721') {
-            findData['type'] = {$nin:["NGM1155"]}
-          } 
-        } 
+        if (type == 'ERC1155') {
+          findData[`type`] = 'NGM1155';
+        } else if (type == 'ERC721') {
+          findData['type'] = { $nin: ["NGM1155"] }
+        }
+      }
 
       console.log(findData)
 
@@ -358,14 +356,14 @@ export class NftService {
           filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
         }
       }
-      if(address_type) {
-        if(address_type =='USER') {
+      if (address_type) {
+        if (address_type == 'USER') {
           body['token_owner'] = address;
-        } else if(address_type == 'COLLECTION') {
+        } else if (address_type == 'COLLECTION') {
           body['contract_address'] = address
         } else {
           return {
-            message:'address and address type and required fields'
+            message: 'address and address type and required fields'
           }
         }
       }
@@ -379,7 +377,7 @@ export class NftService {
 
       if (search !== "NA") {
 
-        body["meta_data.name"] = {$regex:`(?i)${search}`}
+        body["meta_data.name"] = { $regex: `(?i)${search}` }
       }
       console.log(body)
       const nfts = await this.NftModel.find(body)
@@ -661,7 +659,7 @@ export class NftService {
       items_per_page,
       sort_by,
       search
-    }  = getListedCollections;
+    } = getListedCollections;
     try {
       const filter = {}
       const body = {}
@@ -674,14 +672,14 @@ export class NftService {
           filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
         }
       }
-      if(address_type) {
-        if(address_type =='USER') {
+      if (address_type) {
+        if (address_type == 'USER') {
           body['token_owner'] = address;
-        } else if(address_type == 'COLLECTION') {
+        } else if (address_type == 'COLLECTION') {
           body['contract_address'] = address
         } else {
           return {
-            message:'address and address type and required fields'
+            message: 'address and address type and required fields'
           }
         }
       }
@@ -947,9 +945,6 @@ export class NftService {
       }
     }
   }
-
-  //
-
 
   async activityfix(): Promise<any> {
     try {

@@ -11,24 +11,17 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
-  UploadedFiles,
-  ClassSerializerInterceptor,
-  SerializeOptions,
-  Put,
 } from '@nestjs/common';
-import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
 import { CreateUserDto, GetUser, UpdateUser, UserPic } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiBody, ApiConsumes, ApiOperation, ApiProperty, ApiTags } from '@nestjs/swagger';
-import { NftService } from 'src/nft/nft.service';
+import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/services/email.service';
-import { UserEntity } from './dto/user.dto';
-import { updateAllBidsBody } from 'src/marketplace/dtos/createbid.dto';
+import { NftService } from 'src/core/nft/nft.service';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {

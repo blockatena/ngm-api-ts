@@ -11,56 +11,37 @@ import {
     MaxFileSizeValidator,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getcontract, transactions } from './dtos/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
     ApiBody,
     ApiConsumes,
-    ApiHeader,
-    ApiOkResponse,
     ApiOperation,
-    ApiProperty,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 // import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/services/@decorators/roles.decorator';
 import { Role } from 'src/services/enum/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
-import { MintToken } from './dtos/mintToken.dto';
-import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import {
     GetListedCollections,
-    GetNftBody,
-    Paginate,
-    NftContractUser,
 } from './dtos/create.nft.dto';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
-import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
+import { GetUserOwnedAssets } from './dtos/collections.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
-import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
-import { GetOwner } from './dtos/getowner.dto';
-import { APIGuard } from 'src/services/roles.guard';
 // import { log } from 'console';
 import { UsersService } from 'src/users/users.service';
-import { ignoreElements } from 'rxjs';
 import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
-import { GetAllNfts } from './types/nft.types';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
-import { G2Web3_1155 } from './dtos/nft1155.dto';
-import { blockParams } from 'handlebars';
 import { GetBal1155 } from './dtos/getbal';
-import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
-import { Get1155AssetOwner, get1155AssetsByCollectionResponse, Get1155NewlyMintedResponse, GetNft1155, GetSingle1155Nft, GetTokensUserHold, GetTokensUserHoldResponse, GetUserHoldTokensResponse, GetUserOwned1155Assets } from './dtos/getnft1155.dto';
+import { get1155AssetsByCollectionResponse, GetNft1155, GetSingle1155Nft, GetTokensUserHold, GetTokensUserHoldResponse, GetUserHoldTokensResponse, GetUserOwned1155Assets } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
-import { stringify } from 'querystring';
+import { DeploymentService } from '../deployment/deployment.service';
+import { NftMarketplaceService } from '../marketplace/marketplace.service';
 const { log } = console;
 @ApiTags('ERC-1155-APIs')
 @Controller('nft')
@@ -193,11 +174,11 @@ export class NftController1155 {
         try {
             log(Collections_listed);
             let unique_owners
-            if(address_type == 'COLLECTION') {
+            if (address_type == 'COLLECTION') {
                 unique_owners = await this.nftservice.uniqueOwners1155(address);
             }
             log({ unique_owners });
-            
+
             const get_nfts = await this.nftservice.get1155Nfts({
                 ...Collections_listed,
             });

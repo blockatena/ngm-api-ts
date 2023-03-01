@@ -1,23 +1,23 @@
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { NftService } from 'src/nft/nft.service';
-import { auctionSchema, AuctionSchema } from 'src/marketplace/schema/auction.schema';
-import { nftSchema, NftSchema } from 'src/nft/schema/nft.schema';
 import { MetadataController } from './metadata.controller';
 import { MetadataService } from './metadata.service';
-import { metadata, metadataSchema } from './schema/metadata.schema';
-import { nft1155Schema, Nft1155Schema } from 'src/nft/schema/nft.1155.schema';
-import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
-import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
-import { Nft1155OwnerSchema, nft1155OwnerSchema } from 'src/nft/schema/user1155.schema';
+import { MetadataSchema, metadataSchema } from './schema/metadata.schema';
+import { ContractSchema, contractSchema } from '../deployment/schema/contract.schema';
+import { AuctionSchema, auctionSchema } from '../marketplace/schema/auction.schema';
+import { BidSchema, bidSchema } from '../marketplace/schema/bid.schema';
+import { NftService } from '../nft/nft.service';
+import { Nft1155Schema, nft1155Schema } from '../nft/schema/nft.1155.schema';
+import { NftSchema, nftSchema } from '../nft/schema/nft.schema';
+import { Nft1155OwnerSchema, nft1155OwnerSchema } from '../nft/schema/user1155.schema';
 
 @Module({
   imports: [
     HttpModule,
     MongooseModule.forFeature([
       {
-        name: metadata.name,
+        name: MetadataSchema.name,
         schema: metadataSchema,
       },
       {

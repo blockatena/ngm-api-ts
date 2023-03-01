@@ -10,7 +10,6 @@ import {
   CancelAuctionBody,
   CreateAuctionBody,
   GetAuction,
-  GetAllBids,
 } from './dtos/auctiondto/create-auction.dto';
 import {
   Acceptbid,
@@ -24,17 +23,14 @@ import {
   CreateSaleBody,
 } from './dtos/saledtos/createsale.dto';
 import { ethers } from 'ethers';
-import { NftService } from 'src/nft/nft.service';
 import { ActivityService } from 'src/activity/activity.service';
-import { off } from 'process';
-import { brotliDecompress } from 'zlib';
-import { G2W3_1155Sale } from './dtos/auctiondto/create-1155-auction.dto';
+import { NftService } from '../nft/nft.service';
 @ApiTags('MarketPlace')
 @Controller('nft-marketplace')
 export class NftMarketplaceController {
   constructor(
     private readonly nftMarketplaceService: NftMarketplaceService,
-    private readonly nftservice: NftService,
+    private readonly nftService: NftService,
     private readonly activityService: ActivityService,
   ) { }
   /*********************[CREATE-AUCTION]*****************/
@@ -74,7 +70,7 @@ export class NftMarketplaceController {
     console.log("signed Message : ", signedAddress)
     const checkCredentials = { contract_address, token_id };
     try {
-      const is_nft_exists = await this.nftservice.getSingleNft(
+      const is_nft_exists = await this.nftService.getSingleNft(
         checkCredentials,
       );
       console.log(is_nft_exists);
@@ -154,7 +150,7 @@ export class NftMarketplaceController {
       // if it already cancelled return "Auction is already cancelled"
       //Activity
 
-      const is_nft_exists = await this.nftservice.getSingleNft(
+      const is_nft_exists = await this.nftService.getSingleNft(
         cancel_auction
       );
       if (!is_nft_exists) {
@@ -224,7 +220,7 @@ export class NftMarketplaceController {
     let signedAddress = await ethers.utils.verifyMessage(`Signing to Place Bid\n${rawMsg}\n Hash: \n${hashMessage}`, create_bid.sign)
     console.log("signed Message : ", signedAddress)
     try {
-      const is_nft_exists = await this.nftservice.getSingleNft({
+      const is_nft_exists = await this.nftService.getSingleNft({
         token_id,
         contract_address,
       });
@@ -325,7 +321,7 @@ export class NftMarketplaceController {
     console.log("signed Message : ", signedAddress)
     try {
       // is nft exists
-      const is_nft_exists = await this.nftservice.getSingleNft({
+      const is_nft_exists = await this.nftService.getSingleNft({
         token_id,
         contract_address,
       });
@@ -429,7 +425,7 @@ export class NftMarketplaceController {
     // check bids question ?
     try {
       const { contract_address, token_id } = body;
-      const check_nft = await this.nftservice.getSingleNft({
+      const check_nft = await this.nftService.getSingleNft({
         contract_address,
         token_id,
       });
@@ -472,7 +468,7 @@ export class NftMarketplaceController {
     console.log("signed Message : ", signedAddress)
     try {
       //is Nft Exists
-      const check_nft_exists = await this.nftservice.getSingleNft({
+      const check_nft_exists = await this.nftService.getSingleNft({
         contract_address,
         token_id,
       });
@@ -518,7 +514,7 @@ export class NftMarketplaceController {
     let signedAddress = await ethers.utils.verifyMessage(`Signing to Cancel Sale\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
     console.log("signed Message : ", signedAddress)
     try {
-      const nft = await this.nftservice.getSingleNft({
+      const nft = await this.nftService.getSingleNft({
         contract_address: body.contract_address,
         token_id: body.token_id,
       });
@@ -558,7 +554,7 @@ export class NftMarketplaceController {
       let signedAddress = await ethers.utils.verifyMessage(`Signing to Make Offer\n${rawMsg}\n Hash: \n${hashMessage}`, body.sign)
       console.log("signed Message : ", signedAddress)
       // Validating sale is enough, because already sale is fully validated
-      const check_nft_exists = await this.nftservice.getSingleNft({
+      const check_nft_exists = await this.nftService.getSingleNft({
         contract_address,
         token_id,
       });
@@ -651,7 +647,7 @@ export class NftMarketplaceController {
     const checkCredentials = { contract_address, token_id }
     try {
       //Check if Signer 
-      const is_nft_exists = await this.nftservice.getSingleNft(
+      const is_nft_exists = await this.nftService.getSingleNft(
         checkCredentials,
       );
       if (signedAddress !== offer_person_address && signedAddress !== is_nft_exists.token_owner) {

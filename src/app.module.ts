@@ -1,14 +1,10 @@
 import { Module, OnModuleInit } from '@nestjs/common';
-import { NftModule } from './nft/nft.module';
-import { DeploymentModule } from './deployment/deployment.module';
 import { TextileModule } from './textile/textile.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UsersModule } from './users/users.module';
-import { NftMarketplaceModule } from './marketplace/marketplace.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronjobService } from './services/cronjob.service';
-import { MetadataModule } from './metadata/metadata.module';
 import { AppService } from './app.service';
 import { ActivityModule } from './activity/activity.module';
 import configuration from './config/configuration';
@@ -20,11 +16,18 @@ import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CommonModule } from './common/common.module';
 import { AdminModule } from './admin/admin.module';
 import { HttpExceptionFilter } from './filters/base-exception.fiter';
+import ConfigValidation from './config/validation.schema';
+import { DeploymentModule } from './core/deployment/deployment.module';
+import { NftMarketplaceModule } from './core/marketplace/marketplace.module';
+import { MetadataModule } from './core/metadata/metadata.module';
+import { NftModule } from './core/nft/nft.module';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({
+      isGlobal: true, load: [configuration], validationSchema: ConfigValidation
+    }),
     MailerModule.forRoot({
       transport: {
         service: 'gmail',
@@ -49,6 +52,7 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
       },
     }),
     ScheduleModule.forRoot(),
+    //need-to-optimise
     MongooseModule.forRoot(configuration().ATLAS),
     AdminModule,
     NftModule,

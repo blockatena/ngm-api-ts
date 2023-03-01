@@ -4,11 +4,10 @@ import { UsersController } from './users.controller';
 // import { JwtModule } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 // import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
-import { NftModule } from 'src/nft/nft.module';
-import { ActivityService } from 'src/activity/activity.service';
 import { ActivityModule } from 'src/activity/activity.module';
 import { UserSchema, userSchema } from './schema/user.schema';
 import { EmailService } from 'src/services/email.service';
+import { NftModule } from 'src/core/nft/nft.module';
 
 @Module({
   imports: [forwardRef(() => NftModule),

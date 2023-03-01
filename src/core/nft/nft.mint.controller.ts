@@ -11,14 +11,12 @@ import {
     MaxFileSizeValidator,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
-import { getcontract, transactions } from './dtos/tokeninfo.dto';
 import { ethers } from 'ethers';
 import {
     ApiBody,
     ApiConsumes,
     ApiHeader,
     ApiOperation,
-    ApiProperty,
     ApiResponse,
     ApiTags,
 } from '@nestjs/swagger';
@@ -31,37 +29,20 @@ import { Roles } from 'src/services/@decorators/roles.decorator';
 import { Role } from 'src/services/enum/roles.enum';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { MintToken } from './dtos/mintToken.dto';
-import { DeploymentService } from 'src/deployment/deployment.service';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import {
-    GetListedCollections,
-    GetNftBody,
-    Paginate,
-    NftContractUser,
-} from './dtos/create.nft.dto';
-import { GetAssets, GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
-import { GetUserNfts } from 'src/marketplace/dtos/auctiondto/create-auction.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
-import { NftMarketplaceService } from 'src/marketplace/marketplace.service';
-import { GetOwner } from './dtos/getowner.dto';
 import { APIGuard } from 'src/services/roles.guard';
-// import { log } from 'console';
-import { UsersService } from 'src/users/users.service';
-import { ignoreElements } from 'rxjs';
-import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
-import { GetAllNfts } from './types/nft.types';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 import { G2Web3_1155 } from './dtos/nft1155.dto';
-import { blockParams } from 'handlebars';
-import { GetBal1155 } from './dtos/getbal';
-import { formatEther, getJsonWalletAddress } from 'ethers/lib/utils';
-import { collection, Get1155AssetOwner, Get1155NewlyMintedResponse, GetNft1155, GetTokensUserHold } from './dtos/getnft1155.dto';
+import { Get1155AssetOwner, Get1155NewlyMintedResponse } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
-import { stringify } from 'querystring';
-import { type } from 'os';
-import { GetCollectionResponse, GetOwnerResponse, GetSingleNft } from './types/nft721.types';
+import { GetSingleNft } from './types/nft721.types';
+import { UsersService } from 'src/users/users.service';
+import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
+import { DeploymentService } from '../deployment/deployment.service';
+import { NftMarketplaceService } from '../marketplace/marketplace.service';
 const { log } = console;
 
 @ApiTags('Mint')

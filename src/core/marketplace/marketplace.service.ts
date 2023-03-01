@@ -18,20 +18,19 @@ import {
 } from './dtos/create_offer.dto';
 import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
 import { ethers } from 'ethers';
-import { NftService } from 'src/nft/nft.service';
-import { AuctionSchema, AuctionDocument } from 'src/marketplace/schema/auction.schema';
 import { ActivityService } from 'src/activity/activity.service';
 import { TradeVolume } from './dtos/tradevolume.dto';
-import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer, G2W3_1155CancelSale, G2W3_1155CancelOffer } from './dtos/auctiondto/create-1155-auction.dto'
-import { check } from 'prettier';
+import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer, G2W3_1155CancelSale, G2W3_1155CancelOffer } from './dtos/auctiondto/create-1155-auction.dto';
 import { CommonService } from 'src/common/common.service';
 import { log } from 'console';
 import { BidSchema, BidDocument } from './schema/bid.schema';
 import { OfferSchema, OfferDocument } from './schema/offer.schema';
 import { SalesSchema, SalesDocument } from './schema/sales.schema';
-import { ContractDocument, ContractSchema } from 'src/deployment/schema/contract.schema';
-import { Offer1155Schema, Offer1155Document } from 'src/nft/schema/offer1155.schema';
-import { Sale1155Schema, Sale1155Document } from 'src/nft/schema/sale1155.schema';
+import { ContractSchema, ContractDocument } from '../deployment/schema/contract.schema';
+import { NftService } from '../nft/nft.service';
+import { Offer1155Schema, Offer1155Document } from '../nft/schema/offer1155.schema';
+import { Sale1155Schema, Sale1155Document } from '../nft/schema/sale1155.schema';
+import { AuctionSchema, AuctionDocument } from './schema/auction.schema';
 @Injectable()
 export class NftMarketplaceService {
   constructor(
