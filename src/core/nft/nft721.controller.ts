@@ -30,7 +30,6 @@ import { GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 import { GetOwner } from './dtos/getowner.dto';
-import { UsersService } from 'src/users/users.service';
 import { GetAllNfts } from './types/nft.types';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 import { collection } from './dtos/getnft1155.dto';
@@ -39,6 +38,7 @@ import { GetCollectionResponse, GetOwnerResponse, GetSingleNft, GetSingleNftWith
 import { DeploymentService } from '../deployment/deployment.service';
 import { GetUserNfts } from '../marketplace/dtos/auctiondto/create-auction.dto';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
+import { UsersService } from '../users/users.service';
 const { log } = console;
 // require('dotenv').config();
 

@@ -2,9 +2,9 @@ import { forwardRef, Module } from '@nestjs/common';
 import { DeploymentService } from './deployment.service';
 import { DeploymentController } from './deployment.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from 'src/users/users.module';
 import { CommonModule } from 'src/common/common.module';
 import { ContractSchema, contractSchema } from './schema/contract.schema';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [forwardRef(() => UsersModule),

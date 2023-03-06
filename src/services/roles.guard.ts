@@ -7,7 +7,7 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from 'src/core/users/users.service';
 // import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 const { log } = console;
 @Injectable()

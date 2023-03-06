@@ -1,11 +1,11 @@
 import { BadRequestException, HttpException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from 'src/services/email.service';
-import { UsersService } from 'src/users/users.service';
 import { User, UserBody } from './dto/user.dto';
 import { log } from 'console';
 import generateApiKey from 'generate-api-key';
 import { HttpExceptionFilter } from 'src/filters/base-exception.fiter';
+import { UsersService } from 'src/core/users/users.service';
 
 @Injectable()
 export class SubscriptionService {

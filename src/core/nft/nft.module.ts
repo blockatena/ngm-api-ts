@@ -12,7 +12,6 @@ import { ActivityModule } from 'src/activity/activity.module';
 import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
 import { CommonModule } from 'src/common/common.module';
 import { NftMintController } from './nft.mint.controller';
-import { UsersModule } from 'src/users/users.module';
 import { DeploymentModule } from '../deployment/deployment.module';
 import { ContractSchema, contractSchema } from '../deployment/schema/contract.schema';
 import { NftMarketplaceModule } from '../marketplace/marketplace.module';
@@ -21,6 +20,7 @@ import { BidSchema, bidSchema } from '../marketplace/schema/bid.schema';
 import { NftSchema, nftSchema } from './schema/nft.schema';
 import { Nft1155OwnerSchema, nft1155OwnerSchema } from './schema/user1155.schema';
 import { metadataSchema, MetadataSchema } from '../metadata/schema/metadata.schema';
+import { UsersModule } from '../users/users.module';
 
 require('dotenv').config();
 @Module({

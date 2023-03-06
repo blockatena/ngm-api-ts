@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document, PromiseProvider, Types } from 'mongoose';
-import { type } from 'os';
+import { Document } from 'mongoose';
 export type NftDocument = NftSchema & Document;
-
 @Schema({ timestamps: true })
 export class NftSchema {
   @Prop()

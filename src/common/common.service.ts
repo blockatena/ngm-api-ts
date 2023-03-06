@@ -2,13 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { log } from 'console';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
+import { getWalletType } from './types/getwallet.types';
+import { formatEther, parseEther } from 'ethers/lib/utils';
+import { getMailboxID } from '@textile/hub';
 @Injectable()
 export class CommonService {
 
+    private readonly Admin_Wallet = async () => await this.getEnvironmentVar('ADMIN_WALLET');
     constructor(private readonly configService: ConfigService) {
 
     }
-    // FETCHING THE CORRECT ENVIRONMENT EX:DEV AND PROD
+    // FETCHING THE CORgetOnChainTransactionT ENVIRONMENT EX:DEV AND PROD
     async getEnvironmentVar(variable: string): Promise<string> {
         try {
             return this.configService.get<any>(`${variable}`);
@@ -18,7 +22,7 @@ export class CommonService {
         }
     }
     // INITIALIZING  THE WALLET BASED ON ENVIRONMENT EX: FOR DEV MUMBAI AND GOERLI
-    async getWallet(chain: string): Promise<any> {
+    async getWallet(chain: string): Promise<getWalletType | any> {
         try {
             // Get Environment
             const ENVIRONMENT = await this.getEnvironmentVar('ENVIRONMENT');
@@ -27,30 +31,14 @@ export class CommonService {
                 log(`Invalid Environment check env  current Environment is ${ENVIRONMENT}`);
             }
             log(`Current Environment is ${ENVIRONMENT}`);
-            const chain_typee = this.configService.get<any>(
-                ENVIRONMENT,
-            );
-            // chain validation 
-            const current_chain = chain.toUpperCase();
-            const chains = Object.keys(chain_typee);
-            const chain_available = chains.find(chain => chain === current_chain);
-            if (!chain_available) {
-                return {
-                    message: `you are on ${ENVIRONMENT} `,
-                    chains
-                }
-            }
-            const chain_type = chain_typee[`${current_chain}`];
-            log(`RPC is ${chain_type}`);
             // Multi Chain Integration
-            const RPC_URL = chain_type;
+            const RPC_URL = await this.getRpcUrl({ ENVIRONMENT, chain });
             const PRIV_KEY = await this.getEnvironmentVar('PRIV_KEY');
             const API_BASE_URL = await this.getEnvironmentVar('API_BASE_URL');
             //Get Provider
             const provider = new ethers.providers.JsonRpcProvider(
                 RPC_URL,
             );
-
             const wallet = new ethers.Wallet(PRIV_KEY, provider);
             return {
                 check_environment,
@@ -66,6 +54,54 @@ export class CommonService {
             }
         }
     }
+    // GET RPC URL 
+
+    async getRpcUrl({ ENVIRONMENT, chain }: { ENVIRONMENT: string, chain: string }): Promise<string> {
+        try {
+            const chain_typee = this.configService.get<any>(
+                ENVIRONMENT,
+            );
+            const current_chain = chain.toUpperCase();
+            const chains = Object.keys(chain_typee);
+            const chain_available = chains.find(chain => chain === current_chain);
+            if (!chain_available) {
+                return `you are on ${ENVIRONMENT}`;
+            }
+            const chain_type = chain_typee[`${current_chain}`];
+            log(`RPC is ${chain_type} `);
+            return chain_type;
+        }
+        catch (error) {
+
+        }
+    }
+
+    async getTransaction({ RPC_URL, transactionHash }: { RPC_URL: string, transactionHash: string }): Promise<any> {
+        try {
+            const provider = new ethers.providers.JsonRpcProvider(
+                RPC_URL,
+            );
+            const { from, to, value } = await provider.getTransaction(transactionHash);
+            const amount = formatEther(value);
+            const ADMIN_WALLET = await this.Admin_Wallet();
+            const isAdminWallet = (to === ADMIN_WALLET);
+            if (isAdminWallet) {
+                // Transaction is verified
+                console.log("TRANSACTION IS VERIFIED");
+            } else {
+                console.log("TRANSACTION IS INVALID");
+                return {
+                    message: "Invalid Transaction",
+                    reason: "Malicious Account Transfer",
+                    from, to, amount
+                }
+            }
+            console.log({ from, to, amount });
+            return { from, to, amount };
+        } catch (error) {
+
+        }
+    }
 
     async erc20MrktAddr(chain: string,): Promise<any> {
         try {
@@ -74,9 +110,9 @@ export class CommonService {
             const ENVIRONMENT = await this.getEnvironmentVar('ENVIRONMENT');
             const erc20_addr = await this.getEnvironmentVar('ERC20_CONTRACT');
             const marketAddress = await this.getEnvironmentVar('MARKETPLACE_CONTRACT');
-            const marketplaceAddress = marketAddress[`${ENVIRONMENT}`][`${_chain}`];
+            const marketplaceAddress = marketAddress[`${ENVIRONMENT} `][`${_chain} `];
             console.log("marketplaceAddress \n", marketAddress);
-            const erc20Address = erc20_addr[`${ENVIRONMENT}`][`${_chain}`];
+            const erc20Address = erc20_addr[`${ENVIRONMENT} `][`${_chain} `];
             console.log("erc20Address \n", erc20Address);
             return {
                 marketplaceAddress,

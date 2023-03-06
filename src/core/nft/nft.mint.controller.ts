@@ -39,10 +39,10 @@ import { G2Web3_1155 } from './dtos/nft1155.dto';
 import { Get1155AssetOwner, Get1155NewlyMintedResponse } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
 import { GetSingleNft } from './types/nft721.types';
-import { UsersService } from 'src/users/users.service';
 import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
 import { DeploymentService } from '../deployment/deployment.service';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
+import { UsersService } from '../users/users.service';
 const { log } = console;
 
 @ApiTags('Mint')

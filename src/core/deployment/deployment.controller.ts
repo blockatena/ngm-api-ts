@@ -12,14 +12,12 @@ import { CreateDeploymentDto } from './dto/create-deployment.dto';
 import { ethers } from 'ethers';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { ConfigService } from '@nestjs/config';
 import { APIGuard } from 'src/services/roles.guard';
 import { log } from 'console';
-
-import { UsersService } from 'src/users/users.service';
 import { CommonService } from 'src/common/common.service';
 import { collection } from './types/deployment.response';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
+import { UsersService } from '../users/users.service';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {

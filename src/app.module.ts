@@ -2,7 +2,6 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { TextileModule } from './textile/textile.module';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './users/users.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronjobService } from './services/cronjob.service';
 import { AppService } from './app.service';
@@ -21,6 +20,8 @@ import { DeploymentModule } from './core/deployment/deployment.module';
 import { NftMarketplaceModule } from './core/marketplace/marketplace.module';
 import { MetadataModule } from './core/metadata/metadata.module';
 import { NftModule } from './core/nft/nft.module';
+import { UsersModule } from './core/users/users.module';
+import { PaymentModule } from './core/payment/payment.module';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
@@ -66,7 +67,8 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
       ttl: parseInt(TTL) || 60,
       limit: parseInt(LIMIT) || 10,
     }),
-    CommonModule
+    CommonModule,
+    PaymentModule
   ],
   providers: [CronjobService, AppService,
     {

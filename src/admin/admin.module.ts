@@ -3,7 +3,6 @@ import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CronjobService } from 'src/services/cronjob.service';
-import { UsersModule } from 'src/users/users.module';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
 import { EmailService } from 'src/services/email.service';
@@ -15,6 +14,7 @@ import { SalesSchema, salesSchema } from 'src/core/marketplace/schema/sales.sche
 import { NftSchema, nftSchema } from 'src/core/nft/schema/nft.schema';
 import { Offer1155Schema, offer1155Schema } from 'src/core/nft/schema/offer1155.schema';
 import { Sale1155Schema, sale1155Schema } from 'src/core/nft/schema/sale1155.schema';
+import { UsersModule } from 'src/core/users/users.module';
 @Module({
   imports: [
     UsersModule,

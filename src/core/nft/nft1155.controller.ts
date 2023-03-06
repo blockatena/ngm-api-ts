@@ -34,7 +34,6 @@ import { GetUserOwnedAssets } from './dtos/collections.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 // import { log } from 'console';
-import { UsersService } from 'src/users/users.service';
 import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 import { GetBal1155 } from './dtos/getbal';
@@ -42,6 +41,7 @@ import { get1155AssetsByCollectionResponse, GetNft1155, GetSingle1155Nft, GetTok
 import { CommonService } from 'src/common/common.service';
 import { DeploymentService } from '../deployment/deployment.service';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
+import { UsersService } from '../users/users.service';
 const { log } = console;
 @ApiTags('ERC-1155-APIs')
 @Controller('nft')
