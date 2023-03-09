@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { RateLimiter } from 'nft.storage';
+import { ChainEnum } from 'src/common/enum/chain.enum';
 
 export class CreateDeploymentDto {
   @ApiProperty({ default: 'NGM-Nft' })
@@ -13,8 +14,10 @@ export class CreateDeploymentDto {
   readonly roles: any[];
   @ApiProperty({ default: 'Avengers' })
   readonly collection_name: string;
-  @ApiProperty({ enum: ["ETHEREUM", "POLYGON", "MUMBAI", "GOERLI"], default: "ETHEREUM" })
-  readonly chain: string;
+  @ApiProperty({
+    enum: ChainEnum, default: "FILECOIN"
+  })
+  readonly chain: ChainEnum;
   @ApiProperty({
     description:
       'Type of contract you want to deploy.We provide 3 options ',

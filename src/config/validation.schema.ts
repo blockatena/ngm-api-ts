@@ -55,6 +55,9 @@ const ConfigValidation = Joi.object({
     // ADMIN_SECRET_KEY
     ADMIN_SECRET: Joi.string().required(),
 
+    // ADMIN_WALLET
+    ADMIN_WALLET: Joi.string().required(),
+
     // RATE_LIMITTER
     REQUEST_LIMIT: Joi.string().required(),
     REQUEST_TTL: Joi.string().required(),
