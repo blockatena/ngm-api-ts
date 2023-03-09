@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { CommonService } from 'src/common/common.service';
 import { TransactionStatusEnum } from './enum/transaction.status.enum';
 import { TransactionTypeEnum } from './enum/transaction.type.enum';
-import { CurrencyEnum } from './enum/currency.enum';
 import { TransactionModeEnum } from './enum/transaction.mode.enum';
 import { TransactionType } from './types/transaction.type';
 import { TransactionDocument, TransactionSchema } from './schema/transaction.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ChainEnum } from 'src/common/enum/chain.enum';
+import { CurrencyEnum } from 'src/common/enum/currency.enum';
 
 @Injectable()
 export class PaymentService {
@@ -16,28 +17,37 @@ export class PaymentService {
         private readonly TransactionModel: Model<TransactionDocument>) {
 
     }
-    async validateTransaction({ chain, transactionHash }: { chain: string, transactionHash: string }): Promise<any> {
+    async validateTransaction({ chain, transactionHash }: { chain: ChainEnum, transactionHash: string }): Promise<any> {
         try {
             //based on chain validate transaction
             const ENVIRONMENT = await this.commonService.getEnvironmentVar('ENVIRONMENT');
             console.log(ENVIRONMENT);
+            const isTransactionExists = await this.TransactionModel.findOne({ transactionHash })
+            if (isTransactionExists) {
+                return { status: isTransactionExists.status };
+            }
             const RPC_URL = await this.commonService.getRpcUrl({ ENVIRONMENT, chain });
             console.log(RPC_URL);
-            const { from, to, amount } = await this.commonService.getTransaction({ RPC_URL, transactionHash });
+            const currency = await this.getCurrency(chain);
+            const { from, to, amount, error, message } = await this.commonService.
+                getTransaction({ RPC_URL, transactionHash });
             //createTransaction
             //addSubscription
+            if (error) {
+                return message;
+            }
             const transactionObj = {
                 from,
                 to,
-                currency: CurrencyEnum.MATIC,
+                currency,
                 transactionMode: TransactionModeEnum.WALLET,
                 amount,
-                status: TransactionStatusEnum.SUCCESSFUL,
+                status: TransactionStatusEnum.VERIFIED,
                 transactionType: TransactionTypeEnum.SUBSCRIPTION,
             }
             await this.createTransaction(transactionObj);
             return {
-                transactionStatus: TransactionStatusEnum.VERIFIED
+                status: TransactionStatusEnum.VERIFIED
             }
         } catch (error) {
             return {
@@ -55,6 +65,24 @@ export class PaymentService {
                 error,
                 message: "Something went wrong"
             }
+        }
+    }
+    async getCurrency(chain: ChainEnum): Promise<any> {
+        switch (chain) {
+            case ChainEnum.ETHEREUM:
+                return CurrencyEnum.ETH;
+            case ChainEnum.FILECOIN:
+                return CurrencyEnum.FIL;
+            case ChainEnum.POLYGON:
+                return CurrencyEnum.MATIC;
+            case ChainEnum.GOERLI:
+                return CurrencyEnum.GOERLI_ETH;
+            case ChainEnum.HYPERSPACE:
+                return CurrencyEnum.FIL;
+            case ChainEnum.MUMBAI:
+                return CurrencyEnum.MATIC;
+            default:
+                return "INVALID CURRENCY"
         }
     }
 }

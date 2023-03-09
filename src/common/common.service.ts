@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { log } from 'console';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
@@ -85,21 +85,21 @@ export class CommonService {
             const amount = formatEther(value);
             const ADMIN_WALLET = await this.Admin_Wallet();
             const isAdminWallet = (to === ADMIN_WALLET);
+            console.log({ isAdminWallet });
             if (isAdminWallet) {
                 // Transaction is verified
                 console.log("TRANSACTION IS VERIFIED");
+                return { from, to, amount };
+
             } else {
                 console.log("TRANSACTION IS INVALID");
                 return {
-                    message: "Invalid Transaction",
-                    reason: "Malicious Account Transfer",
-                    from, to, amount
+                    error: true,
+                    message: `Invalid Transaction, Malicious Account Transfer`
                 }
             }
-            console.log({ from, to, amount });
-            return { from, to, amount };
         } catch (error) {
-
+            return error
         }
     }
 

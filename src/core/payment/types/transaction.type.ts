@@ -1,4 +1,5 @@
-import { CurrencyEnum } from "../enum/currency.enum";
+
+import { CurrencyEnum } from "src/common/enum/currency.enum";
 import { TransactionModeEnum } from "../enum/transaction.mode.enum";
 import { TransactionStatusEnum } from "../enum/transaction.status.enum";
 import { TransactionTypeEnum } from "../enum/transaction.type.enum";
