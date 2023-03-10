@@ -37,8 +37,8 @@ const ConfigValidation = Joi.object({
     ATLAS: Joi.string().required(),
 
     // JWT
-    JWT_EXPIRES: Joi.string().required(),
-    JWT_SECRET: Joi.string().required(),
+    JWT_EXPIRES: Joi.string(),
+    JWT_SECRET: Joi.string(),
 
     // NFT_STORAGE_KEY
     NFT_STORAGE_KEY: Joi.string().required(),
