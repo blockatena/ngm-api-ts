@@ -1,7 +1,7 @@
 import { OnModuleInit } from '@nestjs/common';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { NftMarketplaceService } from './marketplace/marketplace.service';
+import { NftMarketplaceService } from './core/marketplace/marketplace.service';
 require('dotenv').config();
 const cron_time = process.env.CRON_TIME || '*/30 * * * * *';
 @Injectable()
@@ -37,9 +37,9 @@ export class AppService implements OnModuleInit {
   }
   @Cron(cron_time)
   async checkSale1155() {
-    const all_sales = await this.nftmrktservice.getAll1155sale({status:'started'});
+    const all_sales = await this.nftmrktservice.getAll1155sale({ status: 'started' });
     all_sales.forEach(async (sale) => {
-      if(new Date(sale.end_date) <= new Date()) {
+      if (new Date(sale.end_date) <= new Date()) {
         await this.nftmrktservice.handle1155Sales(sale);
       }
     })

@@ -2,19 +2,19 @@ import { Module } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AdminController } from './admin.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AuctionSchema, auctionSchema } from 'src/marketplace/schema/auction.schema';
-import { NftSchema, nftSchema } from 'src/nft/schema/nft.schema';
 import { CronjobService } from 'src/services/cronjob.service';
-import { BidSchema, bidSchema } from 'src/marketplace/schema/bid.schema';
-import { OfferSchema, offerSchema } from 'src/marketplace/schema/offer.schema';
-import { SalesSchema, salesSchema } from 'src/marketplace/schema/sales.schema';
-import { Offer1155Schema, offer1155Schema } from 'src/nft/schema/offer1155.schema';
-import { Sale1155Schema, sale1155Schema } from 'src/nft/schema/sale1155.schema';
-import { ContractSchema, contractSchema } from 'src/deployment/schema/contract.schema';
-import { UsersModule } from 'src/users/users.module';
 import { SubscriptionController } from './subscription.controller';
 import { SubscriptionService } from './subscription.service';
 import { EmailService } from 'src/services/email.service';
+import { ContractSchema, contractSchema } from 'src/core/deployment/schema/contract.schema';
+import { AuctionSchema, auctionSchema } from 'src/core/marketplace/schema/auction.schema';
+import { BidSchema, bidSchema } from 'src/core/marketplace/schema/bid.schema';
+import { OfferSchema, offerSchema } from 'src/core/marketplace/schema/offer.schema';
+import { SalesSchema, salesSchema } from 'src/core/marketplace/schema/sales.schema';
+import { NftSchema, nftSchema } from 'src/core/nft/schema/nft.schema';
+import { Offer1155Schema, offer1155Schema } from 'src/core/nft/schema/offer1155.schema';
+import { Sale1155Schema, sale1155Schema } from 'src/core/nft/schema/sale1155.schema';
+import { UsersModule } from 'src/core/users/users.module';
 @Module({
   imports: [
     UsersModule,

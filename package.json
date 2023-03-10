@@ -44,6 +44,7 @@
     "generate-api-key": "^1.0.2",
     "handlebars": "^4.7.7",
     "it-to-buffer": "^2.0.2",
+    "joi": "^17.8.3",
     "moment-timezone": "^0.5.39",
     "mongoose": "^6.6.4",
     "nft.storage": "^7.0.0",
