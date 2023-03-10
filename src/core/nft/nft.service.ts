@@ -197,6 +197,38 @@ export class NftService {
     }
   }
 
+    async getPopularNfts(state: string): Promise<any> {
+    try {
+
+      function getMultipleRandom(arr, num) {
+          const shuffled = [...arr].sort(() => 0.5 - Math.random());
+
+          return shuffled.slice(0, num);
+      }
+
+      if (state == 'popular') {
+        const nfts721 = await this.NftModel.find({});
+        const nfts1155:any = await this.Nft11555Model.find({})
+
+        const nfts = nfts721.concat(nfts1155);
+        if(nfts?.length>=4) return await getMultipleRandom(nfts,4);
+        return nfts
+      }
+      if (state == 'auction') {
+        const nfts721 = await this.NftModel.find({ is_in_auction: true });
+        const nfts1155:any = await this.Nft11555Model.find({is_in_auction: true })
+        const auctioned = nfts721.concat(nfts1155);
+        if(auctioned?.length>=4) return await getMultipleRandom(auctioned,4);
+        return auctioned
+      }
+    } catch (error) {
+      return {
+        error,
+        message: 'Something went wrong in service',
+      };
+    }
+  }
+
   async getCountNfts(contract_address: string): Promise<any> {
     try {
       return await this.NftModel.countDocuments({ contract_address });
