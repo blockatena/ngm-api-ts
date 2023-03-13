@@ -362,6 +362,30 @@ export class NftController721 {
       return { message: 'something went wrong in controller', error };
     }
   }
+
+
+  
+  @ApiResponse({
+    status: 201,
+    description: 'Successfully Fetched the Assets for home',
+    type: [GetSingleNft]
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Something went Wrong',
+    type: ErrorHandlerType
+  })
+  @ApiOperation({ summary: 'Get Home Assets' })
+  @Get('get-popular-nfts/:state')
+  async getPopularNFTs(@Param('state') state: string): Promise<any> {
+    try {
+      const data = await this.nftservice.getPopularNfts(state);
+      return data.length > 0 ? data : `Curently no nfts are in ${state}`;
+    } catch (error) {
+      log(error);
+      return { message: 'something went wrong in controller', error };
+    }
+  }
   /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
   @ApiResponse({
     status: 201,
