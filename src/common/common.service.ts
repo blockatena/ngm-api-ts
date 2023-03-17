@@ -76,12 +76,12 @@ export class CommonService {
         }
     }
 
-    async getTransaction({ RPC_URL, transactionHash }: { RPC_URL: string, transactionHash: string }): Promise<any> {
+    async getTransaction({ RPC_URL, transaction_hash }: { RPC_URL: string, transaction_hash: string }): Promise<any> {
         try {
             const provider = new ethers.providers.JsonRpcProvider(
                 RPC_URL,
             );
-            const { from, to, value } = await provider.getTransaction(transactionHash);
+            const { from, to, value } = await provider.getTransaction(transaction_hash);
             const amount = formatEther(value);
             const ADMIN_WALLET = await this.Admin_Wallet();
             const isAdminWallet = (to === ADMIN_WALLET);

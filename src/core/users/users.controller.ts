@@ -22,6 +22,8 @@ import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/services/email.service';
 import { NftService } from 'src/core/nft/nft.service';
+import { GetUserFavourite, IsUserFavourite, UserFavouriteDto } from './dto/user.favourite.dto';
+import { FavouriteKindEnum } from './enum/user.favourite.enum';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
@@ -68,6 +70,61 @@ export class UsersController {
         success: false,
         message: "Something went Wrong"
       }
+    }
+  }
+
+  @Post('favourite')
+  async addFavourite(@Body() body: UserFavouriteDto): Promise<any> {
+    try {
+      return await this.usersService.userFavourite(body);
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'Something went Wrong',
+        error
+      }
+    }
+  }
+
+  @Post('is_user_favourite')
+  async isUserFavourite(@Body() body: IsUserFavourite): Promise<any> {
+    try {
+      const result = await this.usersService.checkIsUserFavourite(body);
+      console.log(result);
+      if (result) {
+        return { isFavourite: true };
+      } else {
+        return { isFavourite: false };
+      }
+
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'Something went Wrong',
+        error
+      }
+    }
+  }
+
+  @Get('favourites/:favourite_kind/:wallet_address')
+  async getUserFavourites(@Param() body: GetUserFavourite) {
+    const { wallet_address, favourite_kind } = body;
+    try {
+      switch (favourite_kind) {
+        case FavouriteKindEnum.COLLECTIONS:
+          return await this.usersService.getUserFavouriteCollections(body);
+        case FavouriteKindEnum.NFTS:
+          return await this.usersService.getUserFavouriteNfts(body);
+        default:
+          return {
+            success: false,
+            message: 'INVALID FAVOURITE SELECTION'
+          }
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 

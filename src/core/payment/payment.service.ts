@@ -17,12 +17,12 @@ export class PaymentService {
         private readonly TransactionModel: Model<TransactionDocument>) {
 
     }
-    async validateTransaction({ chain, transactionHash }: { chain: ChainEnum, transactionHash: string }): Promise<any> {
+    async validateTransaction({ chain, transaction_hash }: { chain: ChainEnum, transaction_hash: string }): Promise<any> {
         try {
             //based on chain validate transaction
             const ENVIRONMENT = await this.commonService.getEnvironmentVar('ENVIRONMENT');
             console.log(ENVIRONMENT);
-            const isTransactionExists = await this.TransactionModel.findOne({ transactionHash })
+            const isTransactionExists = await this.TransactionModel.findOne({ transactionId: transaction_hash })
             if (isTransactionExists) {
                 return { status: isTransactionExists.status };
             }
@@ -30,7 +30,7 @@ export class PaymentService {
             console.log(RPC_URL);
             const currency = await this.getCurrency(chain);
             const { from, to, amount, error, message } = await this.commonService.
-                getTransaction({ RPC_URL, transactionHash });
+                getTransaction({ RPC_URL, transaction_hash });
             //createTransaction
             //addSubscription
             if (error) {
@@ -43,6 +43,7 @@ export class PaymentService {
                 transactionMode: TransactionModeEnum.WALLET,
                 amount,
                 status: TransactionStatusEnum.VERIFIED,
+                transactionId: transaction_hash,
                 transactionType: TransactionTypeEnum.SUBSCRIPTION,
             }
             await this.createTransaction(transactionObj);

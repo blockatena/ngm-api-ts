@@ -20,6 +20,8 @@ export class TransactionSchema {
     amount: number;
     @Prop({ enum: TransactionStatusEnum })
     status: TransactionStatusEnum;
+    @Prop()
+    transactionId: string;
     @Prop({ enum: TransactionTypeEnum })
     transactionType: TransactionTypeEnum;
 }

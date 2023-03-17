@@ -5,5 +5,5 @@ export class ValidateTransaction {
     @ApiProperty()
     chain: ChainEnum;
     @ApiProperty()
-    transactionHash: string;
+    transaction_hash: string;
 }
