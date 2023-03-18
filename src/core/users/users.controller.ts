@@ -48,7 +48,7 @@ export class UsersController {
       const is_user_exists = await this.usersService.getUser({ wallet_address });
       console.log(is_user_exists);
 
-      if (is_user_exists) {
+      if (is_user_exists?.email) {
         return `${wallet_address} exists already`;
       }
       const success = await this.usersService.create(createUserDto);
@@ -73,9 +73,11 @@ export class UsersController {
     }
   }
 
-  @Post('favourite')
-  async addFavourite(@Body() body: UserFavouriteDto): Promise<any> {
+  @Post('handle-favourite')
+  async addFavourite(@Body() body: any): Promise<any> {
+    console.log(body)
     try {
+      
       return await this.usersService.userFavourite(body);
     } catch (error) {
       console.log(error);
@@ -90,9 +92,10 @@ export class UsersController {
   @Post('is_user_favourite')
   async isUserFavourite(@Body() body: IsUserFavourite): Promise<any> {
     try {
+      console.log(body)
       const result = await this.usersService.checkIsUserFavourite(body);
-      console.log(result);
-      if (result) {
+      console.log({result});
+      if (result && !result.error) {
         return { isFavourite: true };
       } else {
         return { isFavourite: false };
@@ -108,15 +111,18 @@ export class UsersController {
     }
   }
 
-  @Get('favourites/:favourite_kind/:wallet_address')
+  @Get('favourites/:favourite_kind/:wallet_address/:nftType')
   async getUserFavourites(@Param() body: GetUserFavourite) {
-    const { wallet_address, favourite_kind } = body;
+    console.log(body)
+    const { wallet_address, favourite_kind, nftType } = body;
     try {
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
-          return await this.usersService.getUserFavouriteCollections(body);
+          // return await this.usersService.getUserFavouriteCollections(body);
+          return await this.usersService.getAllFavouriteCollections(body);
         case FavouriteKindEnum.NFTS:
-          return await this.usersService.getUserFavouriteNfts(body);
+          // return await this.usersService.getUserFavouriteNfts(body);
+          return await this.usersService.getAllFavouriteNFTs(body);
         default:
           return {
             success: false,

@@ -8,10 +8,12 @@ import { FixedNumber } from 'ethers';
 import { UserDocument, UserSchema } from './schema/user.schema';
 import { GetUserFavourite, IsUserFavourite, UserFavouriteDto } from './dto/user.favourite.dto';
 import { FavouriteKindEnum, NftTypeEnum, UserFavouriteEnum } from './enum/user.favourite.enum';
+import { NftService } from '../nft/nft.service';
 const { log } = console;
 @Injectable()
 export class UsersService {
   constructor(
+    private nftservice: NftService,
     @InjectModel(UserSchema.name) private UserModel: Model<UserDocument>,
     // private JWTservice: JwtAuthService,
   ) {
@@ -32,6 +34,12 @@ export class UsersService {
       // if (is_username_exists_already) {
       //   return `The Username  ${username} already exists Please try another Username`;
       // }
+      let isUser = await this.isUserExist(wallet_address)
+      if(isUser) {
+        return await this.UserModel.findOneAndUpdate({wallet_address},{
+        ...createUserDto, limit: { collections: 5, assets: 50 }
+      });
+      }
       return await this.UserModel.create({
         ...createUserDto, limit: { collections: 5, assets: 50 }
       });
@@ -98,15 +106,20 @@ export class UsersService {
   async userFavourite(body: UserFavouriteDto): Promise<any> {
     const { wallet_address, action, favourite_kind, contract_address, token_id } = body;
     try {
+      console.log(body)
       console.log({ favourite_kind });
+      let isUser =await this.isUserExist(wallet_address)
+      console.log('isUser', isUser)
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
+          if(!isUser) await this.UserModel.create({wallet_address})
           return await this.UserModel.findOneAndUpdate({ wallet_address }, {
             [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
               "favourites.collections": contract_address
             }
           }, { new: true });
         case FavouriteKindEnum.NFTS:
+          if(!isUser) await this.UserModel.create({wallet_address})
           return await this.addOrRemoveUserFavouriteNfts(body);
         default:
           return "INVALID FAVOURITE WE ONLY SUPPORT COLLECTION AND NFT";
@@ -235,6 +248,8 @@ export class UsersService {
       wallet_address } = body;
     try {
       console.log(body);
+      const isUser = await this.isUserExist(wallet_address)
+      if(!isUser) return {error:'INVALID USER'}
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
           return await this.UserModel.findOne({ wallet_address, "favourites.collections": { $in: [contract_address] } });
@@ -246,11 +261,11 @@ export class UsersService {
             case NftTypeEnum.NGM1155:
               return await this.UserModel.findOne({ wallet_address, "favourites.nfts.ngm1155": { $in: { contract_address, token_id } } });
             default:
-              return "INVALID NFT TYPE WE ALLOW NGM1155 or NGM721";
+              return {error:"INVALID NFT TYPE WE ALLOW NGM1155 or NGM721"};
           }
 
         default:
-          return "INLAVID TYPE WE ALLOW COLLECTIONS AND NFTS";
+          return {error:"INVALID TYPE WE ALLOW COLLECTIONS AND NFTS"};
       }
     }
     catch (error) {
@@ -264,6 +279,11 @@ export class UsersService {
     }
   }
 
+  async isUserExist(wallet_address:string): Promise<any>  {
+    let ifUser = await this.UserModel.findOne({wallet_address})
+      if(!ifUser) return false;
+      return true;
+  }
   //Get User Favourite Collections
 
   async getUserFavouriteCollections(body: GetUserFavourite) {
@@ -301,6 +321,61 @@ export class UsersService {
     }
   }
 
+  async getAllFavouriteCollections(body:GetUserFavourite) {
+    const {wallet_address} = body;
+
+    try {
+      const user = await this.UserModel.findOne({wallet_address})
+      const collections = await this.nftservice.getCollectionsSelected(user?.favourites?.collections)
+      
+      return {
+        success:true,
+        message:'GET ALL FAVOURITE COLLECTIONS',
+        data:collections?.collections
+      }
+    } catch (error) {
+      return {
+        success:false,
+        message:'something went wrong',
+        error
+      }
+    }
+  }
+
+
+  async getAllFavouriteNFTs(body:GetUserFavourite) {
+    const {wallet_address, nftType} = body;
+
+    try {
+      const user = await this.UserModel.findOne({wallet_address})
+      if(nftType == 'NGM721') {
+        const nfts721 = await this.nftservice.get721NFTsSelected(user?.favourites.nfts.ngm721);
+        return {
+        success:true,
+        message:'GET ALL NGM721 FAVOURITE NFTS',
+        data: nfts721
+      }
+      } 
+      if(nftType == 'NGM1155') {
+        const nfts1155 = await this.nftservice.get1155NFTsSelected(user?.favourites?.nfts?.ngm1155);
+        return {
+        success:true,
+        message:'GET ALL NGM1155 FAVOURITE NFTS',
+        data: nfts1155
+      }
+      }
+      return {
+        success:false,
+        message:'Please select NFT Type',
+      }
+    } catch (error) {
+      return {
+        success:false,
+        message:'something went wrong',
+        error
+      }
+    }
+  }
 
 
 
@@ -309,3 +384,24 @@ export class UsersService {
   // }
 
 }
+
+
+/* 
+{
+  success:true,
+  message:"Successfully Fetched The NFTs",
+  data:nftData
+}
+
+{
+  success:false,
+  message:"NFT Not Found"
+}
+
+{
+  success:false,
+  message:"Unable to fetch data",
+  error
+}
+
+*/
