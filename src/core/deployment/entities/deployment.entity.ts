@@ -1,1 +1,1 @@
-export class Deployment { }
+export class Deployment {}

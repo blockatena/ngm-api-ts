@@ -11,15 +11,29 @@ import {
 import { metadataDocument } from './schema/metadata.schema';
 import { GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
-import { GetNft1155, GetTokensUserHold, get1155nft, GetAssetByUser } from './dtos/getnft1155.dto';
+import {
+  GetNft1155,
+  GetTokensUserHold,
+  get1155nft,
+  GetAssetByUser,
+} from './dtos/getnft1155.dto';
 import { UpdateTokens } from './dtos/updatetokens';
 import { UpdateOwner } from './dtos/address.dto';
-import { ContractSchema, ContractDocument } from '../deployment/schema/contract.schema';
+import {
+  ContractSchema,
+  ContractDocument,
+} from '../deployment/schema/contract.schema';
 import { GetUserNfts } from '../marketplace/dtos/auctiondto/create-auction.dto';
-import { AuctionSchema, AuctionDocument } from '../marketplace/schema/auction.schema';
+import {
+  AuctionSchema,
+  AuctionDocument,
+} from '../marketplace/schema/auction.schema';
 import { BidSchema, BidDocument } from '../marketplace/schema/bid.schema';
 import { NftSchema, NftDocument } from './schema/nft.schema';
-import { Nft1155OwnerSchema, Nft1155OwnerDocument } from './schema/user1155.schema';
+import {
+  Nft1155OwnerSchema,
+  Nft1155OwnerDocument,
+} from './schema/user1155.schema';
 import { MetadataSchema } from '../metadata/schema/metadata.schema';
 const { log } = console;
 @Injectable()
@@ -29,12 +43,15 @@ export class NftService {
     private ContractModel: Model<ContractDocument>,
     private readonly httpService: HttpService,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
-    @InjectModel(MetadataSchema.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(MetadataSchema.name)
+    private MetadataModel: Model<metadataDocument>,
     @InjectModel(AuctionSchema.name)
     private AuctionModel: Model<AuctionDocument>,
     @InjectModel(BidSchema.name) private BidModel: Model<BidDocument>,
-    @InjectModel(Nft1155Schema.name) private Nft11555Model: Model<Nft1155Document>,
-    @InjectModel(Nft1155OwnerSchema.name) private Nft1155OwnerModel: Model<Nft1155OwnerDocument>
+    @InjectModel(Nft1155Schema.name)
+    private Nft11555Model: Model<Nft1155Document>,
+    @InjectModel(Nft1155OwnerSchema.name)
+    private Nft1155OwnerModel: Model<Nft1155OwnerDocument>,
   ) {
     NftModel;
     BidModel;
@@ -61,39 +78,42 @@ export class NftService {
   }
   async createNft(data: any): Promise<any> {
     try {
-      // 
+      //
       return await this.NftModel.create(data);
-    } catch (error) {
-
-    }
-
+    } catch (error) {}
   }
   // ADDING OWNER
   async addOwner(updateOwner: UpdateOwner): Promise<any> {
     const { contract_address, token_owner } = updateOwner;
     try {
-      return await this.ContractModel.updateOne({ contract_address }, { $addToSet: { unique_owners: token_owner } });
+      return await this.ContractModel.updateOne(
+        { contract_address },
+        { $addToSet: { unique_owners: token_owner } },
+      );
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
-        message: "Something went wrong in add Owner Service",
-        error
-      }
+        message: 'Something went wrong in add Owner Service',
+        error,
+      };
     }
   }
   // REMOVING OWNER
   async removeOwner(updateOwner: UpdateOwner): Promise<any> {
     const { contract_address, token_owner } = updateOwner;
     try {
-      return await this.ContractModel.updateOne({ contract_address }, { $unset: { unique_owners: token_owner } });
+      return await this.ContractModel.updateOne(
+        { contract_address },
+        { $unset: { unique_owners: token_owner } },
+      );
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
-        message: "Something went wrong in add Owner Service",
-        error
-      }
+        message: 'Something went wrong in add Owner Service',
+        error,
+      };
     }
   }
 
@@ -104,23 +124,23 @@ export class NftService {
     try {
       //createdAt
       //meta_data.name
-      const filter = {}
-      const body = {}
+      const filter = {};
+      const body = {};
 
       console.log({ page_number, items_per_page, sort_by });
-      if (sort_by !== "NA") {
-        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
-          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
-        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
-          filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
+      if (sort_by !== 'NA') {
+        if (sort_by == 'NEWTOOLD' || sort_by == 'OLDTONEW') {
+          filter[`createdAt`] = sort_by === 'NEWTOOLD' ? -1 : 1;
+        } else if (sort_by == 'ATOZ' || sort_by == 'ZTOA') {
+          filter['meta_data.name'] = sort_by === 'ATOZ' ? 1 : -1;
         }
       }
 
-      if (listed_in !== "NA") {
-        if (listed_in == "AUCTION") {
-          body["is_in_auction"] = true;
-        } else if (listed_in == "SALE") {
-          body["is_in_sale"] = true;
+      if (listed_in !== 'NA') {
+        if (listed_in == 'AUCTION') {
+          body['is_in_auction'] = true;
+        } else if (listed_in == 'SALE') {
+          body['is_in_sale'] = true;
         }
       }
       // console.log({ page_number, items_per_page, sort_by_date, sort_by_names });
@@ -135,8 +155,8 @@ export class NftService {
       //   // filter["meta_data.name"] = sort_by_names;
       //   console.log("ONLY ALPHA SORT \n", sort_by_names);
       // }
-      console.log("FILTER \n", filter);
-      console.log("BODY \n", body);
+      console.log('FILTER \n', filter);
+      console.log('BODY \n', body);
 
       const nfts = await this.NftModel.find(body)
         .sort(filter)
@@ -156,8 +176,7 @@ export class NftService {
   }
 
   async getUserNfts(body: GetUserNfts) {
-    const { token_owner, items_per_page,
-      page_number } = body;
+    const { token_owner, items_per_page, page_number } = body;
     try {
       const nfts = await this.NftModel.find({ token_owner })
         .limit(items_per_page * 1)
@@ -197,29 +216,31 @@ export class NftService {
     }
   }
 
-    async getPopularNfts(state: string): Promise<any> {
+  async getPopularNfts(state: string): Promise<any> {
     try {
-
       function getMultipleRandom(arr, num) {
-          const shuffled = [...arr].sort(() => 0.5 - Math.random());
+        const shuffled = [...arr].sort(() => 0.5 - Math.random());
 
-          return shuffled.slice(0, num);
+        return shuffled.slice(0, num);
       }
 
       if (state == 'popular') {
         const nfts721 = await this.NftModel.find({});
-        const nfts1155:any = await this.Nft11555Model.find({})
+        const nfts1155: any = await this.Nft11555Model.find({});
 
         const nfts = nfts721.concat(nfts1155);
-        if(nfts?.length>=4) return await getMultipleRandom(nfts,4);
-        return nfts
+        if (nfts?.length >= 4) return await getMultipleRandom(nfts, 4);
+        return nfts;
       }
       if (state == 'auction') {
         const nfts721 = await this.NftModel.find({ is_in_auction: true });
-        const nfts1155:any = await this.Nft11555Model.find({is_in_auction: true })
+        const nfts1155: any = await this.Nft11555Model.find({
+          is_in_auction: true,
+        });
         const auctioned = nfts721.concat(nfts1155);
-        if(auctioned?.length>=4) return await getMultipleRandom(auctioned,4);
-        return auctioned
+        if (auctioned?.length >= 4)
+          return await getMultipleRandom(auctioned, 4);
+        return auctioned;
       }
     } catch (error) {
       return {
@@ -258,51 +279,58 @@ export class NftService {
   async getCollections(body: GetCollectionBody) {
     const { page_number, items_per_page, sort_by, chain, type } = body;
     try {
-
       if (Number.isNaN(page_number)) {
         body.page_number = 1;
       }
-      const filter = {}
-      let findData = {}
-      const ENVIRONMENT = process.env.ENVIRONMENT
+      const filter = {};
+      let findData = {};
+      const ENVIRONMENT = process.env.ENVIRONMENT;
 
       console.log({ page_number, items_per_page, sort_by, chain, type });
-      if (sort_by !== "NA") {
-        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
-          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
-        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
-          filter["collection_name"] = sort_by === "ATOZ" ? 1 : -1
+      if (sort_by !== 'NA') {
+        if (sort_by == 'NEWTOOLD' || sort_by == 'OLDTONEW') {
+          filter[`createdAt`] = sort_by === 'NEWTOOLD' ? -1 : 1;
+        } else if (sort_by == 'ATOZ' || sort_by == 'ZTOA') {
+          filter['collection_name'] = sort_by === 'ATOZ' ? 1 : -1;
         }
       }
 
-      if (chain !== "NA") {
-        if (ENVIRONMENT == "DEV") {
-          if (chain == 'MUMBAI' || chain == 'GOERLI' || chain == "HYPERSPACE") {
-            findData[`chain.id`] = chain == 'MUMBAI' ? 80001 : chain == "GOERLI" ? 5 : 3141;
+      if (chain !== 'NA') {
+        if (ENVIRONMENT == 'DEV') {
+          if (chain == 'MUMBAI' || chain == 'GOERLI' || chain == 'HYPERSPACE') {
+            findData[`chain.id`] =
+              chain == 'MUMBAI' ? 80001 : chain == 'GOERLI' ? 5 : 3141;
           }
         } else {
-          if (chain == 'ETHEREUM' || chain == 'POLYGON' || chain == "FILECOIN") {
-            findData[`chain.id`] = chain == 'POLYGON' ? 137 : chain == "ETHEREUM" ? 1 : 314;
+          if (
+            chain == 'ETHEREUM' ||
+            chain == 'POLYGON' ||
+            chain == 'FILECOIN'
+          ) {
+            findData[`chain.id`] =
+              chain == 'POLYGON' ? 137 : chain == 'ETHEREUM' ? 1 : 314;
           }
         }
       }
 
-      if (type !== "NA") {
+      if (type !== 'NA') {
         if (type == 'ERC1155') {
           findData[`type`] = 'NGM1155';
         } else if (type == 'ERC721') {
-          findData['type'] = { $nin: ["NGM1155"] }
+          findData['type'] = { $nin: ['NGM1155'] };
         }
       }
 
-      console.log(findData)
+      console.log(findData);
 
       const collections = await this.ContractModel.find(findData)
         .sort(filter)
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page)
         .exec();
-      const total_collections = await this.ContractModel.countDocuments(findData);
+      const total_collections = await this.ContractModel.countDocuments(
+        findData,
+      );
       return {
         total_collections,
         totalpages: Math.ceil(total_collections / items_per_page),
@@ -314,9 +342,8 @@ export class NftService {
       return {
         message: 'something went wrong',
         error,
-      }
+      };
     }
-
   }
   // Get Nfts By Collection
   async getNftsByCollection(contract_address: string): Promise<any> {
@@ -352,7 +379,7 @@ export class NftService {
         },
       ]);
     } catch (error) {
-      return { success: false, message: "Something went Wrong", error }
+      return { success: false, message: 'Something went Wrong', error };
     }
   }
   /****[GET_NFTS_LISTED]*/
@@ -363,7 +390,8 @@ export class NftService {
       listed_in,
       page_number,
       items_per_page,
-      sort_by, search
+      sort_by,
+      search,
     } = data;
     try {
       console.log(
@@ -373,45 +401,51 @@ export class NftService {
         page_number,
         items_per_page,
         sort_by,
-        search
+        search,
       );
 
+      const filter = {};
+      const body = {};
 
-      const filter = {}
-      const body = {}
-
-      console.log({ page_number, items_per_page, sort_by, search, listed_in, address, address_type });
-      if (sort_by !== "NA") {
-        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
-          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
-        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
-          filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
+      console.log({
+        page_number,
+        items_per_page,
+        sort_by,
+        search,
+        listed_in,
+        address,
+        address_type,
+      });
+      if (sort_by !== 'NA') {
+        if (sort_by == 'NEWTOOLD' || sort_by == 'OLDTONEW') {
+          filter[`createdAt`] = sort_by === 'NEWTOOLD' ? -1 : 1;
+        } else if (sort_by == 'ATOZ' || sort_by == 'ZTOA') {
+          filter['meta_data.name'] = sort_by === 'ATOZ' ? 1 : -1;
         }
       }
       if (address_type) {
         if (address_type == 'USER') {
           body['token_owner'] = address;
         } else if (address_type == 'COLLECTION') {
-          body['contract_address'] = address
+          body['contract_address'] = address;
         } else {
           return {
-            message: 'address and address type and required fields'
-          }
+            message: 'address and address type and required fields',
+          };
         }
       }
-      if (listed_in !== "NA") {
-        if (listed_in == "AUCTION") {
-          body["is_in_auction"] = true;
-        } else if (listed_in == "SALE") {
-          body["is_in_sale"] = true;
+      if (listed_in !== 'NA') {
+        if (listed_in == 'AUCTION') {
+          body['is_in_auction'] = true;
+        } else if (listed_in == 'SALE') {
+          body['is_in_sale'] = true;
         }
       }
 
-      if (search !== "NA") {
-
-        body["meta_data.name"] = { $regex: `(?i)${search}` }
+      if (search !== 'NA') {
+        body['meta_data.name'] = { $regex: `(?i)${search}` };
       }
-      console.log(body)
+      console.log(body);
       const nfts = await this.NftModel.find(body)
         .sort({ ...filter })
         .limit(items_per_page * 1)
@@ -424,7 +458,7 @@ export class NftService {
         total_pages: Math.ceil(total_nfts / items_per_page),
         currentPage: page_number,
         nfts,
-      }
+      };
     } catch (error) {
       console.log(error);
       return { message: 'something went wrong', error };
@@ -447,11 +481,10 @@ export class NftService {
     } catch (error) {
       return {
         message: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
-
 
   async getContract(contract_address: any): Promise<any> {
     console.log(contract_address, 'From Service');
@@ -460,7 +493,9 @@ export class NftService {
   async getCollectionsOwned(user: GetUserOwnedAssets): Promise<any> {
     const { owner_address, items_per_page, page_number } = user;
     try {
-      const collections = await this.ContractModel.find({ owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1)
+      const collections = await this.ContractModel.find({ owner_address })
+        .sort({ createdAt: -1 })
+        .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page);
       log(collections);
       const total = await this.ContractModel.count({ owner_address });
@@ -468,14 +503,14 @@ export class NftService {
         total,
         current_page: page_number,
         items_per_page,
-        collections
-      }
+        collections,
+      };
     } catch (error) {
       log(error);
       return {
         message: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
   // Count Collections
@@ -483,67 +518,70 @@ export class NftService {
     try {
       return await this.ContractModel.count({ ...condition });
     } catch (error) {
-      log(error)
+      log(error);
       return {
         message: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
   // Count Assets by User
   async count1155Assets(wallet_address: string): Promise<any> {
     try {
-      return await this.Nft1155OwnerModel.countDocuments({ token_owner: wallet_address });
+      return await this.Nft1155OwnerModel.countDocuments({
+        token_owner: wallet_address,
+      });
     } catch (error) {
       log(error);
       return {
         success: false,
-        message: "Something Went Wrong",
-        error
-      }
+        message: 'Something Went Wrong',
+        error,
+      };
     }
   }
   // Get Limits
   async checKLimit(asset_limit: number, token_owner: string): Promise<any> {
-
     //  Only the Contract-Owner should Mint
     // Limit
-    const get_721_count = await this.count721Assets(token_owner)
+    const get_721_count = await this.count721Assets(token_owner);
     const get_1155_count = await this.count1155Assets(token_owner);
     const total_count = Number(get_721_count) + Number(get_1155_count);
 
     log(`1155 Count: ${get_1155_count}  \n 
    721 Count  ${get_721_count} \n 
      total=  ${total_count}  \n
-     ${asset_limit}  `)
+     ${asset_limit}  `);
 
-    const condition = Number(total_count) > Number(asset_limit)
+    const condition = Number(total_count) > Number(asset_limit);
     console.log(condition);
     if (condition) {
       log('exceeded');
       return {
         permit: false,
         message: `Hello ${token_owner} you have Exceeded you Limit Your current_limit for Assets :  ${asset_limit}
-       Your current Nfts ${total_count}`
+       Your current Nfts ${total_count}`,
       };
     }
-    return { permit: true }
+    return { permit: true };
   }
 
   async count721Assets(wallet_address: string): Promise<any> {
     try {
-      return await this.NftModel.countDocuments({ token_owner: wallet_address });
+      return await this.NftModel.countDocuments({
+        token_owner: wallet_address,
+      });
     } catch (error) {
       log(error);
       return {
         success: false,
-        message: "Something Went Wrong",
-        error
-      }
+        message: 'Something Went Wrong',
+        error,
+      };
     }
   }
 
-  // Push Images to token 
+  // Push Images to token
   async pushImagesToCollection(contract_address: string, image_uri: string) {
     return await this.ContractModel.findOneAndUpdate(
       {
@@ -564,7 +602,7 @@ export class NftService {
       console.log(error);
       return {
         message: 'Something went wrong in service',
-        error
+        error,
       };
     }
   }
@@ -579,7 +617,7 @@ export class NftService {
     } catch (error) {
       return {
         message: 'Something went wrong in service',
-        error
+        error,
       };
     }
   }
@@ -628,19 +666,22 @@ export class NftService {
         $set: update_data,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
 
       return {
-        message: "something went Wrong",
-        error
-      }
+        message: 'something went Wrong',
+        error,
+      };
     }
   }
 
   async updateMany(data: any, update_data: any): Promise<any> {
-    return await this.ContractModel.updateMany({ data }, {
-      $set: update_data,
-    })
+    return await this.ContractModel.updateMany(
+      { data },
+      {
+        $set: update_data,
+      },
+    );
   }
   /*****************[TO_GET_A_SINGLE_NFT]*******************************/
   async getSingleNft(data: object): Promise<any> {
@@ -664,7 +705,7 @@ export class NftService {
         success: false,
         message: 'Something went wrong in  Service',
         error,
-      }
+      };
     }
   }
   //Get 1155
@@ -677,7 +718,7 @@ export class NftService {
         success: false,
         message: 'Something went wrong in  Service',
         error,
-      }
+      };
     }
   }
 
@@ -690,41 +731,41 @@ export class NftService {
       page_number,
       items_per_page,
       sort_by,
-      search
+      search,
     } = getListedCollections;
     try {
-      const filter = {}
-      const body = {}
+      const filter = {};
+      const body = {};
 
       console.log({ page_number, items_per_page, sort_by });
-      if (sort_by !== "NA") {
-        if (sort_by == "NEWTOOLD" || sort_by == "OLDTONEW") {
-          filter[`createdAt`] = sort_by === "NEWTOOLD" ? -1 : 1;
-        } else if (sort_by == "ATOZ" || sort_by == "ZTOA") {
-          filter["meta_data.name"] = sort_by === "ATOZ" ? 1 : -1
+      if (sort_by !== 'NA') {
+        if (sort_by == 'NEWTOOLD' || sort_by == 'OLDTONEW') {
+          filter[`createdAt`] = sort_by === 'NEWTOOLD' ? -1 : 1;
+        } else if (sort_by == 'ATOZ' || sort_by == 'ZTOA') {
+          filter['meta_data.name'] = sort_by === 'ATOZ' ? 1 : -1;
         }
       }
       if (address_type) {
         if (address_type == 'USER') {
           body['token_owner'] = address;
         } else if (address_type == 'COLLECTION') {
-          body['contract_address'] = address
+          body['contract_address'] = address;
         } else {
           return {
-            message: 'address and address type and required fields'
-          }
+            message: 'address and address type and required fields',
+          };
         }
       }
-      if (listed_in !== "NA") {
-        if (listed_in == "AUCTION") {
-          body["is_in_auction"] = true;
-        } else if (listed_in == "SALE") {
-          body["is_in_sale"] = true;
+      if (listed_in !== 'NA') {
+        if (listed_in == 'AUCTION') {
+          body['is_in_auction'] = true;
+        } else if (listed_in == 'SALE') {
+          body['is_in_sale'] = true;
         }
       }
 
-      if (search !== "NA") {
-        body["meta_data.name"] = { $regex: `/^${search}/i` }
+      if (search !== 'NA') {
+        body['meta_data.name'] = { $regex: `/^${search}/i` };
       }
 
       const nfts = await this.Nft11555Model.find(body)
@@ -739,14 +780,14 @@ export class NftService {
         total_pages: Math.ceil(total_nfts / items_per_page),
         currentPage: page_number,
         nfts,
-      }
+      };
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
         error,
-        message: "Something Went Wrong"
-      }
+        message: 'Something Went Wrong',
+      };
     }
   }
   //**********************[UNIQUE_OWNERS_1155]**********************/
@@ -761,20 +802,22 @@ export class NftService {
   }
   async getAll1155Nfts(contract_address: string): Promise<any> {
     try {
-      const nfts = await this.Nft11555Model.find({ contract_address })
-      const total_nfts = await this.Nft11555Model.find({ contract_address }).countDocuments();
+      const nfts = await this.Nft11555Model.find({ contract_address });
+      const total_nfts = await this.Nft11555Model.find({
+        contract_address,
+      }).countDocuments();
       return {
         // collection: await this.getContract(contract_address),
         total_nfts,
         // nfts,
-      }
+      };
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
         error,
-        message: "Something Went Wrong"
-      }
+        message: 'Something Went Wrong',
+      };
     }
   }
 
@@ -788,82 +831,105 @@ export class NftService {
         success: false,
         message: 'Something went wrong in  Service',
         error,
-      }
+      };
     }
   }
   // get number of tokens does user hold
   async getTokensUserHold(getTokensUserHold: GetTokensUserHold): Promise<any> {
     const { contract_address, token_id, token_owner } = getTokensUserHold;
     try {
-      const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
+      const check_nft_exists = await this.get1155Nft({
+        contract_address,
+        token_id,
+      });
       if (!check_nft_exists) {
         return `There is no Asset with ${contract_address} and ${token_id}`;
-
       }
-      // check he ownes nft or not 
+      // check he ownes nft or not
       // getting all owners
-      const get_owners = await this.get1155NftOwnersforSingleNft({ contract_address, token_id });
+      const get_owners = await this.get1155NftOwnersforSingleNft({
+        contract_address,
+        token_id,
+      });
 
       // check owner exists or not
-      const is_owner_exists = get_owners.find(owner => owner.token_owner === token_owner);
+      const is_owner_exists = get_owners.find(
+        (owner) => owner.token_owner === token_owner,
+      );
       console.log(is_owner_exists);
 
       if (!is_owner_exists) {
         return `${token_owner} doesnt hold this ${contract_address} ${token_id}`;
-
       }
       return { tokens: is_owner_exists.number_of_tokens };
     } catch (error) {
-      log(error)
+      log(error);
       return {
         message: `something went wrong`,
-      }
+      };
     }
   }
-  // 
+  //
   async get1155AssetByOwner(getAssetByUser: GetAssetByUser): Promise<any> {
     const { contract_address, token_id, token_owner } = getAssetByUser;
     try {
-      const check_nft_exists = await this.get1155Nft({ contract_address, token_id });
+      const check_nft_exists = await this.get1155Nft({
+        contract_address,
+        token_id,
+      });
       if (!check_nft_exists) {
         return `There is no Asset with ${contract_address} and ${token_id}`;
-
       }
-      //  check he ownes nft or not 
+      //  check he ownes nft or not
       // getting all owners
-      return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
+      return await this.Nft1155OwnerModel.findOne({
+        contract_address,
+        token_id,
+        token_owner,
+      });
     } catch (error) {
       log(error);
       return {
         success: false,
         message: 'Something Went Wrong',
         error,
-      }
+      };
     }
   }
   // update user Tokens
   async updateTokens(updateTokens: UpdateTokens): Promise<any> {
-    const { contract_address, token_id, _tokens, token_owner, operation } = updateTokens;
+    const { contract_address, token_id, _tokens, token_owner, operation } =
+      updateTokens;
     try {
-      if (operation === "INCREMENT") return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $inc: { number_of_tokens: _tokens } })
-      else return await this.Nft1155OwnerModel.updateOne({ contract_address, token_id, token_owner }, { $inc: { number_of_tokens: -(_tokens) } });
+      if (operation === 'INCREMENT')
+        return await this.Nft1155OwnerModel.updateOne(
+          { contract_address, token_id, token_owner },
+          { $inc: { number_of_tokens: _tokens } },
+        );
+      else
+        return await this.Nft1155OwnerModel.updateOne(
+          { contract_address, token_id, token_owner },
+          { $inc: { number_of_tokens: -_tokens } },
+        );
     } catch (error) {
       log(error);
       return {
         success: false,
         message: `Something went Wrong`,
-        error
-      }
+        error,
+      };
     }
   }
 
-  // 
-  async get1155NftByOwner(getUserOwnedAssets: GetUserOwnedAssets): Promise<any> {
+  //
+  async get1155NftByOwner(
+    getUserOwnedAssets: GetUserOwnedAssets,
+  ): Promise<any> {
     const { owner_address, page_number, items_per_page } = getUserOwnedAssets;
     try {
       log(getUserOwnedAssets);
       // const nfts = await this.Nft1155OwnerModel.find({ token_owner: owner_address }).sort({ createdAt: -1 }).limit(items_per_page * 1).skip((page_number - 1) * items_per_page);
-      // 
+      //
       const nfts = await this.Nft1155OwnerModel.aggregate([
         { $match: { token_owner: owner_address } },
         {
@@ -891,7 +957,8 @@ export class NftService {
             ],
             as: `auction1`,
           },
-        }, {
+        },
+        {
           $project: {
             contract_address: 1,
             token_id: 1,
@@ -900,30 +967,31 @@ export class NftService {
             number_of_tokens: 1,
             createdAt: 1,
             updatedAt: 1,
-            meta_data: "$auction1.meta_data"
-          }
+            meta_data: '$auction1.meta_data',
+          },
         },
       ])
         .sort({ createdAt: -1 })
         .limit(items_per_page * 1)
         .skip((page_number - 1) * items_per_page);
-      // 
+      //
       return {
-        total_pages: await this.Nft1155OwnerModel.countDocuments({ token_owner: owner_address }),
+        total_pages: await this.Nft1155OwnerModel.countDocuments({
+          token_owner: owner_address,
+        }),
         current_page: page_number,
         items_per_page,
-        nfts
-      }
-    }
-    catch (error) {
+        nfts,
+      };
+    } catch (error) {
       return {
         success: false,
         message: 'Something went wrong in  Service',
         error,
-      }
+      };
     }
   }
-  // 
+  //
 
   async create1155NftOwner(arrdb: any): Promise<any> {
     try {
@@ -933,7 +1001,7 @@ export class NftService {
         success: false,
         message: 'Something went wrong in  Service',
         error,
-      }
+      };
     }
   }
 
@@ -943,25 +1011,29 @@ export class NftService {
         $set: update_data,
       });
     } catch (error) {
-      console.log(error)
+      console.log(error);
 
       return {
-        message: "something went Wrong",
-        error
-      }
+        message: 'something went Wrong',
+        error,
+      };
     }
   }
 
   async getSingle1155NftByOwner(getNft1155: get1155nft): Promise<any> {
     const { contract_address, token_id, token_owner } = getNft1155;
     try {
-      return await this.Nft1155OwnerModel.findOne({ contract_address, token_id, token_owner });
+      return await this.Nft1155OwnerModel.findOne({
+        contract_address,
+        token_id,
+        token_owner,
+      });
     } catch (error) {
       return {
         success: false,
         message: 'Something went wrong in  Service',
         error,
-      }
+      };
     }
   }
 
@@ -969,62 +1041,64 @@ export class NftService {
     try {
       return await this.Nft11555Model.findOneAndUpdate(data, updateData);
     } catch (error) {
-      console.log(error)
+      console.log(error);
 
       return {
-        message: "something went Wrong",
-        error
-      }
+        message: 'something went Wrong',
+        error,
+      };
     }
   }
 
-  async getCollectionsSelected(data:any) {
-    console.log(data)
+  async getCollectionsSelected(data: any) {
+    console.log(data);
     try {
-      const collections = await this.ContractModel.find({contract_address:{$in:[...data]}})
-      return {collections}
+      const collections = await this.ContractModel.find({
+        contract_address: { $in: [...data] },
+      });
+      return { collections };
     } catch (error) {
       return {
-        success:false,
-        message:'Error',
-        error
-      }
+        success: false,
+        message: 'Error',
+        error,
+      };
     }
   }
 
-  async get721NFTsSelected(data:any) {
-    console.log(data?.length)
+  async get721NFTsSelected(data: any) {
+    console.log(data?.length);
     try {
-      let nfts = []
-      for(let i = 0;i<data?.length;i++){
-      const nft = await this.NftModel.find(data[i])
-      nfts.push(...nft)
+      let nfts = [];
+      for (let i = 0; i < data?.length; i++) {
+        const nft = await this.NftModel.find(data[i]);
+        nfts.push(...nft);
       }
-      return {nfts}
+      return { nfts };
     } catch (error) {
       return {
-        success:false,
-        message:'Error',
-        error
-      }
+        success: false,
+        message: 'Error',
+        error,
+      };
     }
   }
 
-  async get1155NFTsSelected(data:any) {
-    console.log(data?.length)
+  async get1155NFTsSelected(data: any) {
+    console.log(data?.length);
     try {
-      let nfts = []
-      for(let i = 0;i<data?.length;i++){
-      const nft = await this.Nft11555Model.find(data[i])
-      nfts.push(...nft)
+      let nfts = [];
+      for (let i = 0; i < data?.length; i++) {
+        const nft = await this.Nft11555Model.find(data[i]);
+        nfts.push(...nft);
       }
-      return {nfts}
+      return { nfts };
     } catch (error) {
       return {
-        success:false,
-        message:'Error',
-        error
-      }
+        success: false,
+        message: 'Error',
+        error,
+      };
     }
   }
 
@@ -1033,19 +1107,21 @@ export class NftService {
       const totalcount = await this.NftModel.countDocuments({});
       const activities = await this.NftModel.find({});
       for (let i = 0; i < totalcount; i++) {
-
         let tokenId: any = activities[i].token_id;
         let price: any = activities[i].price;
         console.log(tokenId, i);
-        await this.NftModel.updateOne({ _id: activities[i]._id }, { $set: { price: parseInt(price) } })
+        await this.NftModel.updateOne(
+          { _id: activities[i]._id },
+          { $set: { price: parseInt(price) } },
+        );
       }
     } catch (error) {
       log(error);
       return {
         succcess: false,
         message: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
 }

@@ -8,8 +8,8 @@ class Attributes {
 }
 
 export class MintToken {
-  @ApiProperty({ default: "Api Holder Address" })
-  wallet_address: string
+  @ApiProperty({ default: 'Api Holder Address' })
+  wallet_address: string;
   @ApiProperty({
     description: 'Contract Address of the deployed contract (Battle Field)',
     default: '0x2F9792620f776d5f5231F5f24b5194Ad36967B8a',

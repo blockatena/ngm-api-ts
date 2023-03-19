@@ -1,5 +1,5 @@
 export enum TestnetChain {
-    GOERLI = 'GOERLI',
-    MUMBAI = 'MUMBAI',
-    HYPERSPACE = 'HYPERSPACE',
+  GOERLI = 'GOERLI',
+  MUMBAI = 'MUMBAI',
+  HYPERSPACE = 'HYPERSPACE',
 }

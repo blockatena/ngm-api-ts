@@ -1,3 +1,3 @@
 export class GetChain {
-    chain: string;
+  chain: string;
 }

@@ -7,12 +7,13 @@ import { ContractSchema, contractSchema } from './schema/contract.schema';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [forwardRef(() => UsersModule),
-  MongooseModule.forFeature([
-    { name: ContractSchema.name, schema: contractSchema },
-  ]),
+  imports: [
+    forwardRef(() => UsersModule),
+    MongooseModule.forFeature([
+      { name: ContractSchema.name, schema: contractSchema },
+    ]),
 
-    CommonModule
+    CommonModule,
 
     // NftModule
   ],
@@ -20,4 +21,4 @@ import { UsersModule } from '../users/users.module';
   providers: [DeploymentService],
   exports: [DeploymentService],
 })
-export class DeploymentModule { }
+export class DeploymentModule {}
