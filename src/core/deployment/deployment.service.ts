@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ContractSchema, ContractDocument } from './schema/contract.schema';
 
-
 @Injectable()
 export class DeploymentService {
   constructor(
@@ -22,7 +21,7 @@ export class DeploymentService {
   async createContract(data: any): Promise<any> {
     console.log('from data', data);
     try {
-      return (await this.ContractModel.create(data));
+      return await this.ContractModel.create(data);
     } catch (error) {
       return { mesasge: 'problem in service', error };
     }

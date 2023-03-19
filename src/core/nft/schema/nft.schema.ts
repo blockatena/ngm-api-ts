@@ -8,7 +8,7 @@ export class NftSchema {
   @Prop({ enum: ['NGM721PSI', 'NGM1155', 'NGMTINY721'] })
   contract_type: string;
   @Prop({ type: Object })
-  chain: { id: number, name: string };
+  chain: { id: number; name: string };
   @Prop()
   token_id: number;
   @Prop({ default: '0' })
@@ -34,4 +34,4 @@ export class NftSchema {
 }
 
 export const nftSchema = SchemaFactory.createForClass(NftSchema);
-nftSchema.pre('save', async () => { });
+nftSchema.pre('save', async () => {});

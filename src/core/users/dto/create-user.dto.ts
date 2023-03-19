@@ -16,9 +16,8 @@ export class UserPic {
   type: string;
 }
 
-
 export class GetUser {
-  @ApiProperty({ example: "0x2A8b77DF421106C8fCdBE08697c949D519f4c05a" })
+  @ApiProperty({ example: '0x2A8b77DF421106C8fCdBE08697c949D519f4c05a' })
   wallet_address: string;
 }
 

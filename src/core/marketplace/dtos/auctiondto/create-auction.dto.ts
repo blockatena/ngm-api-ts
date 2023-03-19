@@ -14,7 +14,7 @@ export class CreateAuctionBody {
   @ApiProperty({ example: 20 })
   min_price: number;
   @ApiProperty()
-  sign: string
+  sign: string;
 }
 export class CancelAuctionBody {
   @ApiProperty({ example: '0x2A8b77DF421106C8fCdBE08697c949D519f4c05a' })
@@ -22,7 +22,7 @@ export class CancelAuctionBody {
   @ApiProperty({ example: '3' })
   token_id: number;
   @ApiProperty()
-  sign: string
+  sign: string;
 }
 export class GetAllBids {
   @ApiProperty()
@@ -43,7 +43,7 @@ export class GetAuction {
   end_date: string;
 }
 export class GetUserNfts {
-  @ApiProperty({ default: "0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72" })
+  @ApiProperty({ default: '0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72' })
   token_owner: string;
   @ApiProperty({ default: 1, minimum: 1 })
   page_number: number;

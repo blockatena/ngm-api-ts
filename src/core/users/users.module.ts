@@ -10,16 +10,17 @@ import { EmailService } from 'src/services/email.service';
 import { NftModule } from 'src/core/nft/nft.module';
 
 @Module({
-  imports: [forwardRef(() => NftModule),
-  forwardRef(() => ActivityModule),
-  // JwtModule.register({
-  //   secret: process.env.jwtSecret,
-  //   signOptions: { expiresIn: process.env.ExpiresIN },
-  // }),
-  MongooseModule.forFeature([{ name: UserSchema.name, schema: userSchema }]),
+  imports: [
+    forwardRef(() => NftModule),
+    forwardRef(() => ActivityModule),
+    // JwtModule.register({
+    //   secret: process.env.jwtSecret,
+    //   signOptions: { expiresIn: process.env.ExpiresIN },
+    // }),
+    MongooseModule.forFeature([{ name: UserSchema.name, schema: userSchema }]),
   ],
   controllers: [UsersController],
   providers: [UsersService, EmailService],
-  exports: [UsersService]
+  exports: [UsersService],
 })
-export class UsersModule { }
+export class UsersModule {}

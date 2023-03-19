@@ -37,34 +37,46 @@ export class Paginate {
   // sort_by_date: string;
   // @ApiProperty({ enum: ["NOTREQUIRED", "ATOZ", "ZTOA"], required: false })
   // sort_by_names: string;
-  @ApiProperty({ enum: ["NA", "NEWTOOLD", "OLDTONEW", "ATOZ", "ZTOA"], default: "NA" })
-  sort_by:string;
-  @ApiProperty({enum:["NA","AUCTION", "SALE"], default:"NA"})
-  listed_in:string
+  @ApiProperty({
+    enum: ['NA', 'NEWTOOLD', 'OLDTONEW', 'ATOZ', 'ZTOA'],
+    default: 'NA',
+  })
+  sort_by: string;
+  @ApiProperty({ enum: ['NA', 'AUCTION', 'SALE'], default: 'NA' })
+  listed_in: string;
 }
 
 export class NftContractUser {
-  @ApiProperty({ default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C', description: 'contract address of the Collection' })
+  @ApiProperty({
+    default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C',
+    description: 'contract address of the Collection',
+  })
   readonly contract_address: string;
-  @ApiProperty({ default: '0x952450E079AFBb4f75b1F0Ed94120e6573623bC1', description: 'wallet address of the user' })
+  @ApiProperty({
+    default: '0x952450E079AFBb4f75b1F0Ed94120e6573623bC1',
+    description: 'wallet address of the user',
+  })
   readonly user_address: string;
 }
 
 export class GetListedCollections {
-  @ApiProperty({ default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C' },)
+  @ApiProperty({ default: '0x8f27D09be98d2583E0322C25C8F2149E4AA2635C' })
   address?: string;
-  @ApiProperty({enum: ['USER', 'COLLECTION'], default: 'COLLECTION' })
+  @ApiProperty({ enum: ['USER', 'COLLECTION'], default: 'COLLECTION' })
   address_type?: string;
-  @ApiProperty({ enum: ['NA','AUCTION', 'SALE'], default: 'NA' })
+  @ApiProperty({ enum: ['NA', 'AUCTION', 'SALE'], default: 'NA' })
   listed_in?: string;
   @ApiProperty({ default: 1 })
   page_number?: number;
   @ApiProperty({ default: 10 })
   items_per_page?: number;
-  @ApiProperty({ enum: ["NA", "NEWTOOLD", "OLDTONEW", "ATOZ", "ZTOA"], default: "NA" })
-  sort_by:string;
-  @ApiProperty({default:"NA"})
-  search:string
+  @ApiProperty({
+    enum: ['NA', 'NEWTOOLD', 'OLDTONEW', 'ATOZ', 'ZTOA'],
+    default: 'NA',
+  })
+  sort_by: string;
+  @ApiProperty({ default: 'NA' })
+  search: string;
 }
 export class GetBids {
   @ApiProperty()

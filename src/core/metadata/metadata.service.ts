@@ -7,7 +7,10 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { NFTStorage } from 'nft.storage';
 import { MetadataSchema, metadataDocument } from './schema/metadata.schema';
-import { ContractSchema, ContractDocument } from '../deployment/schema/contract.schema';
+import {
+  ContractSchema,
+  ContractDocument,
+} from '../deployment/schema/contract.schema';
 import { NftService } from '../nft/nft.service';
 import { NftSchema, NftDocument } from '../nft/schema/nft.schema';
 require('dotenv').config();
@@ -23,7 +26,8 @@ const storage = new NFTStorage({ token });
 export class MetadataService {
   constructor(
     private readonly httpService: HttpService,
-    @InjectModel(MetadataSchema.name) private MetadataModel: Model<metadataDocument>,
+    @InjectModel(MetadataSchema.name)
+    private MetadataModel: Model<metadataDocument>,
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
     @InjectModel(ContractSchema.name)
     private ContractModel: Model<ContractDocument>,
@@ -45,7 +49,7 @@ export class MetadataService {
     if (metadataDoc) {
       const uri = metadataDoc.tokenUri[token_id]?.uri || null;
       if (!uri) {
-        return `Token ID doesnt Exists`
+        return `Token ID doesnt Exists`;
       }
       console.log(uri);
       const res = await this.httpService.axiosRef.get(uri);
@@ -144,12 +148,10 @@ export class MetadataService {
     //   { contract_address, token_id },
     //   { $set: { meta_data: metadataJson.data, meta_data_url: metadataUri } },
     // );
-
     // const jsonBlob = new Blob([JSON.stringify(metadataJson.data)]);
     // const cid = await storage.storeBlob(jsonBlob);
     // const ipfsMetadataUri = `${nftStorageUri}/${cid}`;
     // console.log('ipfsMetadataUri', ipfsMetadataUri);
-
     // const metadata = await this.nftservice.pushTokenUriToDocArray(
     //   contract_address,
     //   ipfsMetadataUri,

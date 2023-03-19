@@ -8,87 +8,117 @@ import { ActivityDocument, ActivitySchema } from './schema/activity.schema';
 import { log } from 'console';
 @Injectable()
 export class ActivityService {
-    constructor(@InjectModel(ActivitySchema.name)
-    private activityModel: Model<ActivityDocument>) {
-        activityModel;
+  constructor(
+    @InjectModel(ActivitySchema.name)
+    private activityModel: Model<ActivityDocument>,
+  ) {
+    activityModel;
+  }
+  async createActivity(data: any): Promise<any> {
+    try {
+      return await this.activityModel.create(data);
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went Wrong',
+        error,
+      };
     }
-    async createActivity(data: any): Promise<any> {
-        try {
-            return await this.activityModel.create(data);
-        } catch (error) {
-            console.log(error);
-            return {
-                message: "something went Wrong",
-                error
-            }
-        }
+  }
+  async getUserActivity(data: UserActivity): Promise<any> {
+    const { wallet_address, items_per_page, page_number } = data;
+    try {
+      console.log(data);
+      const activity_data = await this.activityModel
+        .find({ $or: [{ from: wallet_address }, { to: wallet_address }] })
+        .sort({ createdAt: -1 })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
+      const total_pages = await this.activityModel.countDocuments({
+        $or: [{ from: wallet_address }, { to: wallet_address }],
+      });
+      return {
+        total_pages: Math.ceil(total_pages / items_per_page),
+        current_page: page_number,
+        activity_data,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went Wrong',
+        error,
+      };
     }
-    async getUserActivity(data: UserActivity): Promise<any> {
-        const { wallet_address, items_per_page, page_number } = data;
-        try {
-            console.log(data);
-            const activity_data = await this.activityModel.find({ $or: [{ from: wallet_address }, { to: wallet_address }] }).sort({ createdAt: -1 }).limit(items_per_page * 1)
-                .skip((page_number - 1) * items_per_page)
-                .exec();
-            const total_pages = await this.activityModel.countDocuments({ $or: [{ from: wallet_address }, { to: wallet_address }] });
-            return { total_pages: Math.ceil(total_pages / items_per_page), current_page: page_number, activity_data }
-        } catch (error) {
-            console.log(error);
-            return {
-                message: "something went Wrong",
-                error
-            }
-        }
+  }
+  //
+  async getUserNotifications(data: UserActivity): Promise<any> {
+    const { wallet_address, items_per_page, page_number } = data;
+    try {
+      console.log(data);
+      return await this.activityModel
+        .find({
+          read: 'false',
+          $or: [{ from: wallet_address }, { to: wallet_address }],
+        })
+        .sort({ createdAt: -1 })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went Wrong',
+        error,
+      };
     }
-    // 
-    async getUserNotifications(data: UserActivity): Promise<any> {
-        const { wallet_address, items_per_page, page_number } = data;
-        try {
-            console.log(data);
-            return await this.activityModel.find({ read: 'false', $or: [{ from: wallet_address }, { to: wallet_address }] }).sort({ createdAt: -1 }).limit(items_per_page * 1)
-                .skip((page_number - 1) * items_per_page)
-                .exec();
-        } catch (error) {
-            console.log(error);
-            return {
-                message: "something went Wrong",
-                error
-            }
-        }
+  }
+  //update notification
+  async readNotication(readNotification: ReadNotification): Promise<any> {
+    const { log } = console;
+    try {
+      return await this.activityModel.findOneAndUpdate(readNotification, {
+        $set: { read: true },
+      });
+    } catch (error) {
+      log(error);
+      return {
+        error,
+      };
     }
-    //update notification
-    async readNotication(readNotification: ReadNotification): Promise<any> {
-        const { log } = console;
-        try {
-            return await this.activityModel.findOneAndUpdate(readNotification, { $set: { read: true } });
-        } catch (error) {
-            log(error);
-            return {
-                error,
-            }
-        }
-    }
-    // 
-    async getItemActivity(data: GetItemActivity): Promise<any> {
-        const { contract_address,token_id, items_per_page, page_number } = data;
-        try {
-            let tokenId:any = token_id
-            console.log(data);
-            const activity_data = await this.activityModel.find({ "item.contract_address": contract_address, "item.token_id": parseInt(tokenId) }).sort({ createdAt: -1 }).limit(items_per_page * 1)
-                .skip((page_number - 1) * items_per_page)
-                .exec();
+  }
+  //
+  async getItemActivity(data: GetItemActivity): Promise<any> {
+    const { contract_address, token_id, items_per_page, page_number } = data;
+    try {
+      let tokenId: any = token_id;
+      console.log(data);
+      const activity_data = await this.activityModel
+        .find({
+          'item.contract_address': contract_address,
+          'item.token_id': parseInt(tokenId),
+        })
+        .sort({ createdAt: -1 })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page)
+        .exec();
 
-            const total_pages = await this.activityModel.countDocuments({ "item.contract_address": contract_address, "item.token_id": parseInt(tokenId) });
-            return { total_pages: Math.ceil(total_pages / items_per_page), current_page: page_number, activity_data }
-        } catch (error) {
-            console.log(error);
-            return {
-                message: "something went Wrong",
-                error
-            }
-        }
+      const total_pages = await this.activityModel.countDocuments({
+        'item.contract_address': contract_address,
+        'item.token_id': parseInt(tokenId),
+      });
+      return {
+        total_pages: Math.ceil(total_pages / items_per_page),
+        current_page: page_number,
+        activity_data,
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        message: 'something went Wrong',
+        error,
+      };
     }
-    // activty fix 
-
-
+  }
+  // activty fix
 }

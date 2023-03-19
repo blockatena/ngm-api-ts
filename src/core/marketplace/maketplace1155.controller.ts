@@ -2,14 +2,19 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NftMarketplaceService } from './marketplace.service';
 import { ActivityService } from 'src/activity/activity.service';
-import { G2W3_1155Sale, G2W3_1155Offer, G2W3_1155AcceptOffer, G2W3_1155CancelSale, G2W3_1155CancelOffer, G2W3_1155AllOffers } from './dtos/auctiondto/create-1155-auction.dto';
+import {
+  G2W3_1155Sale,
+  G2W3_1155Offer,
+  G2W3_1155AcceptOffer,
+  G2W3_1155CancelSale,
+  G2W3_1155CancelOffer,
+  G2W3_1155AllOffers,
+} from './dtos/auctiondto/create-1155-auction.dto';
 import { NftService } from '../nft/nft.service';
 @ApiTags('MarketPlace 1155')
 @Controller('nft-marketplace')
 export class NftMarketplace1155Controller {
-  constructor(
-    private readonly nftMarketplaceService: NftMarketplaceService,
-  ) { }
+  constructor(private readonly nftMarketplaceService: NftMarketplaceService) {}
 
   /*********************[ERC1155 PART]***********************/
 
@@ -28,8 +33,8 @@ export class NftMarketplace1155Controller {
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
 
@@ -46,8 +51,8 @@ export class NftMarketplace1155Controller {
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
   @ApiOperation({ summary: 'Cancel Sale' })
@@ -63,8 +68,8 @@ export class NftMarketplace1155Controller {
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
 
@@ -81,8 +86,8 @@ export class NftMarketplace1155Controller {
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
 
@@ -99,8 +104,8 @@ export class NftMarketplace1155Controller {
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
 
@@ -117,8 +122,8 @@ export class NftMarketplace1155Controller {
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
 
@@ -131,12 +136,15 @@ export class NftMarketplace1155Controller {
   @Post('get-all-offer-1155')
   async getAllOffer1155(@Body() body: G2W3_1155AllOffers) {
     try {
-      return await this.nftMarketplaceService.getAll1155offer({ body, status: 'started' });
+      return await this.nftMarketplaceService.getAll1155offer({
+        body,
+        status: 'started',
+      });
     } catch (e) {
       return {
         success: 'error',
-        message: e
-      }
+        message: e,
+      };
     }
   }
 }

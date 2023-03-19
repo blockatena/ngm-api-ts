@@ -1,30 +1,73 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-class Limit {
-  collections: number;
-  assets: number;
-}
-
 export type UserDocument = UserSchema & Document;
 
 @Schema({ timestamps: true })
 export class UserSchema {
   @Prop()
   username: string;
-  @Prop({ unique: true })
+
+  @Prop({ required: true, unique: true })
   wallet_address: string;
+
   @Prop({ unique: true })
   email: string;
-  @Prop()
+
+  @Prop({ default: '' })
   profile_image: string;
-  @Prop()
+
+  @Prop({ default: '' })
   banner_image: string;
-  @Prop({ type: Limit })
-  limit: {
-    collections: number,
-    assets: number
+
+  @Prop({
+    _id: false,
+    type: {
+      collections: { type: Number, default: 0 },
+      assets: { type: Number, default: 0 },
+    },
+  })
+  limit: Record<string, number>;
+
+  @Prop({
+    _id: false,
+    type: {
+      collections: {
+        type: [String],
+        default: [],
+        required: false,
+        unique: true,
+      },
+      nfts: {
+        ngm721: {
+          _id: false,
+          type: [{ contract_address: String, token_id: Number }],
+          required: false,
+          default: [],
+          unique: true,
+        },
+        ngm1155: {
+          _id: false,
+          type: [{ contract_address: String, token_id: Number }],
+          required: false,
+          default: [],
+          unique: true,
+        },
+      },
+    },
+    default: {
+      collections: [],
+      nfts: { ngm721: [], ngm1155: [] },
+    },
+  })
+  favourites: {
+    collections: string[];
+    nfts: {
+      ngm721: { contract_address: string; token_id: number }[];
+      ngm1155: { contract_address: string; token_id: number }[];
+    };
   };
+
   @Prop({ unique: true })
   api_key: string;
 }

@@ -1,18 +1,8 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { NftService } from './nft.service';
 import { getcontract } from './dtos/tokeninfo.dto';
 import { ethers } from 'ethers';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
 // import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/services/@decorators/roles.decorator';
@@ -34,7 +24,13 @@ import { GetAllNfts } from './types/nft.types';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 import { collection } from './dtos/getnft1155.dto';
 import { CommonService } from 'src/common/common.service';
-import { GetCollectionResponse, GetOwnerResponse, GetSingleNft, GetSingleNftWithCollectionAndAuction, GetSingleNftWithCollectionAndSale } from './types/nft721.types';
+import {
+  GetCollectionResponse,
+  GetOwnerResponse,
+  GetSingleNft,
+  GetSingleNftWithCollectionAndAuction,
+  GetSingleNftWithCollectionAndSale,
+} from './types/nft721.types';
 import { DeploymentService } from '../deployment/deployment.service';
 import { GetUserNfts } from '../marketplace/dtos/auctiondto/create-auction.dto';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
@@ -63,12 +59,10 @@ export class NftController721 {
     private activityService: ActivityService,
     private usersService: UsersService,
     private readonly commonService: CommonService,
-  ) { }
+  ) {}
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
-
-
 
   // @Get('total-count/:contract_address')
   // @ApiCreatedResponse({
@@ -125,21 +119,18 @@ export class NftController721 {
   //   return `ddf`;
   // }
 
-
-
   // 721
-
 
   /****************[GET_ALL_NFTS_WITH_PAGINATION]*****************/
   @ApiResponse({
     status: 200,
     description: 'Successfully Fetched All the Nfts',
-    type: GetAllNfts
+    type: GetAllNfts,
   })
   @ApiResponse({
     status: 500,
     description: 'Something Went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({
     summary: 'Get all the Assets',
@@ -152,7 +143,7 @@ export class NftController721 {
         page_number,
         items_per_page,
         sort_by,
-        listed_in
+        listed_in,
       });
       if (!data) {
         return {
@@ -169,30 +160,33 @@ export class NftController721 {
   /***********[GET_COLLECTIONS_OWNED_BY_USER]**********/
   @ApiResponse({
     status: 200,
-    type: GetAllNfts
+    type: GetAllNfts,
   })
   @ApiResponse({
     status: 500,
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get User Collections' })
   @Get('collections-owned/:owner_address/:page_number/:items_per_page')
   async getCollectionsOwned(@Param() params: GetUserOwnedAssets): Promise<any> {
     const { owner_address, page_number, items_per_page } = params;
     try {
-      return (await this.nftservice.getCollectionsOwned({ owner_address, page_number, items_per_page }));
+      return await this.nftservice.getCollectionsOwned({
+        owner_address,
+        page_number,
+        items_per_page,
+      });
     } catch (error) {
       log(error);
       return {
         message: 'something went Wrong',
-        error
-      }
+        error,
+      };
     }
   }
   /***********[GET_ALL_NFTS_WITH_PAGINATION]****************/
   @ApiOperation({
-    summary:
-      'Get User Assets by Collection',
+    summary: 'Get User Assets by Collection',
   })
   @Get('get-user-nft-cntr/:user_address/:contract_address')
   async getUserNftsByCollection(
@@ -240,12 +234,10 @@ export class NftController721 {
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({
-    summary:
-      'Get Asset details',
-
+    summary: 'Get Asset details',
   })
   @Get('get-nft/:contract_address/:token_id')
   async getNft(@Param() body: GetNftBody): Promise<any> {
@@ -258,7 +250,9 @@ export class NftController721 {
       log(is_nft_exists);
       const nft = is_nft_exists;
       if (is_nft_exists.nft) {
-        const token_owner_info = await this.usersService.getUser(is_nft_exists.nft.token_owner)
+        const token_owner_info = await this.usersService.getUser(
+          is_nft_exists.nft.token_owner,
+        );
         if (is_nft_exists.nft.is_in_auction) {
           const auction = await this.nftservice.getAuction(body);
           log(auction._id);
@@ -285,7 +279,6 @@ export class NftController721 {
         }
         return { ...nft, token_owner_info };
       }
-
     } catch (error) {
       log(error);
       return { message: 'Something went wrong' };
@@ -295,12 +288,12 @@ export class NftController721 {
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Assets that are Owned by User',
-    type: [GetSingleNft]
+    type: [GetSingleNft],
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get  Assets by Owner Address' })
   @Get('get-user-nfts/:token_owner/:page_number/:items_per_page')
@@ -319,12 +312,12 @@ export class NftController721 {
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Collections',
-    type: collection
+    type: collection,
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get All Collections' })
   @Get('get-collections/:page_number/:items_per_page/:sort_by/:chain/:type')
@@ -344,12 +337,12 @@ export class NftController721 {
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Assets that are Listed',
-    type: [GetSingleNft]
+    type: [GetSingleNft],
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get Listed Assets' })
   @Get('get-nfts-listed/:listed_in')
@@ -363,17 +356,15 @@ export class NftController721 {
     }
   }
 
-
-  
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Assets for home',
-    type: [GetSingleNft]
+    type: [GetSingleNft],
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get Home Assets' })
   @Get('get-popular-nfts/:state')
@@ -389,15 +380,18 @@ export class NftController721 {
   /*******[GET_NFTS_LISTED_IN_SPECIFIC_COLLECTION]**********/
   @ApiResponse({
     status: 201,
-    description: 'Successfully Fetched the Assets that are Listed in Collection',
-    type: [GetSingleNft]
+    description:
+      'Successfully Fetched the Assets that are Listed in Collection',
+    type: [GetSingleNft],
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
-  @ApiOperation({ summary: 'Get Assets that are  Listed in Specific Collection' })
+  @ApiOperation({
+    summary: 'Get Assets that are  Listed in Specific Collection',
+  })
   @Post('get-nfts-721-collection')
   async getNftsListedCollection(
     @Body() Collections_listed: GetListedCollections,
@@ -417,12 +411,12 @@ export class NftController721 {
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Collection',
-    type: GetCollectionResponse
+    type: GetCollectionResponse,
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get Assets by Collection' })
   @Get('collection/:contract_address')
@@ -433,7 +427,8 @@ export class NftController721 {
     try {
       log(contract);
       // Fetching Contract details
-      const collection = await this.nftservice.getContract(contract.contract_address
+      const collection = await this.nftservice.getContract(
+        contract.contract_address,
       );
       log(collection);
       // fetching all Nfts
@@ -472,19 +467,18 @@ export class NftController721 {
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Owner from the Block Chain',
-    type: GetOwnerResponse
+    type: GetOwnerResponse,
   })
   @ApiResponse({
     status: 500,
     description: 'Something went Wrong',
-    type: ErrorHandlerType
+    type: ErrorHandlerType,
   })
   @ApiOperation({ summary: 'Get Owner of the Nft from BlockChain' })
   @Get('get-owner/:contract_address/:token_id')
   async getOwner(@Param() get_Owner: GetOwner): Promise<any> {
     const { contract_address, token_id } = get_Owner;
     try {
-
       const nft1 = await this.nftservice.getContract(contract_address);
 
       const abiPath = path.join(
@@ -493,12 +487,19 @@ export class NftController721 {
       );
       const abi = fs.readFileSync(abiPath, 'utf-8');
 
-      // 
+      //
       const _chain = nft1?.chain?.name;
-      const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } = await this.commonService.getWallet(_chain);
-      // 
-      const contract_instance = new ethers.Contract(contract_address, abi, wallet);
-      const get_collecion = await this.nftservice.getCollectionOnly(contract_address);
+      const { RPC_URL, API_BASE_URL, provider, wallet, check_environment } =
+        await this.commonService.getWallet(_chain);
+      //
+      const contract_instance = new ethers.Contract(
+        contract_address,
+        abi,
+        wallet,
+      );
+      const get_collecion = await this.nftservice.getCollectionOnly(
+        contract_address,
+      );
       log(get_collecion);
       // get_collecion.forEach(async nft => {
       //   log(nft.contract_address, nft.token_id);
@@ -523,14 +524,14 @@ export class NftController721 {
       return {
         contract_address,
         token_id,
-        token_owner: TOKEN_OWNER
+        token_owner: TOKEN_OWNER,
       };
     } catch (error) {
       log(error);
       return {
-        message: "something went Wrong",
-        error
-      }
+        message: 'something went Wrong',
+        error,
+      };
     }
   }
 

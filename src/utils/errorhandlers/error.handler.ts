@@ -1,10 +1,10 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class ErrorHandlerType {
-    @ApiProperty()
-    success: boolean;
-    @ApiProperty()
-    message: string;
-    @ApiProperty()
-    error: Error;
+  @ApiProperty()
+  success: boolean;
+  @ApiProperty()
+  message: string;
+  @ApiProperty()
+  error: Error;
 }

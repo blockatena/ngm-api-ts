@@ -1,14 +1,14 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UploadAsset {
-    @ApiProperty()
-    uri: string;
+  @ApiProperty()
+  uri: string;
 }
 export class UploadAssetError {
-    @ApiProperty()
-    success: boolean;
-    @ApiProperty()
-    message: string;
-    @ApiProperty()
-    error: Error;
+  @ApiProperty()
+  success: boolean;
+  @ApiProperty()
+  message: string;
+  @ApiProperty()
+  error: Error;
 }
