@@ -42,11 +42,25 @@ export class UsersController {
     private readonly nftService: NftService,
     private readonly activityService: ActivityService,
     private readonly emailService: EmailService,
-  ) {}
+  ) { }
   //
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
+
+  @ApiOperation({ summary: 'Check is User exist' })
+  @Get('/isuser_registered/:wallet_address')
+  async isUserRegistered(@Param('wallet_address') wallet_address: string) {
+    try {
+      return await this.usersService.isUserExist(wallet_address);
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Unable to Check IsUserExists or not',
+        error,
+      };
+    }
+  }
   //
   @ApiOperation({ summary: 'This Api will create a User' })
   @Post('create-user')
@@ -59,7 +73,7 @@ export class UsersController {
       });
       console.log(is_user_exists);
 
-      if (is_user_exists) {
+      if (is_user_exists?.email) {
         return `${wallet_address} exists already`;
       }
       const success = await this.usersService.create(createUserDto);
@@ -84,8 +98,9 @@ export class UsersController {
     }
   }
 
-  @Post('favourite')
+  @Post('handle-favourite')
   async addFavourite(@Body() body: UserFavouriteDto): Promise<any> {
+    console.log(body);
     try {
       return await this.usersService.userFavourite(body);
     } catch (error) {
@@ -101,9 +116,10 @@ export class UsersController {
   @Post('is_user_favourite')
   async isUserFavourite(@Body() body: IsUserFavourite): Promise<any> {
     try {
+      console.log(body);
       const result = await this.usersService.checkIsUserFavourite(body);
-      console.log(result);
-      if (result) {
+      console.log({ result });
+      if (result && !result.error) {
         return { isFavourite: true };
       } else {
         return { isFavourite: false };
@@ -118,15 +134,18 @@ export class UsersController {
     }
   }
 
-  @Get('favourites/:favourite_kind/:wallet_address')
+  @Get('favourites/:favourite_kind/:wallet_address/:nftType')
   async getUserFavourites(@Param() body: GetUserFavourite) {
-    const { wallet_address, favourite_kind } = body;
+    console.log(body);
+    const { wallet_address, favourite_kind, nftType } = body;
     try {
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
           return await this.usersService.getUserFavouriteCollections(body);
+        // return await this.usersService.getAllFavouriteCollections(body);
         case FavouriteKindEnum.NFTS:
           return await this.usersService.getUserFavouriteNfts(body);
+        // return await this.usersService.getAllFavouriteNFTs(body);
         default:
           return {
             success: false,
@@ -165,7 +184,6 @@ export class UsersController {
         profile_image,
         banner_image,
       } = data;
-      return data;
       return {
         username,
         wallet_address,

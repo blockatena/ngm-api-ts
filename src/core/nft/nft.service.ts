@@ -80,7 +80,7 @@ export class NftService {
     try {
       //
       return await this.NftModel.create(data);
-    } catch (error) {}
+    } catch (error) { }
   }
   // ADDING OWNER
   async addOwner(updateOwner: UpdateOwner): Promise<any> {
@@ -1045,6 +1045,58 @@ export class NftService {
 
       return {
         message: 'something went Wrong',
+        error,
+      };
+    }
+  }
+
+  async getCollectionsSelected(data: any) {
+    console.log(data);
+    try {
+      const collections = await this.ContractModel.find({
+        contract_address: { $in: [...data] },
+      });
+      return { collections };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error',
+        error,
+      };
+    }
+  }
+
+  async get721NFTsSelected(data: any) {
+    console.log(data?.length);
+    try {
+      let nfts = [];
+      for (let i = 0; i < data?.length; i++) {
+        const nft = await this.NftModel.find(data[i]);
+        nfts.push(...nft);
+      }
+      return { nfts };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error',
+        error,
+      };
+    }
+  }
+
+  async get1155NFTsSelected(data: any) {
+    console.log(data?.length);
+    try {
+      let nfts = [];
+      for (let i = 0; i < data?.length; i++) {
+        const nft = await this.Nft11555Model.find(data[i]);
+        nfts.push(...nft);
+      }
+      return { nfts };
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Error',
         error,
       };
     }

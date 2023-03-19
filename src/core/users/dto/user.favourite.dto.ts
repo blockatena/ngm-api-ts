@@ -47,4 +47,6 @@ export class GetUserFavourite {
   favourite_kind: FavouriteKindEnum;
   @ApiProperty()
   wallet_address: string;
+  @ApiProperty({ enum: ['NGM721', 'NGM1155', 'NA'], default: 'NA' })
+  nftType: string;
 }
