@@ -4,6 +4,6 @@ import { TextileController } from './textile.controller';
 
 @Module({
   controllers: [TextileController],
-  providers: [TextileService]
+  providers: [TextileService],
 })
 export class TextileModule {}

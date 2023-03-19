@@ -17,7 +17,7 @@ export class MetadataSchema {
   }>;
 
   @Prop({ type: Object })
-  chain: { id: number, name: string };
+  chain: { id: number; name: string };
 }
 
 export const metadataSchema = SchemaFactory.createForClass(MetadataSchema);

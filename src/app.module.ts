@@ -27,7 +27,9 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true, load: [configuration], validationSchema: ConfigValidation
+      isGlobal: true,
+      load: [configuration],
+      validationSchema: ConfigValidation,
     }),
     MailerModule.forRoot({
       transport: {
@@ -68,9 +70,11 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
       limit: parseInt(LIMIT) || 10,
     }),
     CommonModule,
-    PaymentModule
+    PaymentModule,
   ],
-  providers: [CronjobService, AppService,
+  providers: [
+    CronjobService,
+    AppService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
@@ -82,7 +86,7 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService) {}
 
   async onModuleInit() {
     await this.appService.onModuleInit();

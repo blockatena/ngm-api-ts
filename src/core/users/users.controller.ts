@@ -16,36 +16,47 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { NFTStorage, File, Blob } from 'nft.storage';
 import { UsersService } from './users.service';
 import { ConfigService } from '@nestjs/config';
-import { CreateUserDto, GetUser, UpdateUser, UserPic } from './dto/create-user.dto';
+import {
+  CreateUserDto,
+  GetUser,
+  UpdateUser,
+  UserPic,
+} from './dto/create-user.dto';
 import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ActivityService } from 'src/activity/activity.service';
 import { GetNotification } from './dto/get-notifiction.dto';
 import { EmailService } from 'src/services/email.service';
 import { NftService } from 'src/core/nft/nft.service';
-import { GetUserFavourite, IsUserFavourite, UserFavouriteDto } from './dto/user.favourite.dto';
+import {
+  GetUserFavourite,
+  IsUserFavourite,
+  UserFavouriteDto,
+} from './dto/user.favourite.dto';
 import { FavouriteKindEnum } from './enum/user.favourite.enum';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService, private configService: ConfigService,
+  constructor(
+    private readonly usersService: UsersService,
+    private configService: ConfigService,
     private readonly nftService: NftService,
     private readonly activityService: ActivityService,
-    private readonly emailService: EmailService
-
-  ) {
-  }
-  // 
+    private readonly emailService: EmailService,
+  ) {}
+  //
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
-  // 
+  //
   @ApiOperation({ summary: 'This Api will create a User' })
   @Post('create-user')
   async create(@Body() createUserDto: CreateUserDto) {
     const { wallet_address, username, email } = createUserDto;
     try {
       // check wallet Address is present in Db
-      const is_user_exists = await this.usersService.getUser({ wallet_address });
+      const is_user_exists = await this.usersService.getUser({
+        wallet_address,
+      });
       console.log(is_user_exists);
 
       if (is_user_exists) {
@@ -60,16 +71,16 @@ export class UsersController {
           wallet_address: wallet_address,
         },
         subject: 'Welcome',
-        message: 'Thank you'
-      })
+        message: 'Thank you',
+      });
       console.log(mail);
       return success;
     } catch (error) {
       console.log(error);
       return {
         success: false,
-        message: "Something went Wrong"
-      }
+        message: 'Something went Wrong',
+      };
     }
   }
 
@@ -82,8 +93,8 @@ export class UsersController {
       return {
         success: false,
         message: 'Something went Wrong',
-        error
-      }
+        error,
+      };
     }
   }
 
@@ -97,14 +108,13 @@ export class UsersController {
       } else {
         return { isFavourite: false };
       }
-
     } catch (error) {
       console.log(error);
       return {
         success: false,
         message: 'Something went Wrong',
-        error
-      }
+        error,
+      };
     }
   }
 
@@ -120,11 +130,11 @@ export class UsersController {
         default:
           return {
             success: false,
-            message: 'INVALID FAVOURITE SELECTION'
-          }
+            message: 'INVALID FAVOURITE SELECTION',
+          };
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
   }
 
@@ -143,7 +153,7 @@ export class UsersController {
         return {
           message: 'You are registered with us',
           success: false,
-        }
+        };
       }
       console.log(data);
       const {
@@ -151,7 +161,10 @@ export class UsersController {
         email,
         createdAt,
         updatedAt,
-        limit, profile_image, banner_image, } = data
+        limit,
+        profile_image,
+        banner_image,
+      } = data;
       return data;
       return {
         username,
@@ -161,16 +174,15 @@ export class UsersController {
         updatedAt,
         limit,
         profile_image,
-        banner_image
-      }
-
+        banner_image,
+      };
     } catch (error) {
       console.log(error);
       return {
         success: false,
         message: 'something Went wrong',
-        error
-      }
+        error,
+      };
     }
   }
 
@@ -180,7 +192,9 @@ export class UsersController {
     const { wallet_address, username } = updateUser;
     try {
       // First find user exists or not
-      const is_user_exists = await this.usersService.getUser({ wallet_address });
+      const is_user_exists = await this.usersService.getUser({
+        wallet_address,
+      });
       if (!is_user_exists) {
         return `${wallet_address} doesnt register with us please register`;
       }
@@ -190,8 +204,8 @@ export class UsersController {
       return {
         success: false,
         message: 'Something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
   @Delete(':id')
@@ -200,7 +214,8 @@ export class UsersController {
   }
   // File Upload
   @ApiOperation({
-    summary: 'This Api will upload your profile pic or banner gets you URI of that Profile pic or banner',
+    summary:
+      'This Api will upload your profile pic or banner gets you URI of that Profile pic or banner',
   })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -209,19 +224,18 @@ export class UsersController {
       properties: {
         file: { type: 'string', format: 'binary' },
         wallet_address: { type: 'string' },
-        type: { type: 'string' }
+        type: { type: 'string' },
       },
     },
   })
-  @UseInterceptors(
-    FileInterceptor('file'),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   @Post('uploadFile')
-  async uploadFile(@Body() body: UserPic,
+  async uploadFile(
+    @Body() body: UserPic,
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 200000 }),// 1kb=1000
+          new MaxFileSizeValidator({ maxSize: 200000 }), // 1kb=1000
           new FileTypeValidator({ fileType: 'jpeg' }),
         ],
       }),
@@ -230,8 +244,10 @@ export class UsersController {
   ) {
     const { wallet_address, type } = body;
     try {
-      //check user is registered or not 
-      const is_user_exists = await this.usersService.getUser({ wallet_address });
+      //check user is registered or not
+      const is_user_exists = await this.usersService.getUser({
+        wallet_address,
+      });
       if (!is_user_exists) {
         return 'User doesnt exists Please Register with us';
       }
@@ -245,21 +261,27 @@ export class UsersController {
       console.log({ tokenUri });
       // // **********Storing in Db
       if (type == 'profile')
-        await this.usersService.updateUser(wallet_address, { profile_image: tokenUri })
+        await this.usersService.updateUser(wallet_address, {
+          profile_image: tokenUri,
+        });
       if (type == 'banner')
-        await this.usersService.updateUser(wallet_address, { banner_image: tokenUri })
+        await this.usersService.updateUser(wallet_address, {
+          banner_image: tokenUri,
+        });
       // **********
       return await this.usersService.getUser({ wallet_address });
     } catch (error) {
       return {
         success: false,
-        message: 'something went Wrong'
+        message: 'something went Wrong',
       };
     }
   }
-  // 
+  //
   @Get('get-user-notification/:wallet_address/:page_number/:items_per_page/')
-  async getUserNotification(@Param() getNotification: GetNotification): Promise<any> {
+  async getUserNotification(
+    @Param() getNotification: GetNotification,
+  ): Promise<any> {
     const { log } = console;
     try {
       return await this.activityService.getUserNotifications(getNotification);
@@ -267,7 +289,7 @@ export class UsersController {
       log(error);
       return {
         error,
-      }
+      };
     }
   }
 
@@ -279,6 +301,4 @@ export class UsersController {
 
   //   }
   // }
-
-
 }

@@ -13,7 +13,7 @@ export class ContractSchema {
   @Prop()
   total_supply: number;
   @Prop({ type: Object })
-  chain: { id: number, name: string };
+  chain: { id: number; name: string };
   @Prop()
   type: string;
   @Prop()

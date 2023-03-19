@@ -5,9 +5,9 @@ import { ApiTags } from '@nestjs/swagger';
 @ApiTags('Payment')
 @Controller('payment')
 export class PaymentController {
-  constructor(private readonly paymentService: PaymentService) { }
+  constructor(private readonly paymentService: PaymentService) {}
 
-  @Post("validate-transaction")
+  @Post('validate-transaction')
   async validateTransaction(@Body() body: ValidateTransaction): Promise<any> {
     return await this.paymentService.validateTransaction(body);
   }

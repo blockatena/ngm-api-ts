@@ -15,12 +15,12 @@ export class CreateDeploymentDto {
   @ApiProperty({ default: 'Avengers' })
   readonly collection_name: string;
   @ApiProperty({
-    enum: ChainEnum, default: "FILECOIN"
+    enum: ChainEnum,
+    default: 'FILECOIN',
   })
   readonly chain: ChainEnum;
   @ApiProperty({
-    description:
-      'Type of contract you want to deploy.We provide 3 options ',
+    description: 'Type of contract you want to deploy.We provide 3 options ',
     enum: ['NGM721PSI', 'NGMTINY721', 'NGM1155'],
     default: 'NGM721PSI',
   })

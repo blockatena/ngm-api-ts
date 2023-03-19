@@ -32,10 +32,27 @@ export class UserSchema {
   @Prop({
     _id: false,
     type: {
-      collections: { type: [String], default: [], required: false, unique: true },
+      collections: {
+        type: [String],
+        default: [],
+        required: false,
+        unique: true,
+      },
       nfts: {
-        ngm721: { _id: false, type: [{ contract_address: String, token_id: Number }], required: false, default: [], unique: true },
-        ngm1155: { _id: false, type: [{ contract_address: String, token_id: Number }], required: false, default: [], unique: true },
+        ngm721: {
+          _id: false,
+          type: [{ contract_address: String, token_id: Number }],
+          required: false,
+          default: [],
+          unique: true,
+        },
+        ngm1155: {
+          _id: false,
+          type: [{ contract_address: String, token_id: Number }],
+          required: false,
+          default: [],
+          unique: true,
+        },
       },
     },
     default: {

@@ -14,7 +14,7 @@ export class CreateSaleBody {
   @ApiProperty()
   end_date: string;
   @ApiProperty()
-  sign: string
+  sign: string;
 }
 export class CancelSaleBody {
   @ApiProperty()
@@ -22,5 +22,5 @@ export class CancelSaleBody {
   @ApiProperty()
   token_id: number;
   @ApiProperty()
-  sign: string
+  sign: string;
 }

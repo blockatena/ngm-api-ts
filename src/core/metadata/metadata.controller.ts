@@ -5,7 +5,7 @@ import { MetadataService } from './metadata.service';
 @ApiTags('Metadata')
 @Controller('metadata')
 export class MetadataController {
-  constructor(private readonly metadataservice: MetadataService) { }
+  constructor(private readonly metadataservice: MetadataService) {}
   // Swagger UI Options
   @ApiOperation({
     summary: 'Fetch the Metadata of the Token',

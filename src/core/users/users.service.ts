@@ -4,15 +4,23 @@ import { CreateUserDto, GetUser } from './dto/create-user.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { UserDocument, UserSchema } from './schema/user.schema';
-import { GetUserFavourite, IsUserFavourite, UserFavouriteDto } from './dto/user.favourite.dto';
-import { FavouriteKindEnum, NftTypeEnum, UserFavouriteEnum } from './enum/user.favourite.enum';
+import {
+  GetUserFavourite,
+  IsUserFavourite,
+  UserFavouriteDto,
+} from './dto/user.favourite.dto';
+import {
+  FavouriteKindEnum,
+  NftTypeEnum,
+  UserFavouriteEnum,
+} from './enum/user.favourite.enum';
 const { log } = console;
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(UserSchema.name) private UserModel: Model<UserDocument>,
-    // private JWTservice: JwtAuthService,
-  ) {
+  ) // private JWTservice: JwtAuthService,
+  {
     UserModel;
   }
   /***************[CREATING_USER]**************/
@@ -24,21 +32,21 @@ export class UsersService {
 
       const is_email_exists_already = await this.UserModel.findOne({ email });
       if (is_email_exists_already) {
-        return `${email} is already Linked to another Wallet Please try another Email `
+        return `${email} is already Linked to another Wallet Please try another Email `;
       }
       // const is_username_exists_already = await this.UserModel.findOne({ username });
       // if (is_username_exists_already) {
       //   return `The Username  ${username} already exists Please try another Username`;
       // }
       return await this.UserModel.create({
-        ...createUserDto, limit: { collections: 5, assets: 50 }
+        ...createUserDto,
+        limit: { collections: 5, assets: 50 },
       });
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
       return {
-        mesage: "Something went Wrong"
-      }
+        mesage: 'Something went Wrong',
+      };
     }
   }
 
@@ -55,20 +63,21 @@ export class UsersService {
       return {
         success: false,
         message: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
-
   }
   // Update User
   async updateUser(wallet_address: string, update_data: any) {
-
     try {
-      return await this.UserModel.updateOne({ wallet_address }, {
-        $set: {
-          ...update_data
-        }
-      })
+      return await this.UserModel.updateOne(
+        { wallet_address },
+        {
+          $set: {
+            ...update_data,
+          },
+        },
+      );
       // return `This action updates a #${id} user`;
     } catch (error) {
       log(error);
@@ -76,16 +85,23 @@ export class UsersService {
   }
 
   /**********[Increse Limit]***********/
-  async increseLimit(wallet_address: string, collection: number, assets: number): Promise<any> {
+  async increseLimit(
+    wallet_address: string,
+    collection: number,
+    assets: number,
+  ): Promise<any> {
     try {
-      return await this.UserModel.updateOne({ wallet_address }, { $inc: { "limit.collection": collection, "limit.assets": assets } });
+      return await this.UserModel.updateOne(
+        { wallet_address },
+        { $inc: { 'limit.collection': collection, 'limit.assets': assets } },
+      );
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
         message: 'Something Went Wrong',
-        error
-      }
+        error,
+      };
     }
   }
   // Remove User
@@ -94,62 +110,86 @@ export class UsersService {
   }
 
   async userFavourite(body: UserFavouriteDto): Promise<any> {
-    const { wallet_address, action, favourite_kind, contract_address, token_id } = body;
+    const {
+      wallet_address,
+      action,
+      favourite_kind,
+      contract_address,
+      token_id,
+    } = body;
     try {
       console.log({ favourite_kind });
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
-          return await this.UserModel.findOneAndUpdate({ wallet_address }, {
-            [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
-              "favourites.collections": contract_address
-            }
-          }, { new: true });
+          return await this.UserModel.findOneAndUpdate(
+            { wallet_address },
+            {
+              [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
+                'favourites.collections': contract_address,
+              },
+            },
+            { new: true },
+          );
         case FavouriteKindEnum.NFTS:
           return await this.addOrRemoveUserFavouriteNfts(body);
         default:
-          return "INVALID FAVOURITE WE ONLY SUPPORT COLLECTION AND NFT";
-
+          return 'INVALID FAVOURITE WE ONLY SUPPORT COLLECTION AND NFT';
       }
     } catch (error) {
       console.log(error);
       return {
         success: false,
         message: 'Something went Wrong',
-        error
-      }
+        error,
+      };
     }
   }
 
   async addOrRemoveUserFavouriteNfts(body: UserFavouriteDto) {
-    const { wallet_address, action, favourite_kind, contract_address, token_id, nft_type } = body;
+    const {
+      wallet_address,
+      action,
+      favourite_kind,
+      contract_address,
+      token_id,
+      nft_type,
+    } = body;
     try {
-
       if (nft_type === NftTypeEnum.NGM721) {
-        return await this.UserModel.findOneAndUpdate({ wallet_address }, {
-          [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
-            "favourites.nfts.ngm721": {
-              contract_address, token_id
-            }
-          }
-        }, { new: true });
+        return await this.UserModel.findOneAndUpdate(
+          { wallet_address },
+          {
+            [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
+              'favourites.nfts.ngm721': {
+                contract_address,
+                token_id,
+              },
+            },
+          },
+          { new: true },
+        );
       }
       if (nft_type === NftTypeEnum.NGM1155) {
-        return await this.UserModel.findOneAndUpdate({ wallet_address }, {
-          [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
-            "favourites.nfts.ngm1155": {
-              contract_address, token_id
-            }
-          }
-        }, { new: true });
+        return await this.UserModel.findOneAndUpdate(
+          { wallet_address },
+          {
+            [action === UserFavouriteEnum.ADD ? '$push' : '$pull']: {
+              'favourites.nfts.ngm1155': {
+                contract_address,
+                token_id,
+              },
+            },
+          },
+          { new: true },
+        );
       }
-
     } catch (error) {
-      console.log(error)
+      console.log(error);
       return {
         success: false,
         message: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
 
@@ -162,128 +202,154 @@ export class UsersService {
       const createdAt = -1;
       const items_per_page = 5;
       const page_number = 1;
-      return (await this.UserModel.aggregate(
-        [
+      return (
+        await this.UserModel.aggregate([
           {
-            $match: { wallet_address }
+            $match: { wallet_address },
           },
           {
-            $unwind: "$favourites.collections"
+            $unwind: '$favourites.collections',
           },
           {
             $lookup: {
-              from: "contractschemas",
-              let: { contract_address: "$favourites.collections" },
+              from: 'contractschemas',
+              let: { contract_address: '$favourites.collections' },
               pipeline: [
                 {
-                  $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }] } }
-                }
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$contract_address', '$$contract_address'] },
+                      ],
+                    },
+                  },
+                },
               ],
-              as: "collections"
-            }
-          }, {
+              as: 'collections',
+            },
+          },
+          {
             $group: {
               _id: '$_id',
-              fav_collections: { $push: { $arrayElemAt: ['$collections', 0] } }
-            }
-          }
-          , {
+              fav_collections: { $push: { $arrayElemAt: ['$collections', 0] } },
+            },
+          },
+          {
             $project: {
               _id: 0,
-              fav_collections: 1
-            }
-          }
-        ]
-      ).sort({ createdAt })
-        .limit(items_per_page * 1)
-        .skip((page_number - 1) * items_per_page))[0].fav_collections;
+              fav_collections: 1,
+            },
+          },
+        ])
+          .sort({ createdAt })
+          .limit(items_per_page * 1)
+          .skip((page_number - 1) * items_per_page)
+      )[0].fav_collections;
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
         messsage: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
   async getUserFavouriteNfts(body: GetUserFavourite) {
     const { wallet_address } = body;
 
     try {
-
-      const nft721Pipeline = (await this.UserModel.aggregate(
-        [
-          {
-            $match: { wallet_address }
-          },
-          {
-            $unwind: "$favourites.nfts.ngm721"
-          },
-          {
-            $lookup: {
-              from: "nftschemas",
-              let: {
-                contract_address: "$favourites.nfts.ngm721.contract_address", token_id: "$favourites.nfts.ngm721.token_id"
+      const nft721Pipeline =
+        (
+          await this.UserModel.aggregate([
+            {
+              $match: { wallet_address },
+            },
+            {
+              $unwind: '$favourites.nfts.ngm721',
+            },
+            {
+              $lookup: {
+                from: 'nftschemas',
+                let: {
+                  contract_address: '$favourites.nfts.ngm721.contract_address',
+                  token_id: '$favourites.nfts.ngm721.token_id',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$contract_address', '$$contract_address'] },
+                          { $eq: ['$token_id', '$$token_id'] },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'nfts',
               },
-              pipeline: [
-                {
-                  $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }, { $eq: ["$token_id", "$$token_id"] }] } }
-                }
-              ],
-              as: "nfts"
-            }
-          },
+            },
 
-          {
-            $group: {
-              _id: '$_id',
-              fav_721Nfts: { $push: { $arrayElemAt: ['$nfts', 0] } }
-            }
-          }
-          , {
-            $project: {
-              _id: 0,
-              fav_721Nfts: 1
-            }
-          }
-        ]
-      ))[0]?.fav_721Nfts || [];
+            {
+              $group: {
+                _id: '$_id',
+                fav_721Nfts: { $push: { $arrayElemAt: ['$nfts', 0] } },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                fav_721Nfts: 1,
+              },
+            },
+          ])
+        )[0]?.fav_721Nfts || [];
 
-      const nft1155Pipeline = (await this.UserModel.aggregate(
-        [
-          {
-            $match: { wallet_address }
-          },
-          {
-            $unwind: "$favourites.nfts.ngm1155"
-          },
-          {
-            $lookup: {
-              from: "nft1155schemas",
-              let: { contract_address: "$favourites.nfts.ngm1155.contract_address", token_id: "$favourites.nfts.ngm1155.token_id" },
-              pipeline: [
-                {
-                  $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }, { $eq: ["$token_id", "$$token_id"] }] } }
-                }
-              ],
-              as: "fav_1155Nfts"
-            }
-
-          },
-          {
-            $group: {
-              _id: '$_id',
-              fav_1155Nfts: { $push: { $arrayElemAt: ['$fav_1155Nfts', 0] } }
-            }
-          }
-          , {
-            $project: {
-              _id: 0,
-              fav_1155Nfts: 1
-            }
-          }
-        ]
-      ))[0]?.fav_1155Nfts || [];
+      const nft1155Pipeline =
+        (
+          await this.UserModel.aggregate([
+            {
+              $match: { wallet_address },
+            },
+            {
+              $unwind: '$favourites.nfts.ngm1155',
+            },
+            {
+              $lookup: {
+                from: 'nft1155schemas',
+                let: {
+                  contract_address: '$favourites.nfts.ngm1155.contract_address',
+                  token_id: '$favourites.nfts.ngm1155.token_id',
+                },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $and: [
+                          { $eq: ['$contract_address', '$$contract_address'] },
+                          { $eq: ['$token_id', '$$token_id'] },
+                        ],
+                      },
+                    },
+                  },
+                ],
+                as: 'fav_1155Nfts',
+              },
+            },
+            {
+              $group: {
+                _id: '$_id',
+                fav_1155Nfts: { $push: { $arrayElemAt: ['$fav_1155Nfts', 0] } },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                fav_1155Nfts: 1,
+              },
+            },
+          ])
+        )[0]?.fav_1155Nfts || [];
 
       return [...nft721Pipeline, ...nft1155Pipeline];
       //  const favourite_721_assets = nft721Pipeline[0]?.fav_721 || [];
@@ -291,12 +357,12 @@ export class UsersService {
       //console.log(favourite_721_assets);
       //return [...favourite_721_assets, fav_1155_assets];
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
         messsage: 'something went wrong',
-        error
-      }
+        error,
+      };
     }
   }
 
@@ -306,46 +372,51 @@ export class UsersService {
       token_id,
       nft_type,
       favourite_kind,
-      wallet_address
+      wallet_address,
     } = body;
     try {
       console.log(body);
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
-          return await this.UserModel.findOne({ wallet_address, "favourites.collections": { $in: [contract_address] } });
+          return await this.UserModel.findOne({
+            wallet_address,
+            'favourites.collections': { $in: [contract_address] },
+          });
         case FavouriteKindEnum.NFTS:
           switch (nft_type) {
             case NftTypeEnum.NGM721:
-              console.log("hit");
-              return await this.UserModel.findOne({ wallet_address, "favourites.nfts.ngm721": { $in: [{ contract_address, token_id }] } });
+              console.log('hit');
+              return await this.UserModel.findOne({
+                wallet_address,
+                'favourites.nfts.ngm721': {
+                  $in: [{ contract_address, token_id }],
+                },
+              });
             case NftTypeEnum.NGM1155:
-              return await this.UserModel.findOne({ wallet_address, "favourites.nfts.ngm1155": { $in: { contract_address, token_id } } });
+              return await this.UserModel.findOne({
+                wallet_address,
+                'favourites.nfts.ngm1155': {
+                  $in: { contract_address, token_id },
+                },
+              });
             default:
-              return "INVALID NFT TYPE WE ALLOW NGM1155 or NGM721";
+              return 'INVALID NFT TYPE WE ALLOW NGM1155 or NGM721';
           }
 
         default:
-          return "INLAVID TYPE WE ALLOW COLLECTIONS AND NFTS";
+          return 'INLAVID TYPE WE ALLOW COLLECTIONS AND NFTS';
       }
-    }
-    catch (error) {
+    } catch (error) {
       console.log(error);
       return {
         success: false,
         messsage: 'something went wrong',
-        error
-      }
-
+        error,
+      };
     }
   }
-
-
-
-
-
 
   // async testFix(): Promise<any> {
   //   return this.UserModel.updateMany({}, { $set: { limit: { collection: 0, assets: 0 }, } });
   // }
-
 }

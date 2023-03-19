@@ -6,39 +6,38 @@ const { log } = console;
 @ApiTags('API Key Management')
 @Controller('subscription')
 export class SubscriptionController {
-  constructor(
-    private readonly subscriptionService: SubscriptionService,
-  ) { }
+  constructor(private readonly subscriptionService: SubscriptionService) {}
   @ApiHeader({
     name: 'SECRET',
-    description: 'Secret of the Enterprise for creating an API key'
+    description: 'Secret of the Enterprise for creating an API key',
   })
   @ApiOperation({ summary: 'This Route will create a Api key' })
   @Post('create-api-key')
-  async subscribeToPremium(@Headers('SECRET') SECRET: string, @Body() body: User): Promise<any> {
+  async subscribeToPremium(
+    @Headers('SECRET') SECRET: string,
+    @Body() body: User,
+  ): Promise<any> {
     return await this.subscriptionService.subscribeToPremium({ SECRET, body });
   }
 
-  @ApiOperation({ summary: "Increse Limit" })
+  @ApiOperation({ summary: 'Increse Limit' })
   @ApiHeader({
     name: 'SECRET',
-    description: 'Secret of the Enterprise for creating an API key'
+    description: 'Secret of the Enterprise for creating an API key',
   })
   @Post('increse-limit')
-  async increseLimit(@Headers('SECRET') SECRET: string, @Body() body: UserBody,): Promise<any> {
+  async increseLimit(
+    @Headers('SECRET') SECRET: string,
+    @Body() body: UserBody,
+  ): Promise<any> {
     try {
-
       return await this.subscriptionService.increseLimit({ SECRET, body });
-
     } catch (error) {
       log(error);
       return {
         message: 'something went wrong',
         error,
-      }
+      };
     }
-
   }
 }
-
-

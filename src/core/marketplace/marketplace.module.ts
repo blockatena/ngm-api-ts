@@ -8,9 +8,15 @@ import { CommonModule } from 'src/common/common.module';
 import { BidSchema, bidSchema } from './schema/bid.schema';
 import { OfferSchema, offerSchema } from './schema/offer.schema';
 import { SalesSchema, salesSchema } from './schema/sales.schema';
-import { ContractSchema, contractSchema } from '../deployment/schema/contract.schema';
+import {
+  ContractSchema,
+  contractSchema,
+} from '../deployment/schema/contract.schema';
 import { NftModule } from '../nft/nft.module';
-import { Offer1155Schema, offer1155Schema } from '../nft/schema/offer1155.schema';
+import {
+  Offer1155Schema,
+  offer1155Schema,
+} from '../nft/schema/offer1155.schema';
 import { Sale1155Schema, sale1155Schema } from '../nft/schema/sale1155.schema';
 import { AuctionSchema, auctionSchema } from './schema/auction.schema';
 @Module({
@@ -32,4 +38,4 @@ import { AuctionSchema, auctionSchema } from './schema/auction.schema';
   providers: [NftMarketplaceService],
   exports: [NftMarketplaceService],
 })
-export class NftMarketplaceModule { }
+export class NftMarketplaceModule {}

@@ -21,7 +21,7 @@ export class AcceptOfferBody {
   @ApiProperty()
   token_owner: string;
   @ApiProperty()
-  sign: string
+  sign: string;
 }
 
 export class GetAllOffersBody {
@@ -39,5 +39,5 @@ export class CancelOffer {
   @ApiProperty()
   caller: string;
   @ApiProperty()
-  sign: string
+  sign: string;
 }

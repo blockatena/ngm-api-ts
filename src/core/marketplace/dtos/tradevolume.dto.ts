@@ -1,4 +1,4 @@
 export class TradeVolume {
-    contract_address: string;
-    price: string;
+  contract_address: string;
+  price: string;
 }
