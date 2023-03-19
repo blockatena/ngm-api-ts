@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto, GetUser } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 // import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { FixedNumber } from 'ethers';
 import { UserDocument, UserSchema } from './schema/user.schema';
 import { GetUserFavourite, IsUserFavourite, UserFavouriteDto } from './dto/user.favourite.dto';
 import { FavouriteKindEnum, NftTypeEnum, UserFavouriteEnum } from './enum/user.favourite.enum';
@@ -155,13 +153,65 @@ export class UsersService {
     }
   }
 
+  //Get User Favourite Collections
 
+  async getUserFavouriteCollections(body: GetUserFavourite) {
+    const { wallet_address } = body;
+
+    try {
+      const createdAt = -1;
+      const items_per_page = 5;
+      const page_number = 1;
+      return (await this.UserModel.aggregate(
+        [
+          {
+            $match: { wallet_address }
+          },
+          {
+            $unwind: "$favourites.collections"
+          },
+          {
+            $lookup: {
+              from: "contractschemas",
+              let: { contract_address: "$favourites.collections" },
+              pipeline: [
+                {
+                  $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }] } }
+                }
+              ],
+              as: "collections"
+            }
+          }, {
+            $group: {
+              _id: '$_id',
+              fav_collections: { $push: { $arrayElemAt: ['$collections', 0] } }
+            }
+          }
+          , {
+            $project: {
+              _id: 0,
+              fav_collections: 1
+            }
+          }
+        ]
+      ).sort({ createdAt })
+        .limit(items_per_page * 1)
+        .skip((page_number - 1) * items_per_page))[0].fav_collections;
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        messsage: 'something went wrong',
+        error
+      }
+    }
+  }
   async getUserFavouriteNfts(body: GetUserFavourite) {
     const { wallet_address } = body;
 
     try {
 
-      const nft721Pipeline = await this.UserModel.aggregate(
+      const nft721Pipeline = (await this.UserModel.aggregate(
         [
           {
             $match: { wallet_address }
@@ -172,22 +222,34 @@ export class UsersService {
           {
             $lookup: {
               from: "nftschemas",
-              let: { contract_address: "$favourites.nfts.ngm721.contract_address", token_id: "$favourites.nfts.ngm721.token_id" },
+              let: {
+                contract_address: "$favourites.nfts.ngm721.contract_address", token_id: "$favourites.nfts.ngm721.token_id"
+              },
               pipeline: [
                 {
                   $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }, { $eq: ["$token_id", "$$token_id"] }] } }
                 }
               ],
-              as: "fav_721"
+              as: "nfts"
             }
-          }, {
-            $project: {
-              fav_721: 1
-            }
-          }]
-      )
+          },
 
-      const nft1155Pipeline = await this.UserModel.aggregate(
+          {
+            $group: {
+              _id: '$_id',
+              fav_721Nfts: { $push: { $arrayElemAt: ['$nfts', 0] } }
+            }
+          }
+          , {
+            $project: {
+              _id: 0,
+              fav_721Nfts: 1
+            }
+          }
+        ]
+      ))[0]?.fav_721Nfts || [];
+
+      const nft1155Pipeline = (await this.UserModel.aggregate(
         [
           {
             $match: { wallet_address }
@@ -204,18 +266,30 @@ export class UsersService {
                   $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }, { $eq: ["$token_id", "$$token_id"] }] } }
                 }
               ],
-              as: "fav_1155"
+              as: "fav_1155Nfts"
             }
-          }, {
+
+          },
+          {
+            $group: {
+              _id: '$_id',
+              fav_1155Nfts: { $push: { $arrayElemAt: ['$fav_1155Nfts', 0] } }
+            }
+          }
+          , {
             $project: {
-              fav_1155: 1
+              _id: 0,
+              fav_1155Nfts: 1
             }
-          }]
-      )
-      const favourite_721_assets = nft721Pipeline[0].fav_721;
-      const fav_1155_assets = nft1155Pipeline[0].fav_1155;
-      console.log(favourite_721_assets);
-      return { favourite_721_assets, fav_1155_assets };
+          }
+        ]
+      ))[0]?.fav_1155Nfts || [];
+
+      return [...nft721Pipeline, ...nft1155Pipeline];
+      //  const favourite_721_assets = nft721Pipeline[0]?.fav_721 || [];
+      // const fav_1155_assets = nft1155Pipeline[0]?.fav_1155 || [];
+      //console.log(favourite_721_assets);
+      //return [...favourite_721_assets, fav_1155_assets];
     } catch (error) {
       log(error)
       return {
@@ -232,7 +306,8 @@ export class UsersService {
       token_id,
       nft_type,
       favourite_kind,
-      wallet_address } = body;
+      wallet_address
+    } = body;
     try {
       console.log(body);
       switch (favourite_kind) {
@@ -264,42 +339,7 @@ export class UsersService {
     }
   }
 
-  //Get User Favourite Collections
 
-  async getUserFavouriteCollections(body: GetUserFavourite) {
-    const { wallet_address } = body;
-
-    try {
-      return await this.UserModel.aggregate(
-        [
-          {
-            $match: { wallet_address }
-          },
-          {
-            $unwind: "$favourites.collections"
-          },
-          {
-            $lookup: {
-              from: "contractschemas",
-              let: { contract_address: "$favourites.contract_address" },
-              pipeline: [
-                {
-                  $match: { $expr: { $and: [{ $eq: ["$contract_address", "$$contract_address"] }] } }
-                }
-              ],
-              as: "collections"
-            }
-          },]
-      )
-    } catch (error) {
-      log(error)
-      return {
-        success: false,
-        messsage: 'something went wrong',
-        error
-      }
-    }
-  }
 
 
 

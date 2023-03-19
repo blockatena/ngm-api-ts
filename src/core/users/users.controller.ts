@@ -151,7 +151,8 @@ export class UsersController {
         email,
         createdAt,
         updatedAt,
-        limit, profile_image, banner_image } = data
+        limit, profile_image, banner_image, } = data
+      return data;
       return {
         username,
         wallet_address,
