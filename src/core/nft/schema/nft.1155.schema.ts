@@ -19,6 +19,10 @@ export class Nft1155Schema {
   listed_tokens: number;
   @Prop()
   price: number;
+  @Prop({ type: { likes: Number } })
+  nft_popularity: {
+    likes: number;
+  }
   @Prop()
   end_date: string;
   @Prop()

@@ -13,6 +13,10 @@ export class NftSchema {
   token_id: number;
   @Prop({ default: '0' })
   price: string;
+  @Prop({ type: { likes: Number } })
+  nft_popularity: {
+    likes: number;
+  }
   @Prop()
   highest_price: number;
   @Prop()
@@ -34,4 +38,4 @@ export class NftSchema {
 }
 
 export const nftSchema = SchemaFactory.createForClass(NftSchema);
-nftSchema.pre('save', async () => {});
+nftSchema.pre('save', async () => { });
