@@ -35,6 +35,9 @@ import {
   Nft1155OwnerDocument,
 } from './schema/user1155.schema';
 import { MetadataSchema } from '../metadata/schema/metadata.schema';
+import { FavouriteKindEnum, NftTypeEnum, UserFavouriteEnum } from '../users/enum/user.favourite.enum';
+import { NftHandleLikes } from './dtos/nft.handle.likes.dto';
+import { UserFavouriteDto } from '../users/dto/user.favourite.dto';
 const { log } = console;
 @Injectable()
 export class NftService {
@@ -1124,4 +1127,55 @@ export class NftService {
       };
     }
   }
-}
+
+  async handleLikeOrDisLike(body: UserFavouriteDto) {
+    const { contract_address, token_id, nft_type, action, favourite_kind } = body;
+    try {
+      switch (favourite_kind) {
+        case FavouriteKindEnum.COLLECTIONS:
+          return await this.ContractModel.updateOne({
+            contract_address
+          }, {
+            $inc: {
+              "collection_popularity.likes": (action === UserFavouriteEnum.ADD) ? 1 : -1
+            }
+          })
+        case FavouriteKindEnum.NFTS:
+          switch (nft_type) {
+            case NftTypeEnum.NGM721:
+              return await this.NftModel.updateOne({
+                contract_address, token_id
+              }, {
+                $inc: {
+                  "nft_popularity.likes": (action === UserFavouriteEnum.ADD) ? 1 : -1
+                }
+              })
+            case NftTypeEnum.NGM1155:
+              return await this.Nft11555Model.updateOne({
+                contract_address, token_id
+              }, {
+                $inc: {
+                  "nft_popularity.likes": (action === UserFavouriteEnum.ADD) ? 1 : -1
+                }
+              })
+            default: return {
+              success: false,
+              message: "INVALID NFT TYPE WE ONLY SUPPORT NGM721 AND NGM1155"
+            }
+          }
+        default:
+          return {
+            success: false,
+            message: "INVALID FAVOURITE KIND"
+          }
+      }
+
+    } catch (error) {
+      return {
+        success: false,
+        message: "Unable to Perform Like or Dislike Operation",
+        error
+      }
+    }
+  }
+} 
