@@ -54,7 +54,7 @@ export default () => ({
     DEV: {
       GOERLI: '0x393d5645CF11aeD51Cd8BcFDE7e7D82100d0f2f3', //updated  done
       MUMBAI: '0x70C9c656453cFB577522dDE9A9780562C986EB63', //updated done
-      HYPERSPACE: '0xBAe0ed51524Fd903A07a280038c148Ca8A9cb234',// updated on 25/03/2023
+      HYPERSPACE: '0xA004D89fDbaa38ed9a66f691230ec24f1a96a155',// updated on 25/03/2023
     },
     PROD: {
       ETHEREUM: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', //not updated yet

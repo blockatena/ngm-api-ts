@@ -110,15 +110,16 @@ export class CommonService {
   async erc20MrktAddr(chain: string): Promise<any> {
     try {
       const _chain = chain.toUpperCase();
+      console.log(_chain)
       console.log('CHAIN', { _chain });
       const ENVIRONMENT = await this.getEnvironmentVar('ENVIRONMENT');
       const erc20_addr = await this.getEnvironmentVar('ERC20_CONTRACT');
       const marketAddress = await this.getEnvironmentVar(
         'MARKETPLACE_CONTRACT',
       );
-      const marketplaceAddress = marketAddress[`${ENVIRONMENT} `][`${_chain} `];
+      const marketplaceAddress = marketAddress[`${ENVIRONMENT}`][`${_chain}`];
       console.log('marketplaceAddress \n', marketAddress);
-      const erc20Address = erc20_addr[`${ENVIRONMENT} `][`${_chain} `];
+      const erc20Address = erc20_addr[`${ENVIRONMENT}`][`${_chain}`];
       console.log('erc20Address \n', erc20Address);
       return {
         marketplaceAddress,
