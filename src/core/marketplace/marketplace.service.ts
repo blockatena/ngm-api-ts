@@ -11,7 +11,7 @@ import {
   MakeOfferBody,
 } from './dtos/create_offer.dto';
 import { abi as marketplaceAbi } from 'src/utils/constants/MARKETPLACE/marketplace.abi';
-import { ethers } from 'ethers';
+import { Wallet, ethers } from 'ethers';
 import { ActivityService } from 'src/activity/activity.service';
 import { TradeVolume } from './dtos/tradevolume.dto';
 import {
