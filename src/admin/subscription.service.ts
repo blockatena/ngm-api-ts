@@ -12,6 +12,7 @@ import { log } from 'console';
 import generateApiKey from 'generate-api-key';
 import { HttpExceptionFilter } from 'src/filters/base-exception.fiter';
 import { UsersService } from 'src/core/users/users.service';
+import { SendAPiKey } from './dto/sendapikey.dto';
 
 @Injectable()
 export class SubscriptionService {
@@ -19,7 +20,7 @@ export class SubscriptionService {
     private userService: UsersService,
     private emailService: EmailService,
     private configservice: ConfigService,
-  ) {}
+  ) { }
 
   async subscribeToPremium({
     SECRET,
@@ -70,7 +71,6 @@ export class SubscriptionService {
 
       return {
         message: `Successfully Generated the Api Key for User ${wallet_address}`,
-        apiKey: store_api_key,
       };
     } else {
       return `You already have an Api key if you want to change your API key contact hello@blockatena.com`;
@@ -112,4 +112,30 @@ export class SubscriptionService {
       log(error);
     }
   }
+
+  async sendApiKeyToMail(body: SendAPiKey): Promise<any> {
+
+    const { wallet_address } = body;
+    //validate user
+    const isUserRegistered = await this.userService.getUser({ wallet_address });
+    if (!isUserRegistered) {
+      return {
+        success: true,
+        message: `${wallet_address} is not registered with us.`
+      }
+    }
+    const { email, user_name, api_key } = isUserRegistered;
+    const mailObj = {
+      email_addr: email,
+      user_name,
+      wallet_address,
+      api_key,
+      subject: "API Key Request"
+    }
+
+    return await this.emailService.sendApiKey(mailObj);
+  }
+
+
+
 }

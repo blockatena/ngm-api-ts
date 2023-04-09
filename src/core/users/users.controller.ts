@@ -311,12 +311,22 @@ export class UsersController {
     }
   }
 
-  // @Put('test-fix')
-  // async testFix(): Promise<any> {
-  //   try {
-  //     return await this.usersService.testFix();
-  //   } catch (error) {
+  @Post('test-fix')
+  async testFix(): Promise<any> {
+    try {
+      const det = {
+        recepient: {
+          email_addr: "sathyaswaroopvandavasi@gmail.com",
+          user_name: "sss",
+          wallet_address: "SSD"
+        },
+        subject: "sdsd",
+        message: "fdf"
+      }
+      return await this.emailService.welcomeMail(det);
+      //  return await this.usersService.testFix();
+    } catch (error) {
 
-  //   }
-  // }
+    }
+  }
 }
