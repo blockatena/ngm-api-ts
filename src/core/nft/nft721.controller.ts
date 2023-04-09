@@ -59,7 +59,7 @@ export class NftController721 {
     private activityService: ActivityService,
     private usersService: UsersService,
     private readonly commonService: CommonService,
-  ) {}
+  ) { }
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
@@ -281,7 +281,7 @@ export class NftController721 {
       }
     } catch (error) {
       log(error);
-      return { message: 'Something went wrong' };
+      return { message: 'Unable to fetch Assets' };
     }
   }
   //

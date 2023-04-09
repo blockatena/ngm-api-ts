@@ -2,11 +2,12 @@ import { Body, Controller, Headers, Post } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { User, UserBody } from './dto/user.dto';
 import { SubscriptionService } from './subscription.service';
+import { SendAPiKey } from './dto/sendapikey.dto';
 const { log } = console;
 @ApiTags('API Key Management')
 @Controller('subscription')
 export class SubscriptionController {
-  constructor(private readonly subscriptionService: SubscriptionService) {}
+  constructor(private readonly subscriptionService: SubscriptionService) { }
   @ApiHeader({
     name: 'SECRET',
     description: 'Secret of the Enterprise for creating an API key',
@@ -39,5 +40,10 @@ export class SubscriptionController {
         error,
       };
     }
+  }
+
+  @Post('send-api-key')
+  async sendApiKey(@Body() body: SendAPiKey): Promise<any> {
+    return await this.subscriptionService.sendApiKeyToMail(body);
   }
 }

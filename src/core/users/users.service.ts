@@ -15,6 +15,7 @@ import {
   UserFavouriteEnum,
 } from './enum/user.favourite.enum';
 import { NftService } from '../nft/nft.service';
+import { User } from 'src/admin/dto/user.dto';
 const { log } = console;
 @Injectable()
 export class UsersService {
