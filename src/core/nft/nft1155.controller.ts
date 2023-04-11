@@ -377,5 +377,18 @@ export class NftController1155 {
     }
   }
 
+  @Get('get-1155-unique/:contract_address') 
+  async get1155uniqueByCollections(@Param('contract_address') contract_address: string): Promise<any> {
+    try {
+      return await this.nftservice.get1155UqinueOwners(contract_address)
+    }
+    catch(error){
+      return {
+        success:false,
+        error
+      }
+    }
+  }
+
 
 }
