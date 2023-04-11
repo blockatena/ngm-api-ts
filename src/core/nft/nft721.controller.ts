@@ -433,16 +433,26 @@ export class NftController721 {
       log(collection);
       // fetching all Nfts
       let nfts;
+      
+      // fetching data for analysis
+      
+      const floor_price = 0;
+      const best_offer = 0;
+      let owners
+      if(collection?.type == 'NGM1155') {
+        owners = await this.nftservice.get1155UqinueOwners(contract.contract_address)
+        nfts = await this.nftservice.get1155Items(contract.contract_address)
+      } else {
+        owners = (
+        await this.nftservice.getUniqueOwners(contract.contract_address)
+      ).length;
       nfts = await this.nftservice.getNftsByCollection(
         contract.contract_address,
       );
-      // fetching data for analysis
+      }
+
       const total_volume = nfts.length;
-      const floor_price = 0;
-      const best_offer = 0;
-      const owners = (
-        await this.nftservice.getUniqueOwners(contract.contract_address)
-      ).length;
+      
       return {
         collection,
         total_volume,

@@ -1187,6 +1187,47 @@ export class NftService {
     }
   }
 
+  async get1155UqinueOwners(contract_address:string): Promise<any> {
+    try {
+      let getUnique = (await this.Nft1155OwnerModel.distinct('token_owner',{contract_address}))
+      let getUniqueCount = getUnique.length
+      // console.log(getUnique)
+      // return {
+      //   success:true,
+      //   owners:getUniqueCount,
+      //   unique:getUnique
+      // }
+      return getUniqueCount
+    }
+    catch(error) {
+      return {
+        success:false,
+        message:'something went wrong',
+        error
+      }
+    }
+  }
+
+  async get1155Items(contract_address:string): Promise<any> {
+    try {
+      let getNFTs = await this.Nft11555Model.find({contract_address})
+      // console.log(getUnique)
+      // return {
+      //   success:true,
+      //   owners:getUniqueCount,
+      //   unique:getUnique
+      // }
+      return getNFTs
+    }
+    catch(error) {
+      return {
+        success:false,
+        message:'something went wrong',
+        error
+      }
+    }
+  }
+
   async handleLikeOrDisLike(body: UserFavouriteDto) {
     const { contract_address, token_id, nft_type, action, favourite_kind } = body;
     try {
