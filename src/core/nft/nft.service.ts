@@ -9,7 +9,7 @@ import {
   Paginate,
 } from './dtos/create.nft.dto';
 import { metadataDocument } from './schema/metadata.schema';
-import { GetCollectionBody, GetUserOwnedAssets } from './dtos/collections.dto';
+import { GetCollectionBody, GetUserOwnedAssets, GetUserOwnedAssetsByCollections } from './dtos/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import {
   GetNft1155,
@@ -995,6 +995,65 @@ export class NftService {
     }
   }
   //
+  async getUser1155AssetsByCollection(body: GetUserOwnedAssetsByCollections) {
+    try {
+      const { owner_address, contract_address } = body;
+
+      const nfts = await this.Nft1155OwnerModel.aggregate([
+        { $match: { token_owner: owner_address, contract_address } },
+        {
+          $lookup: {
+            from: 'nft1155schemas',
+            let: {
+              contract_address: '$contract_address',
+              token_id: '$token_id',
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: ['$$contract_address', '$contract_address'],
+                      },
+                      {
+                        $eq: ['$$token_id', '$token_id'],
+                      },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: `auction1`,
+          },
+        },
+        {
+          $project: {
+            contract_address: 1,
+            token_id: 1,
+            chain: 1,
+            token_owner: 1,
+            number_of_tokens: 1,
+            createdAt: 1,
+            updatedAt: 1,
+            meta_data: '$auction1.meta_data',
+          },
+        },
+      ])
+        .sort({ createdAt: -1 })
+
+      //
+      return nfts
+
+    } catch (error) {
+      log(error);
+      return {
+        success: false,
+        message: "Unable to Fetch Nfts",
+        error
+      }
+    }
+  }
 
   async create1155NftOwner(arrdb: any): Promise<any> {
     try {
