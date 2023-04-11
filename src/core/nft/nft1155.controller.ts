@@ -7,7 +7,6 @@ import {
   UploadedFile,
   UseInterceptors,
   Post,
-  UseGuards,
   MaxFileSizeValidator,
 } from '@nestjs/common';
 import { NftService } from './nft.service';
@@ -21,14 +20,12 @@ import {
 } from '@nestjs/swagger';
 // import { RedisCliService } from '../redis-cli/redis-cli.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-// import { RolesGuard } from 'src/guards/roles.guard';
-import { Roles } from 'src/services/@decorators/roles.decorator';
-import { Role } from 'src/services/enum/roles.enum';
+// import { RolesGuard } from 'src/guards/roles.guard'
 import { NFTStorage, File, Blob } from 'nft.storage';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { GetListedCollections } from './dtos/create.nft.dto';
-import { GetUserOwnedAssets } from './dtos/collections.dto';
+import { GetUserOwnedAssets, GetUserOwnedAssetsByCollections } from './dtos/collections.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 // import { log } from 'console';
@@ -61,7 +58,7 @@ export class NftController1155 {
     private activityService: ActivityService,
     private usersService: UsersService,
     private readonly commonService: CommonService,
-  ) {}
+  ) { }
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
@@ -364,4 +361,21 @@ export class NftController1155 {
       };
     }
   }
+  // get 1155 User1155 Assets for Particular Collection
+  @Get('get-user-1155-assets-by-collection/:owner_address/:contract_address')
+  async getUser1155AssetsByCollection(@Param() body: GetUserOwnedAssetsByCollections): Promise<any> {
+    try {
+      console.log(body);
+      return await this.nftservice.getUser1155AssetsByCollection(body);
+    } catch (error) {
+      log(error)
+      return {
+        success: false,
+        message: "Unable to Fetch Nfts",
+        error
+      }
+    }
+  }
+
+
 }
