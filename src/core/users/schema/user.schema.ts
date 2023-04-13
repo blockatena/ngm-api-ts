@@ -35,23 +35,20 @@ export class UserSchema {
       collections: {
         type: [String],
         default: [],
-        required: false,
-        unique: true,
+        required: false
       },
       nfts: {
         ngm721: {
           _id: false,
           type: [{ contract_address: String, token_id: Number }],
           required: false,
-          default: [],
-          unique: true,
+          default: []
         },
         ngm1155: {
           _id: false,
           type: [{ contract_address: String, token_id: Number }],
           required: false,
-          default: [],
-          unique: true,
+          default: []
         },
       },
     },
@@ -68,7 +65,7 @@ export class UserSchema {
     };
   };
 
-  @Prop({ unique: true })
+  @Prop({ sparse: true })
   api_key: string;
 }
 
