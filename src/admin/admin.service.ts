@@ -1,16 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CronjobService } from 'src/cronjob/cronjob.service';
-import { AuctionSchema, AuctionDocument } from 'src/schemas/auction.schema';
-import { BidSchema, BidDocument } from 'src/schemas/bid.schema';
-import { ContractSchema, ContractDocument } from 'src/schemas/contract.schema';
-import { NftSchema, NftDocument } from 'src/nft/schema/nft.schema';
-
+import { CronjobService } from 'src/services/cronjob.service';
 import { DeleteCronBody, DeleteKeyBody } from './dto/admin.dto';
-import { OfferSchema, OfferDocument } from 'src/schemas/offer.schema';
-import { SalesSchema, SalesDocument } from 'src/schemas/sales.schema';
-
+import {
+  ContractSchema,
+  ContractDocument,
+} from 'src/core/deployment/schema/contract.schema';
+import {
+  AuctionSchema,
+  AuctionDocument,
+} from 'src/core/marketplace/schema/auction.schema';
+import { BidSchema, BidDocument } from 'src/core/marketplace/schema/bid.schema';
+import {
+  OfferSchema,
+  OfferDocument,
+} from 'src/core/marketplace/schema/offer.schema';
+import {
+  SalesSchema,
+  SalesDocument,
+} from 'src/core/marketplace/schema/sales.schema';
+import { NftSchema, NftDocument } from 'src/core/nft/schema/nft.schema';
+import {
+  Offer1155Schema,
+  Offer1155Document,
+} from 'src/core/nft/schema/offer1155.schema';
+import {
+  Sale1155Schema,
+  Sale1155Document,
+} from 'src/core/nft/schema/sale1155.schema';
 @Injectable()
 export class AdminService {
   constructor(
@@ -23,6 +41,10 @@ export class AdminService {
     @InjectModel(NftSchema.name) private NftModel: Model<NftDocument>,
     @InjectModel(SalesSchema.name) private SalesModel: Model<SalesDocument>,
     @InjectModel(OfferSchema.name) private OfferModel: Model<OfferDocument>,
+    @InjectModel(Offer1155Schema.name)
+    private Offer1155Model: Model<Offer1155Document>,
+    @InjectModel(Sale1155Schema.name)
+    private Sale1155Model: Model<Sale1155Document>,
   ) {
     AuctionModel;
     BidModel;
@@ -39,7 +61,7 @@ export class AdminService {
     // if (collection == 'SalesModel') this.SalesModel.deleteMany({});
     // if (collection == 'OfferModel') this.OfferModel.deleteMany({});
   }
-  async UpdateCollection(body: any): Promise<any> { }
+  async UpdateCollection(body: any): Promise<any> {}
   async UpdateNft(body: any, updatee: any): Promise<any> {
     return await this.NftModel.updateMany(body, { $set: updatee });
   }
@@ -54,12 +76,12 @@ export class AdminService {
       console.log(err);
     });
   }
-  async GetNft(body: any): Promise<any> { }
+  async GetNft(body: any): Promise<any> {}
   async GetCollection(body: any): Promise<any> {
     // return await this.ContractModel.;
   }
-  async GetSale(body: any): Promise<any> { }
-  async GetAuction(body: any): Promise<any> { }
+  async GetSale(body: any): Promise<any> {}
+  async GetAuction(body: any): Promise<any> {}
   async deleteCron(cronjob_id: DeleteCronBody): Promise<any> {
     return this.Cron_job.deleteCron(cronjob_id.cron_job_id);
   }

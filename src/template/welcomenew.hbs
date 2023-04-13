@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="x-apple-disable-message-reformatting">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto Sans Thai:wght@500;600&display=swap" />
+
+    <title>Welcome Mail</title>
+    <style>
+        body {
+            background-color: #e5d8d8;
+            /* fonts */
+            font-family: "Noto Sans Thai";
+            font-size: 14px;
+        }
+
+        .presentation {
+
+            text-align: center;
+        }
+
+        .intro {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-size: 14px;
+            line-height: 22px;
+            text-align: center;
+            color: #FDEDED;
+        }
+
+        .welcome-message {
+            position: relative;
+            font-style: normal;
+            font-weight: 600;
+            font-size: 30px;
+            line-height: 45px;
+            text-align: center;
+            color: #FFFFFF;
+        }
+
+        .web3application {
+            color: #14CCAB;
+        }
+
+        .games {
+            color: #ff9c00;
+        }
+
+        .web3 {
+            color: #ef3ec9;
+        }
+
+
+
+        .description {
+            color: #FFFFFF;
+        }
+
+        .label-heading {
+            color:
+                #FFA800;
+        }
+
+        .footer-message {
+            font-family: 'Noto Sans Thai';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 25px;
+            color: #FFFFFF;
+        }
+
+        .team-message {
+            /* margin-top: 25px; */
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .footer-icons {
+            /* margin-top: 30px; */
+            text-align: center;
+        }
+
+
+        /*  */
+
+        /* Set up the grid container */
+        .grid-container {
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-gap: 5px;
+        }
+
+        /* Set up the grid items */
+        .grid-item {
+
+            background-color: #ddd;
+            text-align: center;
+        }
+
+        /* Make the grid responsive */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        table,
+        td,
+        div,
+        h1,
+        p {
+            margin: 0 auto;
+            color: #FFFFFF;
+
+        }
+
+        .main {
+            text-align: center;
+            background-color: #000211;
+        }
+
+        /* Increase the font size of the welcome message on smaller screens */
+        @media only screen and (max-width: 600px) {
+            .welcome-message {
+                font-size: 24px;
+                line-height: 36px;
+                padding: 30px 20px 36px 20px;
+            }
+        }
+
+        /* Increase the font size of the intro on smaller screens */
+        @media only screen and (max-width: 600px) {
+            .intro {
+                font-size: 12px;
+                line-height: 18px;
+                padding: 10px 10px 10px 10px;
+            }
+        }
+
+        /* Increase the font size of the description on smaller screens */
+        @media only screen and (max-width: 600px) {
+            .description {
+                font-size: 12px;
+                line-height: 18px;
+                padding: 10px 10px 10px 10px;
+            }
+        }
+
+        /* Center the team message and footer icons on smaller screens */
+        @media only screen and (max-width: 600px) {
+
+            .team-message,
+            .footer-icons {
+                text-align: center;
+            }
+        }
+
+        .presentation_one {
+
+            background: radial-gradient(74.4% 74.4% at 50% 25.6%, #401897 0%, rgba(36, 33, 75, 0) 100%);
+            /* filter: blur(100px); */
+        }
+
+
+        html {
+            height: 100%;
+
+            overflow: hidden;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="grid-container">
+        <div class="grid-item"></div>
+        <div class="grid-item">
+            <div class="main">
+                <table class="presentation_one" role="presentation"
+                    style="width:602px;border-collapse:collapse;border-spacing:0;text-align:left;">
+                    <tr>
+                        <td style="text-align:center ;padding:40px 0 10px 0;">
+                            <a href="www.gamestoweb3.com" target="blank">
+                                <img alt="GAMES TO WEB3 LOGO"
+                                    src="https://www.linkpicture.com/q/ezgif-5-285d946e39.png">
+                            </a>
+                        </td>
+                    </tr>
+                    <!-- top right bottom left -->
+                    <tr>
+                        <td style="padding: 6px 30px 42px 30px;">
+                            <div class="welcome-message">
+                                Welcome to <span class="games">Games</span>
+                                To
+                                <span class="web3">Web3 !!</span>
+                                {{user_name}}
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+
+
+                <table class="presentation ellipse" role="presentation"
+                    style="width:602px;border-collapse:collapse;border-spacing:0;text-align:left;">
+
+
+                    <tr>
+                        <td style="padding: 5px;">
+                            <div class="intro">
+                                <p> You are now ready to start building your
+                                    <b class="web3application"> Web3 game application</b> with the most efficient
+                                    blockchain
+                                    platform
+                                    out there!
+                                </p>
+                                <p>
+
+                                    But before that, let us present you our top knowledge resources:
+
+                                </p>
+
+                            </div>
+                        </td>
+
+                    </tr>
+
+
+                    <tr>
+
+                        <td style="padding:36px 30px 5px 15px;">
+                            <img class=" icon" height="20" alt=""
+                                src="https://www.linkpicture.com/q/7309177-1@2x.png" />
+                            <label class="label-heading">“
+                                What is
+                                GamesToWeb3 in 5 minutes ”</label> :Discover more about GamesToWeb3's functions and
+                            possibilities in
+                            this
+                            short overview video.
+                        </td>
+
+
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 30px 5px 15px;">
+                            <img class="image-2-icon" height="20" alt=""
+                                src="https://www.linkpicture.com/q/image-2@2x_2.png" />
+                            <label class="label-heading">“
+                                How-to-articles ”</label>:Quickly learn how to build your app with these
+                            Step-by-step guide
+                            articles.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:10px 30px 5px 15px;">
+                            <img class="icon1" height="20" alt=""
+                                src="https://www.linkpicture.com/q/7309177-2@2x.png" />
+                            <label class="label-heading">“
+                                API Docs ”</label>:Check out all the available processes with GamesToWeb3's
+                            blockchain
+                            dictionary.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:10px 30px 5px 15px;">
+                            <img class="image-3-icon" height="20" alt=""
+                                src="https://www.linkpicture.com/q/image-3@2x_1.png" />
+                            <label class="label-heading">“
+                                Discord Community ”</label>:Meet fellow developers and get support from our team.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding:10px 30px 5px 15px;">
+
+                            We're excited to see the game you'll create using our platform. We are here to assist
+                            you
+                            through
+                            every step
+                            of
+                            the
+                            process, so get to work! 😉⚒️
+
+                        </td>
+
+
+                    </tr>
+                    <tr>
+
+                        <td style="padding:10px 30px 5px 15px;">
+                            <div class="team-message">
+                                The GamesToWeb3 team.
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:0;width:50%;">
+                            <div class="footer-icons">
+                                <a href="mailto:gamestoweb3@email.com" target="blank">
+                                    <img height="50" src="https://www.linkpicture.com/q/mail_7.jpg" />
+                                </a>
+                                <a href="https://twitter.com/gamestoweb3" target="blank"> <img height="50"
+                                        src="https://www.linkpicture.com/q/Twitter.jpeg" /></a>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="grid-item"></div>
+    </div>
+    <div>
+
+    </div>
+</body>
+
+</html>

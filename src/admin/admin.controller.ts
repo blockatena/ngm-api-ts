@@ -10,7 +10,7 @@ import {
 @ApiTags('admin')
 @Controller('admin')
 export class AdminController {
-  constructor(private readonly adminService: AdminService) { }
+  constructor(private readonly adminService: AdminService) {}
   @Post('empty-collection')
   async EmptyCollection(@Body() body: EmptyCollection): Promise<any> {
     // return await this.adminService.EmptyCollection(body.collection_name);
@@ -35,11 +35,8 @@ export class AdminController {
     try {
       return this.adminService.deleteCron(cronjob_id);
       //  return 'You are not admin';
-    } catch (error) { }
+    } catch (error) {}
   }
   // ethers Utilities
   //   @Get('Oowner-of')
-
-
-
 }
