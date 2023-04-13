@@ -387,6 +387,7 @@ export class NftMintController {
         token_id,
         number_of_tokens,
         '0x00',
+        { gasPrice: feeData.gasPrice }
       );
       // here
       log('MINTING TOKEN \n', mintToken);
