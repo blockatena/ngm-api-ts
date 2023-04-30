@@ -2,11 +2,7 @@ import { HttpModule } from '@nestjs/axios';
 import { NftController721 } from './nft721.controller';
 import { NftController1155 } from './nft1155.controller';
 import { NftService } from './nft.service';
-import * as redisStore from 'cache-manager-redis-store';
-import { CacheModule, forwardRef, Module } from '@nestjs/common';
-// import { RedisCliService } from '../redis-cli/redis-cli.service';
-// import { JwtAuthService } from 'src/jwt-auth/jwt-auth.service';
-// import { JwtModule } from '@nestjs/jwt';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ActivityModule } from 'src/activity/activity.module';
 import { nft1155Schema, Nft1155Schema } from './schema/nft.1155.schema';
@@ -58,20 +54,9 @@ require('dotenv').config();
       { name: Nft1155Schema.name, schema: nft1155Schema },
       { name: Nft1155OwnerSchema.name, schema: nft1155OwnerSchema },
     ]),
-    // JwtModule.register({
-    //   secret: process.env.jwtSecret,
-    //   signOptions: { expiresIn: process.env.ExpiresIN },
-    // }),
-    // CacheModule.register({
-    //   store: redisStore,
-    //   host: process.env.REDIS_HOST,
-    //   port: process.env.REDIS_PORT,
-    //   db: process.env.REDIS_DB,
-    // }),
   ],
   controllers: [NftController721, NftController1155, NftMintController],
   providers: [NftService],
-  //  add to  RedisCliService
   exports: [NftService],
 })
 export class NftModule {}

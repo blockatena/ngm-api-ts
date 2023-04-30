@@ -33,7 +33,7 @@ export class NftMarketplaceController {
   /*********************[CREATE-AUCTION]*****************/
   /*[Documentation]*/
   @ApiOperation({
-    summary: ' creates an Auction for a NFT',
+    summary: 'Creates an Auction for a NFT',
   })
   @ApiResponse({
     status: 201,
@@ -112,9 +112,13 @@ export class NftMarketplaceController {
       };
       await this.activityService.createActivity(activity_data);
       return await this.nftMarketplaceService.createAuction(create_auction);
-    } catch (err) {
-      console.log(err);
-      return 'something wrong in the system';
+    } catch (error) {
+      console.log(error);
+      return {
+      success:false,
+      message:'Unable to Put Your Asset in Auction',
+      error
+      };
     }
   }
 
@@ -168,13 +172,15 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message: 'something went Wrong',
+        success:false,
+        message: 'Unable to Cancel Auction',
         error,
       };
     }
   }
+
   /************************[Get-Auction]***********************/
-  @ApiOperation({ summary: ' will gets you ' })
+  @ApiOperation({ summary: 'Fetch Auction Info' })
   @Get('get-auction/:contract_address/:token_id/:end_date')
   async getAuction(@Param() get_auction: GetAuction): Promise<any> {
     try {
@@ -183,18 +189,18 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message: 'something went wrong',
+        message: 'Unable to Fetch Auction Details',
       };
     }
   }
-  /******** */
+  
   /*********************[CREATE-BID]***********************/
   @ApiOperation({
-    summary: ' will  Place a bid for an NFT which is in auction',
+    summary: 'Place Bid',
   })
   @ApiResponse({
     status: 201,
-    description: 'Successfully created the bid',
+    description: 'Bid Placed Successfully',
   })
   @ApiResponse({
     status: 400,
@@ -299,17 +305,19 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message: 'something went wrong in controller',
+        success:false,
+        message: 'Unable to Place Bid',
+        error
       };
     }
   }
   /*********************[CANCEL-BID]***********************/
   @ApiOperation({
-    summary: ' will Cancel  a bid for an NFT which is in auction',
+    summary: 'Cancel Bid',
   })
   @ApiResponse({
     status: 201,
-    description: 'The bid is cancelled for the NFT',
+    description: 'The bid has been cancelled',
   })
   @ApiResponse({
     status: 400,
@@ -389,19 +397,23 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message: 'something went wrong',
+        success:false,
+        message: 'Unable to Cancel the Bid',
         error,
       };
     }
   }
 
   /*********************[ACCEPT-BID]***********************/
-  @ApiOperation({ summary: ' will accept a bid ' })
+  @ApiOperation({ summary: 'Accept Bid' })
   @ApiResponse({
     status: 201,
     description: 'This Bid is acccepted',
   })
-  @ApiResponse({ status: 400, description: 'Something went wrong' })
+  @ApiResponse({ 
+     status: 400,
+     description: 'Something went wrong' 
+  })
   @Post('accept-bid')
   async acceptBid(@Body() body: Acceptbid) {
     try {
@@ -427,40 +439,16 @@ export class NftMarketplaceController {
     } catch (error) {
       console.error(error);
       return {
-        messge: 'something went wrong ,Please wait our team is working on it',
+        success:false,
+        messge: 'Unable to Accept the Bid',
+        error
       };
     }
   }
-  @ApiOperation({
-    summary: ' will get all the bids of particular Auction',
-  })
-  @Get('get-bids-of-auction')
-  async getBidsOfAuction(body: GetBids): Promise<any> {
-    // that nft is present
-    // That nft is in auction ?
-    // check bids question ?
-    try {
-      const { contract_address, token_id } = body;
-      const check_nft = await this.nftService.getSingleNft({
-        contract_address,
-        token_id,
-      });
-      if (!check_nft) {
-        return `check contract address is correct or not .May be that Nft might not be existed`;
-      }
-      if (!check_nft.is_in_auction) {
-        return `Nft is not in Auction`;
-      }
-    } catch (error) {
-      console.log(error);
-      return {
-        message: '',
-      };
-    }
-  }
+
   /******************[SALE_AND_OFFER]******************************** */
   @ApiOperation({
-    summary: ' will put your Nft in sale with Timer',
+    summary: 'Create Sale',
   })
   @Post('create-sale')
   async createSale(@Body() body: CreateSaleBody): Promise<any> {
@@ -514,13 +502,12 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message:
-          'Something Went Wrong , Our team is Working on please.For any queries please mail us to the below contact',
-        contact: 'hello@blockatena.com',
+        success:false,
+        message:"Unable to Create Sale",
       };
     }
   }
-  @ApiOperation({ summary: ' Cancels the Nft from sale' })
+  @ApiOperation({ summary: 'Cancel Sale' })
   @Post('cancel-sale')
   async cancelSale(@Body() body: CancelSaleBody): Promise<any> {
     // Add Validations
@@ -546,14 +533,16 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message: 'something went wrong',
+        success:false,
+        message: 'Unable to Cancel The Sale',
         error,
       };
     }
   }
+
   /***************[MAKE_OFFER_TO_NFT]************************/
   @ApiOperation({
-    summary: ' will makes an offer to the Nft which is in sale',
+    summary: 'Make Offer',
   })
   @Post('make-offer-to-nft')
   async makeOffer(@Body() body: MakeOfferBody) {
@@ -568,9 +557,9 @@ export class NftMarketplaceController {
       let rawMsg = `{
       "offer_price":"${offer_price}",
       "offer_person_address":"${offer_person_address}",
-    "contract_address":"${contract_address}",
-    "token_id":"${token_id}"
-  }`;
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}"
+      }`;
       let hashMessage = await ethers.utils.hashMessage(rawMsg);
       let signedAddress = await ethers.utils.verifyMessage(
         `Signing to Make Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
@@ -644,53 +633,26 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message:
-          'something went wrong, our team will resolve it as soon as possible ,Appreciating your patience',
+        success:false,
+        message:"Unable to Make Offer"
       };
     }
   }
-  @ApiOperation({ summary: ' accepts the offer ' })
-  @Post('accept-offer')
-  async acceptOffer(@Body() body: AcceptOfferBody) {
-    //we can add validations
-    const { contract_address, token_id, offer_person_address, token_owner } =
-      body;
-    let rawMsg = `{
-      "contract_address":"${contract_address}",
-      "token_id":"${token_id}",
-      "offer_person_address":"${offer_person_address}",
-      "token_owner":"${token_owner}"
-  }`;
-    let hashMessage = ethers.utils.hashMessage(rawMsg);
-    let signedAddress = ethers.utils.verifyMessage(
-      `Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
-      body.sign,
-    );
-    console.log('signed Message : ', signedAddress);
-    const checkCredentials = {
-      contract_address: body.contract_address,
-      token_id: body.token_id,
-    };
-    if (signedAddress !== token_owner) {
-      return { message: 'Invalid User' };
-    }
-    return await this.nftMarketplaceService.acceptOffer(body);
-  }
-
-  @ApiOperation({ summary: ' Cancels the offer' })
+ 
+  @ApiOperation({ summary: 'Cancel Offer' })
   @Post('cancel-offer')
   async cancelOffer(@Body() body: CancelOffer): Promise<any> {
     const { contract_address, token_id, offer_person_address, caller } = body;
     let rawMsg = `{
       "offer_person_address":"${offer_person_address}",
-    "contract_address":"${contract_address}",
-    "token_id":"${token_id}",
-    "caller":"${caller}"
-  }`;
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}",
+      "caller":"${caller}"
+    }`;
     let hashMessage = await ethers.utils.hashMessage(rawMsg);
     let signedAddress = await ethers.utils.verifyMessage(
       `Signing to Cancel Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
-      body.sign,
+       body.sign,
     );
     console.log('signed Message : ', signedAddress);
     const checkCredentials = { contract_address, token_id };
@@ -709,56 +671,46 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        message: 'something went wrong',
+        message: 'Unable to Cancel Offer',
         error,
       };
     }
   }
-  // @Post('put-for-sale-fixed-price')
-  // async putSaleFixedPrice() {}
-  @ApiOperation({
-    summary: 'under Progress',
-  })
-  @Post('get-all-offers')
-  async getAllOffers(@Body() body: GetAllOffersBody) {
-    // check sale exists or not
-    //  sale ended
-    // accepted offer or not
-    return await this.nftMarketplaceService.getAllOffers(body);
-  }
-  /*********************************************************/
-
-  // @Post('change-nft-bid-price')
-  // async changeBidPrice() {}
-  // @ApiOperation({ summary: ' will return all the bids of the auction' })
-  // @Post('get-bid-list-by-auction')
-  // async getBidListForAuction(@Body() body: GetAllBids): Promise<any> {
-  //   try {
-  //     //Auction
-  //     return ``;
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // }
-  // @Get('test')
-  // async test(): Promise<any> {
-  //   return await this.nftMarketplaceService.addvolume();
-  // }
-
-  //fix
-
-  // activityfix
-  @Post('fix')
-  async activityfix(): Promise<any> {
-    try {
-      await this.nftMarketplaceService.activityfix();
-    } catch (error) {
-      console.log(error);
-      return {
-        succcess: false,
-        message: 'something went wrong',
-        error,
-      };
+ 
+  @ApiOperation({ summary: 'Accept Offer' })
+  @Post('accept-offer')
+  async acceptOffer(@Body() body: AcceptOfferBody) {
+    //we can add validations
+    const { contract_address, token_id, offer_person_address, token_owner } =
+      body;
+    let rawMsg = `{
+      "contract_address":"${contract_address}",
+      "token_id":"${token_id}",
+      "offer_person_address":"${offer_person_address}",
+      "token_owner":"${token_owner}"
+  }`;
+  try {
+    let hashMessage = ethers.utils.hashMessage(rawMsg);
+    let signedAddress = ethers.utils.verifyMessage(
+      `Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
+      body.sign,
+    );
+    console.log('signed Message : ', signedAddress);
+    const checkCredentials = {
+      contract_address: body.contract_address,
+      token_id: body.token_id,
+    };
+    if (signedAddress !== token_owner) {
+      return { message: 'Invalid User' };
     }
+    return await this.nftMarketplaceService.acceptOffer(body); 
+  } catch (error) {
+    console.log(error)
+    return{
+      success:false,
+      message:'Unable to Accept Offer',
+      error
+    }
+  }
   }
 }

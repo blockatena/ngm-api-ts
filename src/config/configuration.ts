@@ -54,12 +54,38 @@ export default () => ({
     DEV: {
       GOERLI: '0x393d5645CF11aeD51Cd8BcFDE7e7D82100d0f2f3', //updated  done
       MUMBAI: '0x70C9c656453cFB577522dDE9A9780562C986EB63', //updated done
-      HYPERSPACE: '0xA004D89fDbaa38ed9a66f691230ec24f1a96a155',// updated on 25/03/2023
+      HYPERSPACE: '0xA004D89fDbaa38ed9a66f691230ec24f1a96a155', // updated on 25/03/2023
     },
     PROD: {
       ETHEREUM: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', //not updated yet
       POLYGON: '0xD2183cE465320Add7E67642EfdD05f2Bd8907342', //updated
       FILECOIN: '',
+    },
+  },
+  RELAYER: {
+    DEV: {
+      MUMBAI: {
+        RELAYER_ADDRESS: process.env.MUMBAI_RELAYER_ADDRESS,
+        RELAYER_APIKEY: process.env.MUMBAI_RELAYER_APIKEY,
+        RELAYER_SECRETKEY: process.env.MUMBAI_RELAYER_SECRETKEY,
+      },
+      GOERLI: {
+        RELAYER_ADDRESS: process.env.GOERLI_RELAYER_ADDRESS,
+        RELAYER_APIKEY: process.env.GOERLI_RELAYER_APIKEY,
+        RELAYER_SECRETKEY: process.env.GOERLI_RELAYER_SECRETKEY,
+      },
+    },
+    PROD: {
+      POLYGON: {
+        RELAYER_ADDRESS:process.env.POLYGON_RELAYER_ADDRESS,
+        RELAYER_APIKEY:process.env.POLYGON_RELAYER_APIKEY,
+        RELAYER_SECRETKEY:process.env.POLYGON_RELAYER_SECRETKEY,
+      },
+      ETHEREUM: {
+        RELAYER_ADDRESS:process.env.ETHEREUM_RELAYER_ADDRESS,
+        RELAYER_APIKEY:process.env.ETHEREUM_RELAYER_APIKEY,
+        RELAYER_SECRETKEY:process.env.ETHEREUM_RELAYER_SECRETKEY,
+      },
     },
   },
 });
