@@ -22,14 +22,10 @@ import { MetadataModule } from './core/metadata/metadata.module';
 import { NftModule } from './core/nft/nft.module';
 import { UsersModule } from './core/users/users.module';
 import { PaymentModule } from './core/payment/payment.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
 const { EMAIL_ADDR, EMAIL_PASSWORD } = configuration().EMAIL;
 const { LIMIT, TTL } = configuration().RATE_LIMIT;
 @Module({
   imports: [
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],

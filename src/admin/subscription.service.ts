@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  HttpException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -10,7 +9,6 @@ import { EmailService } from 'src/services/email.service';
 import { User, UserBody } from './dto/user.dto';
 import { log } from 'console';
 import generateApiKey from 'generate-api-key';
-import { HttpExceptionFilter } from 'src/filters/base-exception.fiter';
 import { UsersService } from 'src/core/users/users.service';
 import { SendAPiKey } from './dto/sendapikey.dto';
 
@@ -30,11 +28,11 @@ export class SubscriptionService {
     body: User;
   }): Promise<any> {
     const { wallet_address, email } = body;
-
+try{
     const secret = this.configservice.get<string>('ADMIN_SECRET');
 
     if (!(secret === SECRET)) {
-      throw new UnauthorizedException('UnAuthorized Exception');
+      return `Invalid Secret Ask Admin for Secret`;
     }
 
     const checkUserExists = await this.userService.getUser({ wallet_address });
@@ -65,7 +63,7 @@ export class SubscriptionService {
         name: `${checkUserExists.wallet_address}${checkUserExists}`,
       });
 
-      const store_api_key = await this.userService.updateUser(wallet_address, {
+      await this.userService.updateUser(wallet_address, {
         api_key,
       });
 
@@ -75,6 +73,14 @@ export class SubscriptionService {
     } else {
       return `You already have an Api key if you want to change your API key contact hello@blockatena.com`;
     }
+  }
+  catch(error){
+    console.log(error);
+    return{
+      message:`Unable to Create API Key ,Please Raise Issue to gamestoweb3@gmail.com`,
+      error
+    }
+  }
   }
 
   async increseLimit({
@@ -87,9 +93,10 @@ export class SubscriptionService {
     const { wallet_address, email, increse_limit } = body;
     const { collections_limit, asset_limit } = increse_limit;
     try {
-      const secret = this.configservice.get<string>('ADMIN_SECRET');
+      const ADMIN_SECRET = this.configservice.get<string>('ADMIN_SECRET');
 
-      if (!(secret === SECRET)) {
+      if (!(ADMIN_SECRET === SECRET)) {
+        return `Invalid Secret , Ask Admin for Secret`;
       }
       // check user is registered or not
       const check_user_exists = await this.userService.getUser({
@@ -113,9 +120,19 @@ export class SubscriptionService {
     }
   }
 
-  async sendApiKeyToMail(body: SendAPiKey): Promise<any> {
+  async sendApiKeyToMail({
+    SECRET,
+    body,
+  }: {
+    SECRET: string;
+    body: SendAPiKey;
+  }): Promise<any> {
 
     const { wallet_address } = body;
+    const ADMIN_SECRET= this.configservice.get<string>('ADMIN_SECRET');
+    if (!(ADMIN_SECRET === SECRET)) {
+      return `Invalid Secret , Ask Admin for Secret`;
+    }
     //validate user
     const isUserRegistered = await this.userService.getUser({ wallet_address });
     if (!isUserRegistered) {
@@ -135,7 +152,5 @@ export class SubscriptionService {
 
     return await this.emailService.sendApiKey(mailObj);
   }
-
-
 
 }
