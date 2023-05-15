@@ -36,8 +36,12 @@ lerna-debug.log*
 
 # Environment variables
 .env
-.env.localll
+.env.local
 
 # Test Files
 721.json
 1155.json
+
+#  Swagger-Spec
+ swagger-spec.json
+ codestandards.md

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, OnModuleInit } from '@nestjs/common';
 import { ApiHeader, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DeploymentService } from './deployment.service';
 import { CreateDeploymentDto } from './dto/create-deployment.dto';
@@ -11,15 +11,22 @@ import { CommonService } from 'src/common/common.service';
 import { collection } from './types/deployment.response';
 import { ErrorHandlerType } from 'src/utils/errorhandlers/error.handler';
 import { UsersService } from '../users/users.service';
+import { DefenderRelaySigner, DefenderRelayProvider }  from 'defender-relay-client/lib/ethers';
+import { ChainEnum } from 'src/common/enum/chain.enum';
+import { ConfigService } from '@nestjs/config';
 @ApiTags('Deployment')
 @Controller('deployment')
 export class DeploymentController {
+  private Environment:string;
   constructor(
     private readonly deploymentService: DeploymentService,
-
     private readonly userService: UsersService,
     private readonly commonService: CommonService,
-  ) {}
+    private readonly configService: ConfigService
+  ) {
+    this.Environment =  this.configService.get<string>("ENVIRONMENT");
+  }
+  
   @ApiResponse({
     status: 201,
     description: 'Successfully Created the Collection',
@@ -38,62 +45,41 @@ export class DeploymentController {
   @ApiOperation({ summary: 'Deploy a collection' })
   @Post('deploy-contract')
   async deployContract(@Body() deploymentBody: CreateDeploymentDto) {
-    log(deploymentBody);
     const {
       symbol,
       owner_address,
       roles,
       collection_name,
-      chain,
       type,
       imageuri,
       description,
     } = deploymentBody;
-    try {
-      log('CHECKING THE ENVIRONMENT \n');
-      const { RPC_URL, API_BASE_URL, provider, wallet } =
-        await this.commonService.getWallet(chain);
-      console.log('ENVIRONMENT  DETAILS \n ', {
-        RPC_URL,
-        API_BASE_URL,
-        provider,
-        wallet,
-      });
+    try {      
+      
+      await this.isLimitExceeded({owner_address});
 
-      log('CHECKING THE LIMIT \n');
-      const get_limit = await this.userService.getUser({
-        wallet_address: owner_address,
-      });
-      const collection_count = await this.deploymentService.ContractCount(
-        owner_address,
-      );
-      if (Number(get_limit?.limit?.collection) > Number(collection_count)) {
-        return `Hello ${owner_address} you exceeded Your Limit `;
+      const chain=deploymentBody.chain.toUpperCase();
+      
+      const isChainAvailble= await this.validateChain(chain);
+      
+      if(!isChainAvailble){
+        return `${chain} is  not available on ${this.Environment}`;
       }
-      log(`FETCHING THE ${type} CONTRACT \n`);
-      const abiPath = path.join(
-        process.cwd(),
-        `src/utils/constants/${type}/${type}.abi`,
-      );
-      const binPath = path.join(
-        process.cwd(),
-        `src/utils/constants/${type}/${type}.bin`,
-      );
-      // log(abiPath, '  ', binPath);
-      //  retrieving abi and bin files through fs module
-      log(process.cwd());
-      const abi = fs.readFileSync(abiPath, 'utf-8');
-      const bin = fs.readFileSync(binPath, 'utf-8');
-      //
-      log('FILE READ COMPLETED \n');
-      const contractFactory = new ethers.ContractFactory(abi, bin, wallet);
-      // log(contractFactory);
+        
+      const {API_BASE_URL, signer,provider}=await this.getSignerAndProvider(chain);
+
+      const {abi,bin}=await this.fetchContractFromAbiAndBinFiles({type});
+     
+      console.log(signer);
+    
+      const contractFactory = new ethers.ContractFactory(abi, bin, signer);
+    
+      console.log(contractFactory);  
+      
       log('CONNECTED TO BLOCK-CHAIN \n');
-      // ERC721PSI - (CollectionName,Symbol) - NGM721PSI
-      // ERC721TINY- (CollectionName,Symbol) - NGMTINY721
-      // ERC1155-D - (CollectionName,Symbol,uri) - NGM1155
+     
       const feeData = await provider.getFeeData();
-      log('FEE DATA  \n', feeData);
+      log('FEE DATA  \n',ethers.utils.formatEther(feeData.gasPrice));
 
       const contract = await contractFactory.deploy(
         collection_name,
@@ -120,7 +106,7 @@ export class DeploymentController {
         `ADDRESS: ${contract_address}, TX-HASH: ${transactionhash} \n\n\n${confirm}`,
       );
       //
-      const arr = {
+      const nftInfo = {
         owner_address,
         symbol,
         collection_name,
@@ -132,46 +118,18 @@ export class DeploymentController {
         baseuri: baseUri,
         imageuri,
       };
-      log('INSERTING INTO DB', arr);
-      return await this.deploymentService.createContract(arr);
+      log('INSERTING Nft Info into DB', nftInfo);
+      return await this.deploymentService.createContract(nftInfo);
     } catch (error) {
       log(error);
       return {
+        success:false,
+        message: 'Unable to deploy Contract',
         error,
-        message: 'Something went wrong our Team is Looking into it',
       };
     }
   }
-  // @Get('GetAll-contracts/:owneraddr')
-  // async getContractsOfUser(@Param('owneraddr') owneraddr: string) {
-  //   return this.deploymentService.getContractByOwnerAddr(owneraddr);
-  // }
 
-  // @Get('callFunction/:owneraddr')
-  // async callFunction(@Param('owneraddr') owneraddr: string) {
-  //   // ethersjs call method safe mint ngm721
-  //   const abiPath = path.join(
-  //     process.cwd(),
-  //     `src/utils/constants/NGM721PSI/NGM721PSI.abi`,
-  //   );
-  //   log(process.cwd());
-  //   const abi = fs.readFileSync(abiPath, 'utf-8');
-  //   const nftCntr = new ethers.Contract(
-  //     '0xe528a4898c00F9B48e302B7b3Ba535319fD51bBd',
-  //     abi,
-  //     wallet,
-  //   ); // abi and provider to be declared
-  //   log('nftContract: ', nftCntr, owneraddr);
-  //   const minted = await nftCntr.safeMint(
-  //     '0xb7e0BD7F8EAe0A33f968a1FfB32DE07C749c7390',
-  //     1,
-  //     '0x0',
-  //   );
-  //   // const minted = await nftCntr.safeMint(owneraddr, 1, '0x0');
-  //   // const uri = await nftCntr.name();
-  //   const uri = await nftCntr.baseURI(0);
-  //   log('uri', uri);
-  // }
   @ApiResponse({
     status: 201,
     description: 'Successfully Fetched the Collection',
@@ -192,16 +150,105 @@ export class DeploymentController {
       );
     } catch (error) {
       log(error);
-      return { error };
+      return { 
+        success:false,
+        message:"Unable to fetch Collection Info",
+        error 
+      };
     }
   }
-  // //
-  // @Post('pause-contract/:cntraddress')
-  // pauseContract(@Param('cntraddress') cntraddress: string) {}
 
-  // @Post('/change-base-uri1155/cntraddr')
-  // changeBaseURI_1155(@Param('cntraddress') cntraddress: string) {}
+  async isLimitExceeded({owner_address}:{owner_address:string}):Promise<any>{
+   try {
 
-  // @Get('/update-contract/:cntraddr')
-  // updateContract(@Param('cntraddress') cntraddress: string) {}
+    log("Checking User's Limit \n");
+    
+    const get_limit = await this.userService.getUser({
+      wallet_address:owner_address,
+    });
+    
+    const collection_count = await this.deploymentService.ContractCount(
+      owner_address,
+    );
+    if (Number(get_limit?.limit?.collection) > Number(collection_count)) {
+      return `Hello ${owner_address} you exceeded Your Limit `;
+    }
+
+    return
+
+   } catch (error) {
+    log(error);
+    return{
+      success:false,
+      message:"Unable to Check User's Limit",
+      error
+    }
+   } 
+  }
+
+  async fetchContractFromAbiAndBinFiles({type}:{type:string}){
+    try {
+      log(`FETCHING THE ${type} CONTRACT \n`);
+      const abiPath = path.join(
+        process.cwd(),
+        `src/utils/constants/${type}/${type}.abi`,
+      );
+      const binPath = path.join(
+        process.cwd(),
+        `src/utils/constants/${type}/${type}.bin`,
+      );
+
+      log(process.cwd());
+      const abi = fs.readFileSync(abiPath, 'utf-8');
+      const bin = fs.readFileSync(binPath, 'utf-8');
+      log('FILE READ COMPLETED \n');
+      return{
+        abi,bin
+      }
+    } catch (error) {
+      log(error)
+      return{
+        success:false,
+        message:"Unable to Load Abi or Bin files",
+        error
+      }
+    }
+  }
+
+  async validateChain(chain:string){
+   const currentChain=chain.toUpperCase();
+   const availableChains= this.commonService.getAvailableChainsOnCurrentEnvironment();
+   if(availableChains.includes(currentChain)){
+    return true;
+   }
+   else{
+    return false;
+   }
+  }
+
+  async getSignerAndProvider(chain:string){
+     const API_BASE_URL=await this.configService.get('API_BASE_URL');
+    
+    if(chain===ChainEnum.FILECOIN || chain===ChainEnum.HYPERSPACE){
+      const { RPC_URL,provider, wallet } = await this.commonService.getWallet(chain);
+       return{
+        API_BASE_URL,
+        signer:wallet,
+        provider
+      }
+    }
+    else
+    {
+    const {RELAYER_APIKEY, RELAYER_SECRETKEY}=  await this.commonService.getRelayerInfo(chain);
+    console.log({RELAYER_APIKEY, RELAYER_SECRETKEY});
+    const credentials = { apiKey: RELAYER_APIKEY, apiSecret: RELAYER_SECRETKEY };
+    const provider = new DefenderRelayProvider(credentials);
+    const signer = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
+    return{
+      API_BASE_URL,
+      signer,
+      provider
+    }
+  }
+  }
 }
