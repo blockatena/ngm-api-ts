@@ -38,13 +38,6 @@ export class NftMarketplace1155Controller {
     }
   }
 
-  // @ApiOperation({ summary: 'Update Sale' })
-  // @ApiResponse({
-  //   status: 201,
-  //   description: 'Update Sale 1155',
-  // })
-  // @ApiResponse({ status: 400, description: 'Something went wrong' })
-  // @Post('update-sale-1155')
   async updateSale1155(@Body() body: G2W3_1155Sale) {
     try {
       return await this.nftMarketplaceService.update1155sale(body);
@@ -127,7 +120,7 @@ export class NftMarketplace1155Controller {
     }
   }
 
-  @ApiOperation({ summary: 'Get All Offer ' })
+  @ApiOperation({ summary: 'Get All Offers ' })
   @ApiResponse({
     status: 201,
     description: 'Get All offer 1155',

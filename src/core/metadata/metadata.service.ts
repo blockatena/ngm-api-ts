@@ -53,13 +53,13 @@ export class MetadataService {
       }
       console.log(uri);
       const res = await this.httpService.axiosRef.get(uri);
-      let image = res.data.image.replace("nftstorage.link", "ipfs.io")
+      let image = res.data.image.replace('nftstorage.link', 'ipfs.io');
       let metaResult = {
-        name:res.data.name,
-        image:image,
-        description:res.data.description,
-        external_uri:res.data.external_uri
-      }
+        name: res.data.name,
+        image: image,
+        description: res.data.description,
+        external_uri: res.data.external_uri,
+      };
       return metaResult;
     } else {
       return 'Token Doesnt exist';

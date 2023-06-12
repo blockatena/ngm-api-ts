@@ -42,7 +42,7 @@ export class UsersController {
     private readonly nftService: NftService,
     private readonly activityService: ActivityService,
     private readonly emailService: EmailService,
-  ) { }
+  ) {}
   //
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
@@ -316,17 +316,15 @@ export class UsersController {
     try {
       const det = {
         recepient: {
-          email_addr: "sathyaswaroopvandavasi@gmail.com",
-          user_name: "sss",
-          wallet_address: "SSD"
+          email_addr: 'sathyaswaroopvandavasi@gmail.com',
+          user_name: 'sss',
+          wallet_address: 'SSD',
         },
-        subject: "sdsd",
-        message: "fdf"
-      }
+        subject: 'sdsd',
+        message: 'fdf',
+      };
       return await this.emailService.welcomeMail(det);
       //  return await this.usersService.testFix();
-    } catch (error) {
-
-    }
+    } catch (error) {}
   }
 }

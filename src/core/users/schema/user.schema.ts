@@ -35,20 +35,20 @@ export class UserSchema {
       collections: {
         type: [String],
         default: [],
-        required: false
+        required: false,
       },
       nfts: {
         ngm721: {
           _id: false,
           type: [{ contract_address: String, token_id: Number }],
           required: false,
-          default: []
+          default: [],
         },
         ngm1155: {
           _id: false,
           type: [{ contract_address: String, token_id: Number }],
           required: false,
-          default: []
+          default: [],
         },
       },
     },

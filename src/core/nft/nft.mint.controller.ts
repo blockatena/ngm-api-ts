@@ -46,7 +46,10 @@ import { UploadAsset, UploadAssetError } from './types/uploadasset.types';
 import { DeploymentService } from '../deployment/deployment.service';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
 import { UsersService } from '../users/users.service';
-import { DefenderRelayProvider, DefenderRelaySigner } from 'defender-relay-client/lib/ethers';
+import {
+  DefenderRelayProvider,
+  DefenderRelaySigner,
+} from 'defender-relay-client/lib/ethers';
 import { ChainEnum } from 'src/common/enum/chain.enum';
 const { log } = console;
 
@@ -99,9 +102,7 @@ export class NftMintController {
   async uploadFile(
     @UploadedFile(
       new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 50000000 }),
-        ],
+        validators: [new MaxFileSizeValidator({ maxSize: 50000000 })],
       }),
     )
     file: Express.Multer.File,
@@ -156,17 +157,20 @@ export class NftMintController {
       wallet_address,
     } = body;
     try {
-      const isContractExists = await this.deploymentService.getContractDetailsByContractAddress(contract_address);
-      
+      const isContractExists =
+        await this.deploymentService.getContractDetailsByContractAddress(
+          contract_address,
+        );
+
       if (!isContractExists) {
         return `Collection address is Incorrect or Collection Doesn't exist`;
       }
 
       const type = isContractExists.type;
       log('CONTRACT_DETAILS \n', isContractExists);
-      
-      const {abi}=await this.fetchContractFromAbiAndBinFiles({type});
-     
+
+      const { abi } = await this.fetchContractFromAbiAndBinFiles({ type });
+
       // Multi Chain Integration
       const CollectionChain = isContractExists?.chain?.name;
 
@@ -176,20 +180,22 @@ export class NftMintController {
       const get_limit = await this.usersService.getUser({
         wallet_address: wallet_address,
       });
-      
+
       const asset_limit = get_limit?.limit?.assets;
-     
+
       if (!asset_limit || asset_limit === 0) {
         return {
           message: 'Your Maximum Minting Limit Reached',
         };
       }
-    
-      const {API_BASE_URL, signer,provider}=await this.getSignerAndProvider(CollectionChain);
+
+      const { API_BASE_URL, signer, provider } =
+        await this.getSignerAndProvider(CollectionChain);
+      console.log({ API_BASE_URL, signer, provider });
 
       // mint token using ethersjs
       const nftCntr = new ethers.Contract(contract_address, abi, signer);
-   
+
       // const nftCntr = new ethers.Contract(contract_address, abi, wallet);
       log('CONTRACT CONNECTED \n ');
       const feeData = await provider.getFeeData();
@@ -205,7 +211,7 @@ export class NftMintController {
       log('RESPONSE FROM BLOCK CHAIN \n', res);
 
       const tokenId = parseInt(res.events[0].args.tokenId._hex || '0');
-      
+
       const jsonData = {
         name,
         image: image_uri,
@@ -230,7 +236,7 @@ export class NftMintController {
       if (collection.length < 3) {
         this.nftservice.pushImagesToCollection(contract_address, image_uri);
       }
-    
+
       log('metadata');
       const arrdb = {
         contract_address,
@@ -259,17 +265,17 @@ export class NftMintController {
         to: ethers.utils.getAddress(body.token_owner),
         read: false,
       });
-     
+
       await this.usersService.updateUser(wallet_address, {
         'limit.assets': asset_limit - 1,
       });
 
       //  ADD OWNER TO COLLECTION
-      
+
       await this.nftservice.addOwner({ contract_address, token_owner });
       const data = await this.nftservice.createNft(arrdb);
       log(data);
-     
+
       await this.nftservice.pushTokenUriToDocArray(
         contract_address,
         ipfsMetadataUri,
@@ -287,7 +293,7 @@ export class NftMintController {
     }
   }
 
-  async fetchContractFromAbiAndBinFiles({type}:{type:string}){
+  async fetchContractFromAbiAndBinFiles({ type }: { type: string }) {
     try {
       log(`FETCHING THE ${type} CONTRACT \n`);
       const abiPath = path.join(
@@ -303,44 +309,56 @@ export class NftMintController {
       const abi = fs.readFileSync(abiPath, 'utf-8');
       const bin = fs.readFileSync(binPath, 'utf-8');
       log('FILE READ COMPLETED \n');
-      return{
-        abi,bin
-      }
+      return {
+        abi,
+        bin,
+      };
     } catch (error) {
-      log(error)
-      return{
-        success:false,
-        message:"Unable to Load Abi or Bin files",
-        error
-      }
+      log(error);
+      return {
+        success: false,
+        message: 'Unable to Load Abi or Bin files',
+        error,
+      };
     }
   }
 
-  async getSignerAndProvider(chain:string){
-    const API_BASE_URL=await this.configService.get('API_BASE_URL');
-   
-   if(chain===ChainEnum.FILECOIN || chain===ChainEnum.HYPERSPACE){
-     const { RPC_URL,provider, wallet } = await this.commonService.getWallet(chain);
-      return{
-       API_BASE_URL,
-       signer:wallet,
-       provider
-     }
-   }
-   else
-   {
-   const {RELAYER_APIKEY, RELAYER_SECRETKEY}=  await this.commonService.getRelayerInfo(chain);
-   console.log({RELAYER_APIKEY, RELAYER_SECRETKEY});
-   const credentials = { apiKey: RELAYER_APIKEY, apiSecret: RELAYER_SECRETKEY };
-   const provider = new DefenderRelayProvider(credentials);
-   const signer = new DefenderRelaySigner(credentials, provider, { speed: 'fast' });
-   return{
-     API_BASE_URL,
-     signer,
-     provider
-   }
+  async getSignerAndProvider(chain: string) {
+    const API_BASE_URL = await this.configService.get('API_BASE_URL');
+
+    if (
+      chain === ChainEnum.FILECOIN ||
+      chain === ChainEnum.HYPERSPACE ||
+      chain === ChainEnum.MANTLE_TESTNET ||
+      chain === ChainEnum.MANTLE_MAINET
+    ) {
+      const { RPC_URL, provider, wallet } = await this.commonService.getWallet(
+        chain,
+      );
+      return {
+        API_BASE_URL,
+        signer: wallet,
+        provider,
+      };
+    } else {
+      const { RELAYER_APIKEY, RELAYER_SECRETKEY } =
+        await this.commonService.getRelayerInfo(chain);
+      console.log({ RELAYER_APIKEY, RELAYER_SECRETKEY });
+      const credentials = {
+        apiKey: RELAYER_APIKEY,
+        apiSecret: RELAYER_SECRETKEY,
+      };
+      const provider = new DefenderRelayProvider(credentials);
+      const signer = new DefenderRelaySigner(credentials, provider, {
+        speed: 'fast',
+      });
+      return {
+        API_BASE_URL,
+        signer,
+        provider,
+      };
+    }
   }
- }
 
   @ApiResponse({
     status: 201,
@@ -378,13 +396,12 @@ export class NftMintController {
       wallet_address,
     } = body;
     try {
-      
       // GET CONTRACT
       const isCollectionExists =
         await this.deploymentService.getContractDetailsByContractAddress(
           contract_address,
         );
-      
+
       // check contract is present ot not
       if (!isCollectionExists) {
         return `Collection address is Incorrect or Collection Doesnt exist`;
@@ -395,24 +412,25 @@ export class NftMintController {
 
       // Multi Chain Integration
       const CollectionChain = isCollectionExists?.chain?.name;
-     
-      const {API_BASE_URL, signer,provider}=await this.getSignerAndProvider(CollectionChain);
+
+      const { API_BASE_URL, signer, provider } =
+        await this.getSignerAndProvider(CollectionChain);
 
       // check limit
       const get_limit = await this.usersService.getUser({
         wallet_address: wallet_address,
       });
-  
+
       const asset_limit = get_limit?.limit?.assets;
-  
+
       if (!asset_limit || asset_limit === 0) {
         return {
           message: 'Your Maximum Minting Limit Reached',
         };
       }
 
-      const {abi}=await this.fetchContractFromAbiAndBinFiles({type});
-      
+      const { abi } = await this.fetchContractFromAbiAndBinFiles({ type });
+
       // mint token using ethersjs
       const nftCntr = new ethers.Contract(contract_address, abi, signer); // abi and provider to be declared
       log('nftContract::::::', nftCntr);
@@ -424,12 +442,12 @@ export class NftMintController {
         token_id,
         number_of_tokens,
         '0x00',
-        { gasPrice: feeData.gasPrice }
+        { gasPrice: feeData.gasPrice },
       );
-     
+
       const res = await mintToken.wait(1);
       log('BLOCK CHAIN RESPONSE \n', res);
-     
+
       const jsonData = {
         name,
         image: image_uri,
@@ -451,11 +469,20 @@ export class NftMintController {
       const collection = await this.nftservice.getNftsByCollection(
         contract_address,
       );
-      
+
       if (collection.length < 3) {
-        this.nftservice.pushImagesToCollection(contract_address, image_uri);
+        const [...imageUris] = isCollectionExists.imageuri;
+        const isImageUriAlreadyExists = imageUris.includes(image_uri);
+        if (isImageUriAlreadyExists) {
+          console.log('No need to push')
+        } else {
+          await this.nftservice.pushImagesToCollection(
+            contract_address,
+            image_uri,
+          );
+        }
       }
-    
+
       const arrdb = {
         contract_address,
         contract_type: type,
@@ -496,8 +523,7 @@ export class NftMintController {
         token_id,
       });
       if (is_nft_exists) {
-      
-         await this.nftservice.update1155Nft(
+        await this.nftservice.update1155Nft(
           { contract_address, token_id },
           {
             number_of_tokens: is_nft_exists.number_of_tokens + number_of_tokens,
@@ -513,7 +539,7 @@ export class NftMintController {
         const is_owner_exists = get_owners.find(
           (owner) => owner.token_owner === token_owner,
         );
-       
+
         if (is_owner_exists) {
           const update_Tokens = await this.nftservice.updateTokens({
             contract_address,
@@ -536,7 +562,7 @@ export class NftMintController {
       // log(data);
       const user_1155 = await this.nftservice.create1155NftOwner(user_stake);
       log(user_1155);
-     await this.nftservice.pushTokenUriToDocArray(
+      await this.nftservice.pushTokenUriToDocArray(
         contract_address,
         ipfsMetadataUri,
         token_id,
@@ -553,5 +579,4 @@ export class NftMintController {
       };
     }
   }
-
 }

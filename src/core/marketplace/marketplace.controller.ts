@@ -115,9 +115,9 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-      success:false,
-      message:'Unable to Put Your Asset in Auction',
-      error
+        success: false,
+        message: 'Unable to Put Your Asset in Auction',
+        error,
       };
     }
   }
@@ -172,7 +172,7 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        success:false,
+        success: false,
         message: 'Unable to Cancel Auction',
         error,
       };
@@ -193,7 +193,7 @@ export class NftMarketplaceController {
       };
     }
   }
-  
+
   /*********************[CREATE-BID]***********************/
   @ApiOperation({
     summary: 'Place Bid',
@@ -305,9 +305,9 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        success:false,
+        success: false,
         message: 'Unable to Place Bid',
-        error
+        error,
       };
     }
   }
@@ -397,7 +397,7 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        success:false,
+        success: false,
         message: 'Unable to Cancel the Bid',
         error,
       };
@@ -410,9 +410,9 @@ export class NftMarketplaceController {
     status: 201,
     description: 'This Bid is acccepted',
   })
-  @ApiResponse({ 
-     status: 400,
-     description: 'Something went wrong' 
+  @ApiResponse({
+    status: 400,
+    description: 'Something went wrong',
   })
   @Post('accept-bid')
   async acceptBid(@Body() body: Acceptbid) {
@@ -439,9 +439,9 @@ export class NftMarketplaceController {
     } catch (error) {
       console.error(error);
       return {
-        success:false,
+        success: false,
         messge: 'Unable to Accept the Bid',
-        error
+        error,
       };
     }
   }
@@ -502,8 +502,8 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        success:false,
-        message:"Unable to Create Sale",
+        success: false,
+        message: 'Unable to Create Sale',
       };
     }
   }
@@ -533,7 +533,7 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        success:false,
+        success: false,
         message: 'Unable to Cancel The Sale',
         error,
       };
@@ -633,12 +633,12 @@ export class NftMarketplaceController {
     } catch (error) {
       console.log(error);
       return {
-        success:false,
-        message:"Unable to Make Offer"
+        success: false,
+        message: 'Unable to Make Offer',
       };
     }
   }
- 
+
   @ApiOperation({ summary: 'Cancel Offer' })
   @Post('cancel-offer')
   async cancelOffer(@Body() body: CancelOffer): Promise<any> {
@@ -652,7 +652,7 @@ export class NftMarketplaceController {
     let hashMessage = await ethers.utils.hashMessage(rawMsg);
     let signedAddress = await ethers.utils.verifyMessage(
       `Signing to Cancel Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
-       body.sign,
+      body.sign,
     );
     console.log('signed Message : ', signedAddress);
     const checkCredentials = { contract_address, token_id };
@@ -676,7 +676,7 @@ export class NftMarketplaceController {
       };
     }
   }
- 
+
   @ApiOperation({ summary: 'Accept Offer' })
   @Post('accept-offer')
   async acceptOffer(@Body() body: AcceptOfferBody) {
@@ -689,28 +689,28 @@ export class NftMarketplaceController {
       "offer_person_address":"${offer_person_address}",
       "token_owner":"${token_owner}"
   }`;
-  try {
-    let hashMessage = ethers.utils.hashMessage(rawMsg);
-    let signedAddress = ethers.utils.verifyMessage(
-      `Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
-      body.sign,
-    );
-    console.log('signed Message : ', signedAddress);
-    const checkCredentials = {
-      contract_address: body.contract_address,
-      token_id: body.token_id,
-    };
-    if (signedAddress !== token_owner) {
-      return { message: 'Invalid User' };
+    try {
+      let hashMessage = ethers.utils.hashMessage(rawMsg);
+      let signedAddress = ethers.utils.verifyMessage(
+        `Signing to Accept Offer\n${rawMsg}\n Hash: \n${hashMessage}`,
+        body.sign,
+      );
+      console.log('signed Message : ', signedAddress);
+      const checkCredentials = {
+        contract_address: body.contract_address,
+        token_id: body.token_id,
+      };
+      if (signedAddress !== token_owner) {
+        return { message: 'Invalid User' };
+      }
+      return await this.nftMarketplaceService.acceptOffer(body);
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'Unable to Accept Offer',
+        error,
+      };
     }
-    return await this.nftMarketplaceService.acceptOffer(body); 
-  } catch (error) {
-    console.log(error)
-    return{
-      success:false,
-      message:'Unable to Accept Offer',
-      error
-    }
-  }
   }
 }

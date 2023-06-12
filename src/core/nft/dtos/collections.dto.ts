@@ -38,7 +38,7 @@ export class GetUserOwnedAssets {
 export class GetUserOwnedAssetsByCollections {
   @ApiProperty({ default: '0xa8E7CCE298F1C2e52DE6920840d80C28Fc787F72' })
   owner_address: string;
-  @ApiProperty({ default: "0xC5dc32D501dc8743E7375FA17B12B34E4C0994de" })
+  @ApiProperty({ default: '0xC5dc32D501dc8743E7375FA17B12B34E4C0994de' })
   contract_address: string;
 }
 

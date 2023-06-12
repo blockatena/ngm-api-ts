@@ -25,7 +25,10 @@ import { NFTStorage, File, Blob } from 'nft.storage';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import { GetListedCollections } from './dtos/create.nft.dto';
-import { GetUserOwnedAssets, GetUserOwnedAssetsByCollections } from './dtos/collections.dto';
+import {
+  GetUserOwnedAssets,
+  GetUserOwnedAssetsByCollections,
+} from './dtos/collections.dto';
 import { ConfigService } from '@nestjs/config';
 import { ActivityService } from 'src/activity/activity.service';
 // import { log } from 'console';
@@ -58,7 +61,7 @@ export class NftController1155 {
     private activityService: ActivityService,
     private usersService: UsersService,
     private readonly commonService: CommonService,
-  ) { }
+  ) {}
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
@@ -363,32 +366,33 @@ export class NftController1155 {
   }
   // get 1155 User1155 Assets for Particular Collection
   @Get('get-user-1155-assets-by-collection/:owner_address/:contract_address')
-  async getUser1155AssetsByCollection(@Param() body: GetUserOwnedAssetsByCollections): Promise<any> {
+  async getUser1155AssetsByCollection(
+    @Param() body: GetUserOwnedAssetsByCollections,
+  ): Promise<any> {
     try {
       console.log(body);
       return await this.nftservice.getUser1155AssetsByCollection(body);
     } catch (error) {
-      log(error)
+      log(error);
       return {
         success: false,
-        message: "Unable to Fetch Nfts",
-        error
-      }
+        message: 'Unable to Fetch Nfts',
+        error,
+      };
     }
   }
 
-  @Get('get-1155-unique/:contract_address') 
-  async get1155uniqueByCollections(@Param('contract_address') contract_address: string): Promise<any> {
+  @Get('get-1155-unique/:contract_address')
+  async get1155uniqueByCollections(
+    @Param('contract_address') contract_address: string,
+  ): Promise<any> {
     try {
-      return await this.nftservice.get1155UqinueOwners(contract_address)
-    }
-    catch(error){
+      return await this.nftservice.get1155UqinueOwners(contract_address);
+    } catch (error) {
       return {
-        success:false,
-        error
-      }
+        success: false,
+        error,
+      };
     }
   }
-
-
 }
