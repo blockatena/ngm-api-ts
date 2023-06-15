@@ -21,9 +21,8 @@ const { log } = console;
 export class UsersService {
   constructor(
     private nftservice: NftService,
-    @InjectModel(UserSchema.name) private UserModel: Model<UserDocument>,
-  ) // private JWTservice: JwtAuthService,
-  {
+    @InjectModel(UserSchema.name) private UserModel: Model<UserDocument>, // private JWTservice: JwtAuthService,
+  ) {
     UserModel;
   }
   /***************[CREATING_USER]**************/
@@ -135,7 +134,7 @@ export class UsersService {
       }
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
-          //like or dislike 
+          //like or dislike
           await this.nftservice.handleLikeOrDisLike(body);
           return await this.UserModel.findOneAndUpdate(
             { wallet_address },
@@ -172,7 +171,7 @@ export class UsersService {
     } = body;
     try {
       if (nft_type === NftTypeEnum.NGM721) {
-        //like or dislike 
+        //like or dislike
         await this.nftservice.handleLikeOrDisLike(body);
         return await this.UserModel.findOneAndUpdate(
           { wallet_address },
@@ -188,7 +187,7 @@ export class UsersService {
         );
       }
       if (nft_type === NftTypeEnum.NGM1155) {
-        //like or dislike 
+        //like or dislike
         await this.nftservice.handleLikeOrDisLike(body);
         return await this.UserModel.findOneAndUpdate(
           { wallet_address },

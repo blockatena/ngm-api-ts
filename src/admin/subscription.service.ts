@@ -18,7 +18,7 @@ export class SubscriptionService {
     private userService: UsersService,
     private emailService: EmailService,
     private configservice: ConfigService,
-  ) { }
+  ) {}
 
   async subscribeToPremium({
     SECRET,
@@ -28,59 +28,60 @@ export class SubscriptionService {
     body: User;
   }): Promise<any> {
     const { wallet_address, email } = body;
-try{
-    const secret = this.configservice.get<string>('ADMIN_SECRET');
+    try {
+      const secret = this.configservice.get<string>('ADMIN_SECRET');
 
-    if (!(secret === SECRET)) {
-      return `Invalid Secret Ask Admin for Secret`;
-    }
+      if (!(secret === SECRET)) {
+        return `Invalid Secret Ask Admin for Secret`;
+      }
 
-    const checkUserExists = await this.userService.getUser({ wallet_address });
-
-    if (!checkUserExists)
-      throw new NotFoundException(
-        {
-          description: `There is no user with wallet ${wallet_address} is registered with us kindly register`,
-        },
-        'USER NOT FOUND',
-      );
-
-    if (!(email === checkUserExists.email))
-      throw new BadRequestException(
-        {
-          cause: new Error(),
-          description: 'Some error description',
-        },
-        `The wallet  ${wallet_address} is  not linked to ${email}`,
-      );
-
-    if (!checkUserExists.api_key) {
-      const api_key = generateApiKey({
-        method: 'uuidv4',
-        dashes: true,
-        min: 32,
-        max: 32,
-        name: `${checkUserExists.wallet_address}${checkUserExists}`,
+      const checkUserExists = await this.userService.getUser({
+        wallet_address,
       });
 
-      await this.userService.updateUser(wallet_address, {
-        api_key,
-      });
+      if (!checkUserExists)
+        throw new NotFoundException(
+          {
+            description: `There is no user with wallet ${wallet_address} is registered with us kindly register`,
+          },
+          'USER NOT FOUND',
+        );
 
+      if (!(email === checkUserExists.email))
+        throw new BadRequestException(
+          {
+            cause: new Error(),
+            description: 'Some error description',
+          },
+          `The wallet  ${wallet_address} is  not linked to ${email}`,
+        );
+
+      if (!checkUserExists.api_key) {
+        const api_key = generateApiKey({
+          method: 'uuidv4',
+          dashes: true,
+          min: 32,
+          max: 32,
+          name: `${checkUserExists.wallet_address}${checkUserExists}`,
+        });
+
+        await this.userService.updateUser(wallet_address, {
+          api_key,
+        });
+
+        return {
+          message: `Successfully Generated the Api Key for User ${wallet_address}`,
+        };
+      } else {
+        return `You already have an Api key if you want to change your API key contact hello@blockatena.com`;
+      }
+    } catch (error) {
+      console.log(error);
       return {
-        message: `Successfully Generated the Api Key for User ${wallet_address}`,
+        message: `Unable to Create API Key ,Please Raise Issue to gamestoweb3@gmail.com`,
+        error,
       };
-    } else {
-      return `You already have an Api key if you want to change your API key contact hello@blockatena.com`;
     }
-  }
-  catch(error){
-    console.log(error);
-    return{
-      message:`Unable to Create API Key ,Please Raise Issue to gamestoweb3@gmail.com`,
-      error
-    }
-  }
   }
 
   async increseLimit({
@@ -127,9 +128,8 @@ try{
     SECRET: string;
     body: SendAPiKey;
   }): Promise<any> {
-
     const { wallet_address } = body;
-    const ADMIN_SECRET= this.configservice.get<string>('ADMIN_SECRET');
+    const ADMIN_SECRET = this.configservice.get<string>('ADMIN_SECRET');
     if (!(ADMIN_SECRET === SECRET)) {
       return `Invalid Secret , Ask Admin for Secret`;
     }
@@ -138,8 +138,8 @@ try{
     if (!isUserRegistered) {
       return {
         success: true,
-        message: `${wallet_address} is not registered with us.`
-      }
+        message: `${wallet_address} is not registered with us.`,
+      };
     }
     const { email, user_name, api_key } = isUserRegistered;
     const mailObj = {
@@ -147,10 +147,9 @@ try{
       user_name,
       wallet_address,
       api_key,
-      subject: "API Key Request"
-    }
+      subject: 'API Key Request',
+    };
 
     return await this.emailService.sendApiKey(mailObj);
   }
-
 }

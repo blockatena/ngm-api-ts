@@ -7,7 +7,7 @@ const { log } = console;
 @ApiTags('API Key Management')
 @Controller('subscription')
 export class SubscriptionController {
-  constructor(private readonly subscriptionService: SubscriptionService) { }
+  constructor(private readonly subscriptionService: SubscriptionService) {}
   @ApiHeader({
     name: 'SECRET',
     description: 'Secret of the Enterprise for creating an API key',
@@ -47,15 +47,18 @@ export class SubscriptionController {
     description: 'Secret of the Enterprise for creating an API key',
   })
   @Post('send-api-key')
-  async sendApiKey(@Headers('SECRET') SECRET: string,@Body() body: SendAPiKey): Promise<any> {
-    try{
-    return await this.subscriptionService.sendApiKeyToMail({SECRET,body});}
-    catch(error){
+  async sendApiKey(
+    @Headers('SECRET') SECRET: string,
+    @Body() body: SendAPiKey,
+  ): Promise<any> {
+    try {
+      return await this.subscriptionService.sendApiKeyToMail({ SECRET, body });
+    } catch (error) {
       console.log(error);
       return {
-      message:"Unable to Send API Key ,Please Raise Issue",
-      error
-     }      
+        message: 'Unable to Send API Key ,Please Raise Issue',
+        error,
+      };
     }
   }
 }

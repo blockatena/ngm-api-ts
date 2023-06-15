@@ -9,7 +9,11 @@ import {
   Paginate,
 } from './dtos/create.nft.dto';
 import { metadataDocument } from './schema/metadata.schema';
-import { GetCollectionBody, GetUserOwnedAssets, GetUserOwnedAssetsByCollections } from './dtos/collections.dto';
+import {
+  GetCollectionBody,
+  GetUserOwnedAssets,
+  GetUserOwnedAssetsByCollections,
+} from './dtos/collections.dto';
 import { Nft1155Document, Nft1155Schema } from './schema/nft.1155.schema';
 import {
   GetNft1155,
@@ -35,7 +39,11 @@ import {
   Nft1155OwnerDocument,
 } from './schema/user1155.schema';
 import { MetadataSchema } from '../metadata/schema/metadata.schema';
-import { FavouriteKindEnum, NftTypeEnum, UserFavouriteEnum } from '../users/enum/user.favourite.enum';
+import {
+  FavouriteKindEnum,
+  NftTypeEnum,
+  UserFavouriteEnum,
+} from '../users/enum/user.favourite.enum';
 import { NftHandleLikes } from './dtos/nft.handle.likes.dto';
 import { UserFavouriteDto } from '../users/dto/user.favourite.dto';
 const { log } = console;
@@ -83,7 +91,7 @@ export class NftService {
     try {
       //
       return await this.NftModel.create(data);
-    } catch (error) { }
+    } catch (error) {}
   }
   // ADDING OWNER
   async addOwner(updateOwner: UpdateOwner): Promise<any> {
@@ -1039,19 +1047,17 @@ export class NftService {
             meta_data: '$auction1.meta_data',
           },
         },
-      ])
-        .sort({ createdAt: -1 })
+      ]).sort({ createdAt: -1 });
 
       //
-      return nfts
-
+      return nfts;
     } catch (error) {
       log(error);
       return {
         success: false,
-        message: "Unable to Fetch Nfts",
-        error
-      }
+        message: 'Unable to Fetch Nfts',
+        error,
+      };
     }
   }
 
@@ -1187,95 +1193,110 @@ export class NftService {
     }
   }
 
-  async get1155UqinueOwners(contract_address:string): Promise<any> {
+  async get1155UqinueOwners(contract_address: string): Promise<any> {
     try {
-      let getUnique = (await this.Nft1155OwnerModel.distinct('token_owner',{contract_address}))
-      let getUniqueCount = getUnique.length
+      let getUnique = await this.Nft1155OwnerModel.distinct('token_owner', {
+        contract_address,
+      });
+      let getUniqueCount = getUnique.length;
       // console.log(getUnique)
       // return {
       //   success:true,
       //   owners:getUniqueCount,
       //   unique:getUnique
       // }
-      return getUniqueCount
-    }
-    catch(error) {
+      return getUniqueCount;
+    } catch (error) {
       return {
-        success:false,
-        message:'something went wrong',
-        error
-      }
+        success: false,
+        message: 'something went wrong',
+        error,
+      };
     }
   }
 
-  async get1155Items(contract_address:string): Promise<any> {
+  async get1155Items(contract_address: string): Promise<any> {
     try {
-      let getNFTs = await this.Nft11555Model.find({contract_address})
+      let getNFTs = await this.Nft11555Model.find({ contract_address });
       // console.log(getUnique)
       // return {
       //   success:true,
       //   owners:getUniqueCount,
       //   unique:getUnique
       // }
-      return getNFTs
-    }
-    catch(error) {
+      return getNFTs;
+    } catch (error) {
       return {
-        success:false,
-        message:'something went wrong',
-        error
-      }
+        success: false,
+        message: 'something went wrong',
+        error,
+      };
     }
   }
 
   async handleLikeOrDisLike(body: UserFavouriteDto) {
-    const { contract_address, token_id, nft_type, action, favourite_kind } = body;
+    const { contract_address, token_id, nft_type, action, favourite_kind } =
+      body;
     try {
       switch (favourite_kind) {
         case FavouriteKindEnum.COLLECTIONS:
-          return await this.ContractModel.updateOne({
-            contract_address
-          }, {
-            $inc: {
-              "collection_popularity.likes": (action === UserFavouriteEnum.ADD) ? 1 : -1
-            }
-          })
+          return await this.ContractModel.updateOne(
+            {
+              contract_address,
+            },
+            {
+              $inc: {
+                'collection_popularity.likes':
+                  action === UserFavouriteEnum.ADD ? 1 : -1,
+              },
+            },
+          );
         case FavouriteKindEnum.NFTS:
           switch (nft_type) {
             case NftTypeEnum.NGM721:
-              return await this.NftModel.updateOne({
-                contract_address, token_id
-              }, {
-                $inc: {
-                  "nft_popularity.likes": (action === UserFavouriteEnum.ADD) ? 1 : -1
-                }
-              })
+              return await this.NftModel.updateOne(
+                {
+                  contract_address,
+                  token_id,
+                },
+                {
+                  $inc: {
+                    'nft_popularity.likes':
+                      action === UserFavouriteEnum.ADD ? 1 : -1,
+                  },
+                },
+              );
             case NftTypeEnum.NGM1155:
-              return await this.Nft11555Model.updateOne({
-                contract_address, token_id
-              }, {
-                $inc: {
-                  "nft_popularity.likes": (action === UserFavouriteEnum.ADD) ? 1 : -1
-                }
-              })
-            default: return {
-              success: false,
-              message: "INVALID NFT TYPE WE ONLY SUPPORT NGM721 AND NGM1155"
-            }
+              return await this.Nft11555Model.updateOne(
+                {
+                  contract_address,
+                  token_id,
+                },
+                {
+                  $inc: {
+                    'nft_popularity.likes':
+                      action === UserFavouriteEnum.ADD ? 1 : -1,
+                  },
+                },
+              );
+            default:
+              return {
+                success: false,
+                message: 'INVALID NFT TYPE WE ONLY SUPPORT NGM721 AND NGM1155',
+              };
           }
         default:
           return {
             success: false,
-            message: "INVALID FAVOURITE KIND"
-          }
+            message: 'INVALID FAVOURITE KIND',
+          };
       }
-
     } catch (error) {
       return {
         success: false,
-        message: "Unable to Perform Like or Dislike Operation",
-        error
-      }
+        message: 'Unable to Perform Like or Dislike Operation',
+        error,
+      };
     }
   }
-} 
+}

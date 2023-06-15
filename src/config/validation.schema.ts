@@ -17,12 +17,14 @@ const ConfigValidation = Joi.object({
   ETHEREUM_RPC_URL: Joi.string().required(),
   FILECOIN: Joi.string().required(),
   POLYGON_RPC_URL: Joi.string().required(),
+  MANTLE_MAINET: Joi.string().required(),
 
   // TEST_NET_RPC_URL
   MUMBAI_RPC_URL: Joi.string().required(),
   GOERLI_RPC_URL: Joi.string().required(),
   HYPERSPACE: Joi.string().required(),
   RPC_URL: Joi.string().required(),
+  MANTLE_TESTNET: Joi.string().required(),
 
   // REDIS
   REDIS_HOST: Joi.string().required(),

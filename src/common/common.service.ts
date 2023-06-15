@@ -1,40 +1,40 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { log } from 'console';
 import { ethers } from 'ethers';
 import { ConfigService } from '@nestjs/config';
 import { getWalletType } from './types/getwallet.types';
-import { formatEther} from 'ethers/lib/utils';
-import { ChainEnum } from './enum/chain.enum';
-import { Exception } from 'handlebars/runtime';
+import { formatEther } from 'ethers/lib/utils';
 
 @Injectable()
 export class CommonService {
-  private readonly Admin_Wallet = async () => await this.getEnvironmentVar('ADMIN_WALLET');
-  private Environment:string;
+  private readonly Admin_Wallet = async () =>
+    await this.getEnvironmentVar('ADMIN_WALLET');
+  private Environment: string;
   constructor(private readonly configService: ConfigService) {
-  this.Environment =  this.configService.get<string>("ENVIRONMENT");
+    this.Environment = this.configService.get<string>('ENVIRONMENT');
   }
-  
+
   // FETCHING THE CORgetOnChainTransactionT ENVIRONMENT EX:DEV AND PROD
-  async getEnvironmentVar(variable: string): Promise<string| any> {
+  async getEnvironmentVar(variable: string): Promise<string | any> {
     try {
       return this.configService.get<any>(`${variable}`);
     } catch (error) {
       log(error);
       return {
-        success:false,
-        message:"Unable to Load Vars",
-        error
+        success: false,
+        message: 'Unable to Load Vars',
+        error,
       };
     }
   }
   // INITIALIZING  THE WALLET BASED ON ENVIRONMENT EX: FOR DEV MUMBAI AND GOERLI
   async getWallet(chain: string): Promise<getWalletType | any> {
     try {
-      const check_environment = this.Environment === 'DEV' || this.Environment === 'PROD';
+      const check_environment =
+        this.Environment === 'DEV' || this.Environment === 'PROD';
       if (!check_environment) {
         log(
-          `Invalid Environment check env  current Environment is ${this.Environment}`
+          `Invalid Environment check env  current Environment is ${this.Environment}`,
         );
       }
       log(`Current Environment is ${this.Environment}`);
@@ -55,29 +55,29 @@ export class CommonService {
     } catch (error) {
       return {
         error,
-        mesaage: "Unable to Get Wallet",
+        mesaage: 'Unable to Get Wallet',
       };
     }
   }
 
-  async getRpcUrl({
-    chain
-  }: {
-    chain: string;
-  }): Promise<any> {
-      const chainsAvailble=this.getAvailableChainsOnCurrentEnvironment();
-      const currentChain = chain.toUpperCase();
-      console.log(chainsAvailble);
-      const isChainAvialble = chainsAvailble.find((_chain) => _chain === currentChain);
-      console.log(isChainAvialble);
-      const rpcUrl =  this.configService.get<any>(this.Environment)[`${currentChain}`];
-      log(`RPC is ${rpcUrl} `);
-      return rpcUrl;
-    } 
+  async getRpcUrl({ chain }: { chain: string }): Promise<any> {
+    const chainsAvailble = this.getAvailableChainsOnCurrentEnvironment();
+    const currentChain = chain.toUpperCase();
+    console.log(chainsAvailble);
+    const isChainAvialble = chainsAvailble.find(
+      (_chain) => _chain === currentChain,
+    );
+    console.log(isChainAvialble);
+    const rpcUrl = this.configService.get<any>(this.Environment)[
+      `${currentChain}`
+    ];
+    log(`RPC is ${rpcUrl} `);
+    return rpcUrl;
+  }
 
-    getAvailableChainsOnCurrentEnvironment(){
-    const chain_typee = this.configService.get<any>(this.Environment);
-    return Object.keys(chain_typee);
+  getAvailableChainsOnCurrentEnvironment() {
+    const availableChains = this.configService.get<any>(this.Environment);
+    return Object.keys(availableChains);
   }
 
   async getTransaction({
@@ -120,11 +120,11 @@ export class CommonService {
       const marketAddress = await this.getEnvironmentVar(
         'MARKETPLACE_CONTRACT',
       );
-      
+
       const marketplaceAddress = marketAddress[`${ENVIRONMENT}`][`${_chain}`];
 
       const erc20Address = erc20_addr[`${ENVIRONMENT}`][`${_chain}`];
-      
+
       return {
         marketplaceAddress,
         erc20Address,
@@ -136,24 +136,25 @@ export class CommonService {
       };
     }
   }
-  
-  async getRelayerInfo(chain:string){
-  try {
-       const relayers= (await this.configService.get<any>("RELAYER"))[`${this.Environment}`];           
-       const availableChains=Object.keys(relayers);
-       console.log("\n",availableChains);
-       if(!availableChains.includes(chain)){
-        return "Invalid Chain";
-       }
-       console.log("dasda  \n",relayers);
-       return relayers[`${chain}`];
-      } catch (error) {
-      return{
-      success:false,
-      message:"Unable to get RelayerInfo",
-      error
-     }
-   }
-  }
 
+  async getRelayerInfo(chain: string) {
+    try {
+      const relayers = (await this.configService.get<any>('RELAYER'))[
+        `${this.Environment}`
+      ];
+      const availableChains = Object.keys(relayers);
+      console.log('\n', availableChains);
+      if (!availableChains.includes(chain)) {
+        return 'Invalid Chain';
+      }
+      console.log('Relayer  \n', relayers);
+      return relayers[`${chain}`];
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Unable to get RelayerInfo',
+        error,
+      };
+    }
+  }
 }

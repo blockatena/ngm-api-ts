@@ -14,7 +14,7 @@ export class APIGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
     @Inject(UsersService) private readonly userService: UsersService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = await context.switchToHttp().getRequest();
@@ -31,7 +31,7 @@ export class APIGuard implements CanActivate {
     const owner_info = await this.userService.getUser({
       wallet_address: token_owner,
     });
- 
+
     if (api_key === owner_info?.api_key) {
       log('API KEY IS CORRECT');
       request.body.limit = owner_info?.limit;

@@ -9,8 +9,7 @@ export class EmailService {
   constructor(
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
-  ) { }
-
+  ) {}
 
   // async onModuleInit() {
   //   // const mail="vinay@blockatena.com";
@@ -61,7 +60,6 @@ export class EmailService {
       sendAPIKey;
     // const { user_name, email_addr, wallet_address } = recepient;
     try {
-
       return await this.mailerService
         .sendMail({
           to: email_addr,

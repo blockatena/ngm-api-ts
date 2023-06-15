@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { number } from 'joi';
 import { Document } from 'mongoose';
 export type ContractDocument = ContractSchema & Document;
 
@@ -15,8 +14,8 @@ export class ContractSchema {
   total_supply: number;
   @Prop({ type: { likes: Number } })
   collection_popularity: {
-    likes: number
-  }
+    likes: number;
+  };
   @Prop({ type: Object })
   chain: { id: number; name: string };
   @Prop()

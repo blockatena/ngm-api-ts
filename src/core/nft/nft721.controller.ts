@@ -59,7 +59,7 @@ export class NftController721 {
     private activityService: ActivityService,
     private usersService: UsersService,
     private readonly commonService: CommonService,
-  ) { }
+  ) {}
   private NFT_STORAGE_KEY = this.configService.get<string>('NFT_STORAGE_KEY');
   private token = this.NFT_STORAGE_KEY;
   private storage = new NFTStorage({ token: this.token });
@@ -433,26 +433,28 @@ export class NftController721 {
       log(collection);
       // fetching all Nfts
       let nfts;
-      
+
       // fetching data for analysis
-      
+
       const floor_price = 0;
       const best_offer = 0;
-      let owners
-      if(collection?.type == 'NGM1155') {
-        owners = await this.nftservice.get1155UqinueOwners(contract.contract_address)
-        nfts = await this.nftservice.get1155Items(contract.contract_address)
+      let owners;
+      if (collection?.type == 'NGM1155') {
+        owners = await this.nftservice.get1155UqinueOwners(
+          contract.contract_address,
+        );
+        nfts = await this.nftservice.get1155Items(contract.contract_address);
       } else {
         owners = (
-        await this.nftservice.getUniqueOwners(contract.contract_address)
-      ).length;
-      nfts = await this.nftservice.getNftsByCollection(
-        contract.contract_address,
-      );
+          await this.nftservice.getUniqueOwners(contract.contract_address)
+        ).length;
+        nfts = await this.nftservice.getNftsByCollection(
+          contract.contract_address,
+        );
       }
 
       const total_volume = nfts.length;
-      
+
       return {
         collection,
         total_volume,

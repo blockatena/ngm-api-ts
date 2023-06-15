@@ -86,7 +86,7 @@ const { LIMIT, TTL } = configuration().RATE_LIMIT;
   ],
 })
 export class AppModule implements OnModuleInit {
-  constructor(private appService: AppService) { }
+  constructor(private appService: AppService) {}
 
   async onModuleInit() {
     await this.appService.onModuleInit();

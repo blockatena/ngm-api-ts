@@ -46,8 +46,8 @@ export class PaymentService {
       const currency = await this.getCurrency(chain);
       const { from, to, amount, error, message } =
         await this.commonService.getTransaction({ RPC_URL, transaction_hash });
-        //createTransaction
-        //addSubscription
+      //createTransaction
+      //addSubscription
       if (error) {
         return message;
       }
